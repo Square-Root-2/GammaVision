@@ -13,5 +13,10 @@ int main() {
         cout << "Evaluation: " << get<5>(optimalMove) << "\n";
         cout << "Moves Until Checkmate/Stalemate: " << get<6>(optimalMove) << "\n";
         cout << "Minimum Depth: " << get<7>(optimalMove) << "\n\n";
+        vector<tuple<int, int, int, int, int, double, int>> principalVariation = e.getPrincipalVariation(FEN, get<7>(optimalMove));
+        cout << "Principal Variation:\n";
+        for (tuple<int, int, int, int, int, double, int> principalMove : principalVariation)
+            cout << char(get<1>(principalMove) + 'a') << " " << 8 - get<0>(principalMove) << " " << char(get<3>(principalMove) + 'a') << " " << 8 - get<2>(principalMove) << " " << ((abs(get<4>(optimalMove) - 1.5) <= 1.5) ? to_string(get<4>(optimalMove)) : "") << "\n";
+        cout << "\n";
     }
 }
