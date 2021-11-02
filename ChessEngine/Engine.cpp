@@ -100,6 +100,7 @@ void Engine::orderMoves(vector<tuple<int, int, int, int, int>>& moves, tuple<str
     moves[j] = move;
 }
 tuple<int, int, int, int, int, double, int, int> Engine::getOptimalMove(string FEN, int seconds) {
+    principalMoves.clear();
     tuple<int, int, int, int, int, double, int, int> optimalMove;
     this->seconds = seconds;
     start = chrono::steady_clock::now();
