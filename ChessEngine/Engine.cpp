@@ -115,11 +115,12 @@ tuple<int, int, int, int, int, double, int, int> Engine::getOptimalMove(string F
 vector<tuple<int, int, int, int, int, double, int>> Engine::getPrincipalVariation(string FEN, int depths) {
     vector<tuple<int, int, int, int, int, double, int>> principalVariation;
     State state(FEN);
-    for (int k = depths; k > 0; k--) {
-        tuple<int, int, int, int, int, double, int> principalMove = principalMoves[tuple<string, bool, int, int, int>(get<0>(state.getHashCode()), get<1>(state.getHashCode()), get<2>(state.getHashCode()), get<3>(state.getHashCode()), k)];
+    while (true) {
+        tuple<int, int, int, int, int, double, int> principalMove = principalMoves[tuple<string, bool, int, int, int>(get<0>(state.getHashCode()), get<1>(state.getHashCode()), get<2>(state.getHashCode()), get<3>(state.getHashCode()), depths--)];
+        if (get<0>(principalMove) == -1)
+            return principalVariation;
         principalVariation.push_back(principalMove);
         makeMove(state, tuple<int, int, int, int, int>(get<0>(principalMove), get<1>(principalMove), get<2>(principalMove), get<3>(principalMove), get<4>(principalMove)));
     }
-    return principalVariation;
 }
 
