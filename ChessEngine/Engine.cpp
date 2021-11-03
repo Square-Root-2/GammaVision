@@ -24,7 +24,13 @@ tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(State& state,
     orderMoves(moves, node);
     for (int i = 0; i < moves.size(); i++) {
         makeMove(state, moves[i]);
-        tuple<int, int, int, int, int, double, int> opponentOptimalMove = getOptimalMove(state, depths - 1, -INFINITY, -optimalEvaluation);
+        tuple<int, int, int, int, int, double, int> opponentOptimalMove;
+        get<4>(node)--;
+        if (principalMoves.find(node) != principalMoves.end() && get<0>(principalMoves[node]) != -1 && i > 0)
+            opponentOptimalMove = getOptimalMove(state, depths - 1, -optimalEvaluation, -optimalEvaluation);
+        if (get<0>(opponentOptimalMove) == 0)
+            opponentOptimalMove = getOptimalMove(state, depths - 1, -INFINITY, -optimalEvaluation);
+        get<4>(node)++;
         get<5>(opponentOptimalMove) = -get<5>(opponentOptimalMove);
         if (get<5>(opponentOptimalMove) > optimalEvaluation || get<5>(opponentOptimalMove) == optimalEvaluation && get<0>(optimalMove) == get<2>(optimalMove) && get<1>(optimalMove) == get<3>(optimalMove)) {
             optimalMove = moves[i];
