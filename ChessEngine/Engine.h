@@ -8,7 +8,7 @@
 using namespace std;
 
 class Engine {
-    map<tuple<string, bool, int, int, int>, tuple<int, int, int, int, int, double, int>> principalMoves;
+    map<tuple<string, bool, int, int, int>, tuple<int, int, int, int, int, double, int>> principalMoves, refutationMoves;
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
     tuple<int, int, int, int, int, double, int> getOptimalMove(State& state, int depths, double maximumOptimalEvaluation);
