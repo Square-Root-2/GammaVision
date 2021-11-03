@@ -121,9 +121,7 @@ void Engine::orderMoves(vector<tuple<int, int, int, int, int>>& moves, tuple<str
 }
 tuple<int, int, int, int, int, double, int, int> Engine::getOptimalMove(string FEN, int seconds) {
     principalMoves.clear();
-    cout << "hi";
     refutationMoves.clear();
-    cout << "hi";
     tuple<int, int, int, int, int, double, int, int> optimalMove;
     this->seconds = seconds;
     start = chrono::steady_clock::now();
