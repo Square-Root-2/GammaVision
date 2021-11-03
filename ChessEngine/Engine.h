@@ -11,7 +11,7 @@ class Engine {
     map<tuple<string, bool, int, int, int>, tuple<int, int, int, int, int, double, int>> principalMoves, refutationMoves;
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
-    tuple<int, int, int, int, int, double, int> getOptimalMove(State& state, int depths, double maximumOptimalEvaluation);
+    tuple<int, int, int, int, int, double, int> getOptimalMove(State& state, int depths, double minimumOptimalEvaluation, double maximumOptimalEvaluation);
     void makeMove(State& state, tuple<int, int, int, int, int> move);
     void orderMoves(vector<tuple<int, int, int, int, int>>& moves, tuple<string, bool, int, int, int> node);
 public:

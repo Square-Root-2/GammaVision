@@ -3,7 +3,7 @@
 #include "MoveGenerator.h"
 #include <random>
 
-tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(State& state, int depths, double maximumOptimalEvaluation) {
+tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(State& state, int depths, double minimumOptimalEvaluation, double maximumOptimalEvaluation) {
     tuple<string, bool, int, int, int> node(get<0>(state.getHashCode()), get<1>(state.getHashCode()), get<2>(state.getHashCode()), get<3>(state.getHashCode()), depths);
     if (principalMoves.find(node) != principalMoves.end())
         tuple<int, int, int, int, int, double, int> principalMove = principalMoves[node];
@@ -18,13 +18,13 @@ tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(State& state,
     if (depths == 0)
         return principalMoves[node] = tuple<int, int, int, int, int, double, int>(-1, -1, -1, -1, -1, Evaluator::evaluateState(state), INT32_MAX);
     tuple<int, int, int, int, int> optimalMove;
-    double optimalEvaluation = -INFINITY;
+    double optimalEvaluation = minimumOptimalEvaluation;
     int minimumMoves = INT32_MAX;
     int maximumMoves = 0;
     orderMoves(moves, node);
     for (int i = 0; i < moves.size(); i++) {
         makeMove(state, moves[i]);
-        tuple<int, int, int, int, int, double, int> opponentOptimalMove = getOptimalMove(state, depths - 1, -optimalEvaluation);
+        tuple<int, int, int, int, int, double, int> opponentOptimalMove = getOptimalMove(state, depths - 1, -INFINITY, -optimalEvaluation);
         get<5>(opponentOptimalMove) = -get<5>(opponentOptimalMove);
         if (get<5>(opponentOptimalMove) > optimalEvaluation || get<5>(opponentOptimalMove) == optimalEvaluation && get<0>(optimalMove) == get<2>(optimalMove) && get<1>(optimalMove) == get<3>(optimalMove)) {
             optimalMove = moves[i];
@@ -127,7 +127,7 @@ tuple<int, int, int, int, int, double, int, int> Engine::getOptimalMove(string F
     start = chrono::steady_clock::now();
     for (int depths = 1; ; depths++) {
         State state(FEN);
-        tuple<int, int, int, int, int, double, int> move = getOptimalMove(state, depths, INFINITY);
+        tuple<int, int, int, int, int, double, int> move = getOptimalMove(state, depths, -INFINITY, INFINITY);
         if (get<0>(move) == -2)
             return optimalMove;
         optimalMove = tuple<int, int, int, int, int, double, int, int>(get<0>(move), get<1>(move), get<2>(move), get<3>(move), get<4>(move), get<5>(move), get<6>(move), depths);
