@@ -2,11 +2,13 @@
 #include "Evaluator.h"
 #include "MoveGenerator.h"
 #include <random>
-
+#include <iostream>
 tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(State& state, int depths, double minimumOptimalEvaluation, double maximumOptimalEvaluation) {
+    if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
+        return tuple<int, int, int, int, int, double, int>(-2, -2, -2, -2, -2, 0, INT32_MAX);
     tuple<string, bool, int, int, int> node(get<0>(state.getHashCode()), get<1>(state.getHashCode()), get<2>(state.getHashCode()), get<3>(state.getHashCode()), depths);
     if (principalMoves.find(node) != principalMoves.end())
-        tuple<int, int, int, int, int, double, int> principalMove = principalMoves[node];
+        return principalMoves[node];
     if (refutationMoves.find(node) != refutationMoves.end()) {
         tuple<int, int, int, int, int, double, int> refutationMove = refutationMoves[node];
         if (get<5>(refutationMove) > maximumOptimalEvaluation || abs(get<5>(refutationMove)) != INFINITY && get<5>(refutationMove) == maximumOptimalEvaluation)
@@ -26,13 +28,12 @@ tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(State& state,
         makeMove(state, moves[i]);
         tuple<int, int, int, int, int, double, int> opponentOptimalMove;
         get<4>(node)--;
-        if (principalMoves.find(node) != principalMoves.end() && get<0>(principalMoves[node]) != -1 && i > 0)
-            opponentOptimalMove = getOptimalMove(state, depths - 1, -optimalEvaluation, -optimalEvaluation);
-        if (get<0>(opponentOptimalMove) == 0)
-            opponentOptimalMove = getOptimalMove(state, depths - 1, -INFINITY, -optimalEvaluation);
+        opponentOptimalMove = getOptimalMove(state, depths - 1, -INFINITY, -optimalEvaluation);
+        if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
+            return tuple<int, int, int, int, int, double, int>(-2, -2, -2, -2, -2, 0, INT32_MAX);
         get<4>(node)++;
         get<5>(opponentOptimalMove) = -get<5>(opponentOptimalMove);
-        if (get<5>(opponentOptimalMove) > optimalEvaluation || get<5>(opponentOptimalMove) == optimalEvaluation && get<0>(optimalMove) == get<2>(optimalMove) && get<1>(optimalMove) == get<3>(optimalMove)) {
+        if (get<5>(opponentOptimalMove) > optimalEvaluation) {
             optimalMove = moves[i];
             optimalEvaluation = get<5>(opponentOptimalMove);
             if (get<5>(opponentOptimalMove) == -INFINITY)
@@ -49,8 +50,6 @@ tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(State& state,
             minimumMoves = get<6>(opponentOptimalMove) + 1;
         }
         state.setHashCode(tuple<string, bool, int, int>(get<0>(node), get<1>(node), get<2>(node), get<3>(node)));
-        if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
-            return tuple<int, int, int, int, int, double, int>(-2, -2, -2, -2, -2, 0, INT32_MAX);
         if (get<5>(opponentOptimalMove) > maximumOptimalEvaluation || abs(get<5>(opponentOptimalMove)) != INFINITY && get<5>(opponentOptimalMove) == maximumOptimalEvaluation)
             return refutationMoves[node] = tuple<int, int, int, int, int, double, int>(get<0>(moves[i]), get<1>(moves[i]), get<2>(moves[i]), get<3>(moves[i]), get<4>(moves[i]), get<5>(opponentOptimalMove), INT32_MAX);
     }
@@ -138,6 +137,7 @@ tuple<int, int, int, int, int, double, int, int> Engine::getOptimalMove(string F
             return optimalMove;
         optimalMove = tuple<int, int, int, int, int, double, int, int>(get<0>(move), get<1>(move), get<2>(move), get<3>(move), get<4>(move), get<5>(move), get<6>(move), depths);
     }
+    return optimalMove; //
 }
 vector<tuple<int, int, int, int, int, double, int>> Engine::getPrincipalVariation(string FEN, int depths) {
     vector<tuple<int, int, int, int, int, double, int>> principalVariation;
