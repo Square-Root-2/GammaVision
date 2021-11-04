@@ -2,7 +2,7 @@
 #include "Evaluator.h"
 #include "MoveGenerator.h"
 #include <random>
-#include <iostream>
+
 tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(State& state, int depths, double minimumOptimalEvaluation, double maximumOptimalEvaluation) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return tuple<int, int, int, int, int, double, int>(-2, -2, -2, -2, -2, 0, INT32_MAX);
