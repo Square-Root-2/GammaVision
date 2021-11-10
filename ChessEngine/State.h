@@ -8,17 +8,11 @@ using namespace std;
 class State {
     tuple<string, bool, int, int> hashCode;
     bool isBishop(int i, int j);
-    bool isBishopAttackingSquare(int i, int j, int k, int l);
     bool isKing(int i, int j);
-    bool isKingAttackingSquare(int i, int j, int k, int l);
     bool isKnight(int i, int j);
-    bool isKnightAttackingSquare(int i, int j, int k, int l);
     bool isPawn(int i, int j);
-    bool isPawnAttackingSquare(int i, int j, int k, int l);
     bool isQueen(int i, int j);
-    bool isQueenAttackingSquare(int i, int j, int k, int l);
     bool isRook(int i, int j);
-    bool isRookAttackingSquare(int i, int j, int k, int l);
 public:
     State(string FEN);
     bool canActiveColorCastleKingside();

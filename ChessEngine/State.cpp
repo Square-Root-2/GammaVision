@@ -3,91 +3,20 @@
 bool State::isBishop(int i, int j) {
     return getPiece(i, j) == 'B' || getPiece(i, j) == 'b';
 }
-bool State::isBishopAttackingSquare(int i, int j, int k, int l) {
-    int di[4] = { -1, 1, 1, -1 };
-    int dj[4] = { 1, 1, -1, -1 };
-    for (int m = 0; m < 4; m++)
-        for (int n = 1; ; n++) {
-            if (i + n * di[m] < 0 || i + n * di[m] >= 8 || j + n * dj[m] < 0 || j + n * dj[m] >= 8)
-                break;
-            if (isInactiveColorPiece(i + n * di[m], j + n * dj[m]))
-                break;
-            if (i + n * di[m] == k && j + n * dj[m] == l)
-                return true;
-            if (isPiece(i + n * di[m], j + n * dj[m]))
-                break;
-        }
-    return false;
-}
 bool State::isKing(int i, int j) {
     return getPiece(i, j) == 'K' || getPiece(i, j) == 'k';
-}
-bool State::isKingAttackingSquare(int i, int j, int k, int l) {
-    int di[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
-    int dj[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
-    for (int m = 0; m < 8; m++) {
-        if (i + di[m] < 0 || i + di[m] >= 8 || j + dj[m] < 0 || j + dj[m] >= 8)
-            continue;
-        if (i + di[m] != k || j + dj[m] != l)
-            continue;
-        return true;
-    }
-    return false;
 }
 bool State::isKnight(int i, int j) {
     return getPiece(i, j) == 'N' || getPiece(i, j) == 'n';
 }
-bool State::isKnightAttackingSquare(int i, int j, int k, int l) {
-    int di[8] = { -2, -1, 1, 2, 2, 1, -1, -2 };
-    int dj[8] = { 1, 2, 2, 1, -1, -2, -2, -1 };
-    for (int m = 0; m < 8; m++) {
-        if (i + di[m] < 0 || i + di[m] >= 8 || j + dj[m] < 0 || j + dj[m] >= 8)
-            continue;
-        if (i + di[m] != k || j + dj[m] != l)
-            continue;
-        return true;
-    }
-    return false;
-}
 bool State::isPawn(int i, int j) {
     return getPiece(i, j) == 'P' || getPiece(i, j) == 'p';
-}
-bool State::isPawnAttackingSquare(int i, int j, int k, int l) {
-    int di[2] = { 1, -1 };
-    int dj[2] = { -1, 1 };
-    for (int m = 0; m < 2; m++) {
-        if (j + dj[m] < 0 || j + dj[m] >= 8)
-            continue;
-        if (i + di[get<1>(hashCode)] != k || j + dj[m] != l)
-            continue;
-        return true;
-    }
-    return false;
 }
 bool State::isQueen(int i, int j) {
     return getPiece(i, j) == 'Q' || getPiece(i, j) == 'q';
 }
-bool State::isQueenAttackingSquare(int i, int j, int k, int l) {
-    return isBishopAttackingSquare(i, j, k, l) || isRookAttackingSquare(i, j, k, l);
-}
 bool State::isRook(int i, int j) {
     return getPiece(i, j) == 'R' || getPiece(i, j) == 'r';
-}
-bool State::isRookAttackingSquare(int i, int j, int k, int l) {
-    int di[4] = { -1, 0, 1, 0 };
-    int dj[4] = { 0, 1, 0, -1 };
-    for (int m = 0; m < 4; m++)
-        for (int n = 1; ; n++) {
-            if (i + n * di[m] < 0 || i + n * di[m] >= 8 || j + n * dj[m] < 0 || j + n * dj[m] >= 8)
-                break;
-            if (isInactiveColorPiece(i + n * di[m], j + n * dj[m]))
-                break;
-            if (i + n * di[m] == k && j + n * dj[m] == l)
-                return true;
-            if (isPiece(i + n * di[m], j + n * dj[m]))
-                break;
-        }
-    return false;
 }
 State::State(string FEN) {
     reverse(FEN.begin(), FEN.end());
@@ -162,30 +91,54 @@ bool State::isActiveColorBishop(int i, int j) {
     return getPiece(i, j) == (getActiveColor() ? 'b' : 'B');
 }
 bool State::isActiveColorInCheck() {
-    int k, l;
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++) {
             if (!isActiveColorKing(i, j))
                 continue;
-            k = i;
-            l = j;
-            break;
+            if ((getActiveColor() ? i <= 5 : i >= 2) && (isInactiveColorPawn(i + (getActiveColor() ? 1 : -1), j - 1) || isInactiveColorPawn(i + (getActiveColor() ? 1 : -1), j + 1)))
+                return true;
+            int di[16] = { -2, -1, 1, 2, 2, 1, -1, -2, -1, -1, 1, 1, -1, 0, 1, 0 };
+            int dj[16] = { 1, 2, 2, 1, -1, -2, -2, -1, -1, 1, 1, -1, 0, 1, 0, -1 };
+            for (int k = 0; k < 8; k++) {
+                if (i + di[k] < 0 || i + di[k] >= 8 || j + dj[k] < 0 || j + dj[k] >= 8)
+                    continue;
+                if (!isInactiveColorKnight(i + di[k], j + dj[k]))
+                    continue;
+                return true;
+            }
+            for (int k = 8; k < 16; k++) {
+                if (i + di[k] < 0 || i + di[k] >= 8 || j + dj[k] < 0 || j + dj[k] >= 8)
+                    continue;
+                if (!isInactiveColorKing(i + di[k], j + dj[k]))
+                    continue;
+                return true;
+            }
+            for (int k = 8; k < 12; k++) {
+                for (int l = 1; ; l++) {
+                    if (i + l * di[k] < 0 || i + l * di[k] >= 8 || j + l * dj[k] < 0 || j + l * dj[k] >= 8)
+                        break;
+                    if (isActiveColorPiece(i + l * di[k], j + l * dj[k]))
+                        break;
+                    if (isInactiveColorBishop(i + l * di[k], j + l * dj[k]) || isInactiveColorQueen(i + l * di[k], j + l * dj[k]))
+                        return true;
+                    if (isInactiveColorPiece(i + l * di[k], j + l * dj[k]))
+                        break;
+                }
+            }
+            for (int k = 12; k < 16; k++) {
+                for (int l = 1; ; l++) {
+                    if (i + l * di[k] < 0 || i + l * di[k] >= 8 || j + l * dj[k] < 0 || j + l * dj[k] >= 8)
+                        break;
+                    if (isActiveColorPiece(i + l * di[k], j + l * dj[k]))
+                        break;
+                    if (isInactiveColorRook(i + l * di[k], j + l * dj[k]) || isInactiveColorQueen(i + l * di[k], j + l * dj[k]))
+                        return true;
+                    if (isInactiveColorPiece(i + l * di[k], j + l * dj[k]))
+                        break;
+                }
+            }
+            return false;
         }
-    for (int i = 0; i < 8; i++)
-        for (int j = 0; j < 8; j++)
-            if (isInactiveColorPawn(i, j) && isPawnAttackingSquare(i, j, k, l))
-                return true;
-            else if (isInactiveColorKnight(i, j) && isKnightAttackingSquare(i, j, k, l))
-                return true;
-            else if (isInactiveColorBishop(i, j) && isBishopAttackingSquare(i, j, k, l))
-                return true;
-            else if (isInactiveColorRook(i, j) && isRookAttackingSquare(i, j, k, l))
-                return true;
-            else if (isInactiveColorQueen(i, j) && isQueenAttackingSquare(i, j, k, l))
-                return true;
-            else if (isInactiveColorKing(i, j) && isKingAttackingSquare(i, j, k, l))
-                return true;
-    return false;
 }
 bool State::isActiveColorKing(int i, int j) {
     return getPiece(i, j) == (getActiveColor() ? 'k' : 'K');
