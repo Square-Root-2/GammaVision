@@ -1,10 +1,11 @@
 #include "Engine.h"
 #include "Evaluator.h"
 #include "MoveGenerator.h"
-#include <chrono>
 #include <random>
 
 tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(State& state, int depths, double maximumOptimalEvaluation) {
+    if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
+        return tuple<int, int, int, int, int, double, int>(-2, -2, -2, -2, -2, 0, INT32_MAX);
     vector<tuple<int, int, int, int, int>> moves = MoveGenerator::getMoves(state);
     if (moves.empty())
         return tuple<int, int, int, int, int, double, int>(-1, -1, -1, -1, -1, state.isActiveColorInCheck() ? -INFINITY : 0, 0);
@@ -20,6 +21,8 @@ tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(State& state,
         tuple<string, bool, int, int> hashCode = state.getHashCode();
         makeMove(state, moves[i]);
         tuple<int, int, int, int, int, double, int> opponentOptimalMove = getOptimalMove(state, depths - 1, -optimalEvaluation);
+        if (get<0>(opponentOptimalMove) == -2)
+            return tuple<int, int, int, int, int, double, int>(-2, -2, -2, -2, -2, 0, INT32_MAX);
         get<5>(opponentOptimalMove) = -get<5>(opponentOptimalMove);
         if (get<5>(opponentOptimalMove) > optimalEvaluation) {
             optimalMove = moves[i];
@@ -77,7 +80,15 @@ void Engine::makeMove(State& state, tuple<int, int, int, int, int> move) {
         state.setPossibleEnPassantTargetColumn(-1);
     state.toggleActiveColor();
 }
-tuple<int, int, int, int, int, double, int> Engine::getOptimalMove(string FEN, int depths) {
-    State state(FEN);
-    return getOptimalMove(state, depths, INFINITY);
+tuple<int, int, int, int, int, double, int, int> Engine::getOptimalMove(string FEN, int seconds) {
+    tuple<int, int, int, int, int, double, int, int> optimalMove;
+    start = chrono::steady_clock::now();
+    this->seconds = seconds;
+    for (int depths = 1; ; depths++) {
+        State state(FEN);
+        tuple<int, int, int, int, int, double, int> move = getOptimalMove(state, depths, INFINITY);
+        if (get<0>(move) == -2)
+            return optimalMove;
+        optimalMove = tuple<int, int, int, int, int, double, int, int>(get<0>(move), get<1>(move), get<2>(move), get<3>(move), get<4>(move), get<5>(move), get<6>(move), depths);
+    }
 }
