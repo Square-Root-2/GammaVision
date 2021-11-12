@@ -89,7 +89,7 @@ pair<double, int> Engine::negamax(State& state, int depths, double maximumOptima
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         makeMove(state, moves[i]);
-        pair<double, int> opponentOptimalEvaluation = negamax(state, depths - 1, INFINITY);
+        pair<double, int> opponentOptimalEvaluation = negamax(state, depths - 1, -optimalEvaluation);
         if (opponentOptimalEvaluation.second == -1)
             return pair<double, int>(0, -1);
         if (-opponentOptimalEvaluation.first > optimalEvaluation) {
