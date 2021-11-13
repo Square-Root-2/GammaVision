@@ -41,39 +41,40 @@ tuple<int, int, int, int, int, double, int> Engine::negamax(State& state, int de
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return tuple<int, int, int, int, int, double, int>(-1, 0, 0, 0, 0, 0, 0);
     vector<tuple<int, int, int, int, int>> moves = MoveGenerator::getMoves(state);
-    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    shuffle(moves.begin(), moves.end(), rng);
+    //mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    //shuffle(moves.begin(), moves.end(), rng);
     tuple<int, int, int, int, int> optimalMove;
-    double optimalEvaluation = -INFINITY;
+    double alpha = -INFINITY;
     int minimumMoves = INT32_MAX;
     int maximumMoves = 0;
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         makeMove(state, moves[i]);
-        pair<double, int> opponentOptimalEvaluation = negamax(state, depths - 1, INFINITY);
-        if (opponentOptimalEvaluation.second == -1)
+        pair<double, int> evaluation = negamax(state, depths - 1, -INFINITY, -alpha);
+        if (evaluation.second == -1)
             return tuple<int, int, int, int, int, double, int>(-1, 0, 0, 0, 0, 0, 0);
-        if (-opponentOptimalEvaluation.first > optimalEvaluation) {
+        evaluation.first = -evaluation.first;
+        if (evaluation.first > alpha) {
             optimalMove = moves[i];
-            optimalEvaluation = -opponentOptimalEvaluation.first;
-            if (-opponentOptimalEvaluation.first == -INFINITY)
-                maximumMoves = opponentOptimalEvaluation.second + 1;
-            else if (-opponentOptimalEvaluation.first == INFINITY)
-                minimumMoves = opponentOptimalEvaluation.second + 1;
+            alpha = evaluation.first;
+            if (evaluation.first == -INFINITY)
+                maximumMoves = evaluation.second + 1;
+            else if (evaluation.first == INFINITY)
+                minimumMoves = evaluation.second + 1;
         }
-        else if (-opponentOptimalEvaluation.first == optimalEvaluation && -opponentOptimalEvaluation.first == -INFINITY && opponentOptimalEvaluation.second + 1 > maximumMoves) {
+        else if (evaluation.first == alpha && evaluation.first == -INFINITY && evaluation.second + 1 > maximumMoves) {
             optimalMove = moves[i];
-            maximumMoves = opponentOptimalEvaluation.second + 1;
+            maximumMoves = evaluation.second + 1;
         }
-        else if (-opponentOptimalEvaluation.first == optimalEvaluation && -opponentOptimalEvaluation.first == INFINITY && opponentOptimalEvaluation.second + 1 < minimumMoves) {
+        else if (evaluation.first == alpha && evaluation.first == INFINITY && evaluation.second + 1 < minimumMoves) {
             optimalMove = moves[i];
-            minimumMoves = opponentOptimalEvaluation.second + 1;
+            minimumMoves = evaluation.second + 1;
         }
         state.setHashCode(hashCode);
     }
-    return tuple<int, int, int, int, int, double, int>(get<0>(optimalMove), get<1>(optimalMove), get<2>(optimalMove), get<3>(optimalMove), get<4>(optimalMove), optimalEvaluation, optimalEvaluation == -INFINITY ? maximumMoves : optimalEvaluation == INFINITY ? minimumMoves : INT32_MAX);
+    return tuple<int, int, int, int, int, double, int>(get<0>(optimalMove), get<1>(optimalMove), get<2>(optimalMove), get<3>(optimalMove), get<4>(optimalMove), alpha, alpha == -INFINITY ? maximumMoves : alpha == INFINITY ? minimumMoves : INT32_MAX);
 }
-pair<double, int> Engine::negamax(State& state, int depths, double maximumOptimalEvaluation) {
+pair<double, int> Engine::negamax(State& state, int depths, double alpha, double beta) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return pair<double, int>(0, -1);
     vector<tuple<int, int, int, int, int>> moves = MoveGenerator::getMoves(state);
@@ -81,34 +82,36 @@ pair<double, int> Engine::negamax(State& state, int depths, double maximumOptima
         return pair<double, int>(state.isActiveColorInCheck() ? -INFINITY : 0, 0);
     if (depths == 0)
         return pair<double, int>(Evaluator::getEvaluation(state), INT32_MAX);
-    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    shuffle(moves.begin(), moves.end(), rng);
-    double optimalEvaluation = -INFINITY;
+    //mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    //shuffle(moves.begin(), moves.end(), rng);
     int minimumMoves = INT32_MAX;
     int maximumMoves = 0;
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         makeMove(state, moves[i]);
-        pair<double, int> opponentOptimalEvaluation = negamax(state, depths - 1, -optimalEvaluation);
-        if (opponentOptimalEvaluation.second == -1)
+        pair<double, int> evaluation = negamax(state, depths - 1, -beta, -alpha);
+        if (evaluation.second == -1)
             return pair<double, int>(0, -1);
-        if (-opponentOptimalEvaluation.first > optimalEvaluation) {
-            optimalEvaluation = -opponentOptimalEvaluation.first;
-            if (-opponentOptimalEvaluation.first == -INFINITY)
-                maximumMoves = opponentOptimalEvaluation.second + 1;
-            else if (-opponentOptimalEvaluation.first == INFINITY)
-                minimumMoves = opponentOptimalEvaluation.second + 1;
-        }
-        else if (-opponentOptimalEvaluation.first == optimalEvaluation && -opponentOptimalEvaluation.first == -INFINITY && opponentOptimalEvaluation.second + 1 > maximumMoves)
-            maximumMoves = opponentOptimalEvaluation.second + 1;
-        else if (-opponentOptimalEvaluation.first == optimalEvaluation && -opponentOptimalEvaluation.first == INFINITY && opponentOptimalEvaluation.second + 1 < minimumMoves)
-            minimumMoves = opponentOptimalEvaluation.second + 1;
-        state.setHashCode(hashCode);
+        evaluation.first = -evaluation.first;
         // alpha-beta pruning
-        if (optimalEvaluation > maximumOptimalEvaluation || abs(optimalEvaluation) != INFINITY && optimalEvaluation == maximumOptimalEvaluation)
-            return pair<double, int>(optimalEvaluation, INT32_MAX);
+        if (evaluation.first > beta || abs(evaluation.first) != INFINITY && evaluation.first == beta)
+            return pair<double, int>(beta, INT32_MAX);
+        if (evaluation.first > alpha) {
+            alpha = evaluation.first;
+            if (evaluation.first == -INFINITY)
+                maximumMoves = evaluation.second + 1;
+            else if (evaluation.first == INFINITY)
+                minimumMoves = evaluation.second + 1;
+        }
+        else if (evaluation.first == alpha && evaluation.first == -INFINITY && evaluation.second + 1 > maximumMoves)
+            maximumMoves = evaluation.second + 1;
+        else if (evaluation.first == alpha && evaluation.first == INFINITY && evaluation.second + 1 < minimumMoves)
+            minimumMoves = evaluation.second + 1;
+        state.setHashCode(hashCode);
     }
-    return pair<double, int>(optimalEvaluation, optimalEvaluation == -INFINITY ? maximumMoves : optimalEvaluation == INFINITY ? minimumMoves : INT32_MAX);
+    if (alpha == INFINITY && minimumMoves == INT32_MAX)
+        return pair<double, int>(0, INT32_MAX);
+    return pair<double, int>(alpha, alpha == -INFINITY ? maximumMoves : alpha == INFINITY ? minimumMoves : INT32_MAX);
 }
 tuple<int, int, int, int, int, double, int, int> Engine::getOptimalMove(string FEN, int seconds) {
     tuple<int, int, int, int, int, double, int> optimalMove;
