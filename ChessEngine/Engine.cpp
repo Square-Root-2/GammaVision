@@ -95,7 +95,7 @@ pair<double, int> Engine::negamax(State& state, int depths, double alpha, double
         evaluation.first = -evaluation.first;
         // alpha-beta pruning
         if (evaluation.first > beta || abs(evaluation.first) != INFINITY && evaluation.first == beta)
-            return pair<double, int>(beta, INT32_MAX);
+            return pair<double, int>(beta, INT32_MAX - 1);
         if (evaluation.first > alpha) {
             alpha = evaluation.first;
             if (evaluation.first == -INFINITY)
