@@ -69,7 +69,7 @@ pair<Move, Evaluation> Engine::negamax(State& state, int depths) {
 }
 Evaluation Engine::negamax(State& state, int depths, Evaluation alpha, Evaluation beta) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
-        return Evaluation(0, -1);
+        return Evaluation(0, INT32_MIN);
     vector<Move> moves = MoveGenerator::getMoves(state);
     if (moves.empty())
         return Evaluation(state.isActiveColorInCheck() ? -INFINITY : 0, 0);
@@ -88,8 +88,8 @@ Evaluation Engine::negamax(State& state, int depths, Evaluation alpha, Evaluatio
         // alpha-beta pruning
         if (evaluation >= beta)
             return beta;
-        if (alpha > evaluation)
-            evaluation = alpha;
+        if (evaluation > alpha)
+            alpha = evaluation;
         state.setHashCode(hashCode);
     }
     return alpha;

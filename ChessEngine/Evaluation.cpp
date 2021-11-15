@@ -24,18 +24,10 @@ bool Evaluation::operator>(Evaluation evaluation) {
 	return false;
 }
 bool Evaluation::operator==(Evaluation evaluation) {
-	return this->pawns == evaluation.getPawns() && this->moves == evaluation.getMoves();
+	return pawns == evaluation.getPawns() && moves == evaluation.getMoves();
 }
 bool Evaluation::operator>=(Evaluation evaluation) {
-	if (this->pawns == evaluation.getPawns() && this->moves == evaluation.getMoves())
-		return true;
-	if (this->pawns != evaluation.getPawns())
-		return this->pawns > evaluation.getPawns();
-	if (this->pawns == -INFINITY)
-		return evaluation.getMoves() > this->moves;
-	if (this->pawns == INFINITY)
-		return evaluation.getMoves() < this->moves;
-	return false;
+	return *this > evaluation || *this == evaluation;
 }
 int Evaluation::getMoves() {
 	return moves;

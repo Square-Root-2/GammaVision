@@ -157,7 +157,6 @@
     <ClInclude Include="Move.h" />
     <ClInclude Include="MoveGenerator.h" />
     <ClInclude Include="MoveType.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="State.h" />
   </ItemGroup>
   <ItemGroup>
