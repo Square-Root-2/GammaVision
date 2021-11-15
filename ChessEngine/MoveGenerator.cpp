@@ -1,7 +1,8 @@
 #include "MoveGenerator.h"
+#include "MoveType.h"
 
-queue<tuple<int, int, int, int, int>> MoveGenerator::getBishopMoves(State& state, int i, int j) {
-    queue<tuple<int, int, int, int, int>> bishopMoves;
+queue<Move> MoveGenerator::getBishopMoves(State& state, int i, int j) {
+    queue<Move> bishopMoves;
     int di[4] = { -1, 1, 1, -1 };
     int dj[4] = { 1, 1, -1, -1 };
     for (int k = 0; k < 4; k++)
@@ -14,7 +15,7 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getBishopMoves(State& state
             state.setPiece(i, j, '.');
             state.setPiece(i + l * di[k], j + l * dj[k], state.getActiveColor() ? 'b' : 'B');
             if (!state.isActiveColorInCheck())
-                bishopMoves.push(tuple<int, int, int, int, int>(i, j, i + l * di[k], j + l * dj[k], -1));
+                bishopMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], NORMAL));
             state.setPiece(i + l * di[k], j + l * dj[k], piece);
             state.setPiece(i, j, state.getActiveColor() ? 'b' : 'B');
             if (state.isPiece(i + l * di[k], j + l * dj[k]))
@@ -22,8 +23,8 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getBishopMoves(State& state
         }
     return bishopMoves;
 }
-queue<tuple<int, int, int, int, int>> MoveGenerator::getKingMoves(State& state, int i, int j) {
-    queue<tuple<int, int, int, int, int>> kingMoves;
+queue<Move> MoveGenerator::getKingMoves(State& state, int i, int j) {
+    queue<Move> kingMoves;
     int di[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
     int dj[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
     for (int k = 0; k < 8; k++) {
@@ -35,7 +36,7 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getKingMoves(State& state, 
         state.setPiece(i, j, '.');
         state.setPiece(i + di[k], j + dj[k], state.getActiveColor() ? 'k' : 'K');
         if (!state.isActiveColorInCheck())
-            kingMoves.push(tuple<int, int, int, int, int>(i, j, i + di[k], j + dj[k], 7));
+            kingMoves.push(Move(i, j, i + di[k], j + dj[k], KING_MOVE));
         state.setPiece(i + di[k], j + dj[k], piece);
         state.setPiece(i, j, state.getActiveColor() ? 'k' : 'K');
     }
@@ -48,7 +49,7 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getKingMoves(State& state, 
             state.setPiece(i, 5, '.');
             state.setPiece(i, 6, state.getActiveColor() ? 'k' : 'K');
             if (!state.isActiveColorInCheck())
-                kingMoves.push(tuple<int, int, int, int, int>(i, 4, i, 6, 8));
+                kingMoves.push(Move(i, 4, i, 6, CASTLE_KINGSIDE));
             state.setPiece(i, 6, '.');
             state.setPiece(i, 5, state.getActiveColor() ? 'k' : 'K');
         }
@@ -62,7 +63,7 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getKingMoves(State& state, 
             state.setPiece(i, 3, '.');
             state.setPiece(i, 2, state.getActiveColor() ? 'k' : 'K');
             if (!state.isActiveColorInCheck())
-                kingMoves.push(tuple<int, int, int, int, int>(i, 4, i, 2, 9));
+                kingMoves.push(Move(i, 4, i, 2, CASTLE_QUEENSIDE));
             state.setPiece(i, 2, '.');
             state.setPiece(i, 3, state.getActiveColor() ? 'k' : 'K');
         }
@@ -71,8 +72,8 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getKingMoves(State& state, 
     }
     return kingMoves;
 }
-queue<tuple<int, int, int, int, int>> MoveGenerator::getKnightMoves(State& state, int i, int j) {
-    queue<tuple<int, int, int, int, int>> knightMoves;
+queue<Move> MoveGenerator::getKnightMoves(State& state, int i, int j) {
+    queue<Move> knightMoves;
     int di[8] = { -2, -1, 1, 2, 2, 1, -1, -2 };
     int dj[8] = { 1, 2, 2, 1, -1, -2, -2, -1 };
     for (int k = 0; k < 8; k++) {
@@ -84,24 +85,26 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getKnightMoves(State& state
         state.setPiece(i, j, '.');
         state.setPiece(i + di[k], j + dj[k], state.getActiveColor() ? 'n' : 'N');
         if (!state.isActiveColorInCheck())
-            knightMoves.push(tuple<int, int, int, int, int>(i, j, i + di[k], j + dj[k], -1));
+            knightMoves.push(Move(i, j, i + di[k], j + dj[k], NORMAL));
         state.setPiece(i + di[k], j + dj[k], piece);
         state.setPiece(i, j, state.getActiveColor() ? 'n' : 'N');
     }
     return knightMoves;
 }
-queue<tuple<int, int, int, int, int>> MoveGenerator::getPawnMoves(State& state, int i, int j) {
-    queue<tuple<int, int, int, int, int>> pawnMoves;
+queue<Move> MoveGenerator::getPawnMoves(State& state, int i, int j) {
+    queue<Move> pawnMoves;
     int di[2] = { -1, 1 };
     if (!state.isPiece(i + di[state.getActiveColor()], j)) {
         state.setPiece(i, j, '.');
         state.setPiece(i + di[state.getActiveColor()], j, state.getActiveColor() ? 'p' : 'P');
         if (!state.isActiveColorInCheck()) {
-            if (abs((i + di[state.getActiveColor()]) - 3.5) == 3.5)
+            if (abs((i + di[state.getActiveColor()]) - 3.5) == 3.5) {
+                MoveType moveTypes[4] = { PROMOTION_TO_BISHOP, PROMOTION_TO_KNIGHT, PROMOTION_TO_QUEEN, PROMOTION_TO_ROOK };
                 for (int k = 0; k < 4; k++)
-                    pawnMoves.push(tuple<int, int, int, int, int>(i, j, i + di[state.getActiveColor()], j, k));
+                    pawnMoves.push(Move(i, j, i + di[state.getActiveColor()], j, moveTypes[k]));
+            }
             else
-                pawnMoves.push(tuple<int, int, int, int, int>(i, j, i + di[state.getActiveColor()], j, -1));
+                pawnMoves.push(Move(i, j, i + di[state.getActiveColor()], j, NORMAL));
         }
         state.setPiece(i + di[state.getActiveColor()], j, '.');
         state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
@@ -110,7 +113,7 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getPawnMoves(State& state, 
         state.setPiece(i, j, '.');
         state.setPiece(i + 2 * di[state.getActiveColor()], j, state.getActiveColor() ? 'p' : 'P');
         if (!state.isActiveColorInCheck())
-            pawnMoves.push(tuple<int, int, int, int, int>(i, j, i + 2 * di[state.getActiveColor()], j, 4));
+            pawnMoves.push(Move(i, j, i + 2 * di[state.getActiveColor()], j, PAWN_FORWARD_TWO));
         state.setPiece(i + 2 * di[state.getActiveColor()], j, '.');
         state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
     }
@@ -127,11 +130,13 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getPawnMoves(State& state, 
         if (isEnPassant)
             state.setPiece(i, j + dj[k], '.');
         if (!state.isActiveColorInCheck()) {
-            if (abs((i + di[state.getActiveColor()]) - 3.5) == 3.5)
+            if (abs((i + di[state.getActiveColor()]) - 3.5) == 3.5) {
+                MoveType moveTypes[4] = { PROMOTION_TO_BISHOP, PROMOTION_TO_KNIGHT, PROMOTION_TO_QUEEN, PROMOTION_TO_ROOK };
                 for (int l = 0; l < 4; l++)
-                    pawnMoves.push(tuple<int, int, int, int, int>(i, j, i + di[state.getActiveColor()], j + dj[k], l));
+                    pawnMoves.push(Move(i, j, i + di[state.getActiveColor()], j + dj[k], moveTypes[l]));
+            }
             else
-                pawnMoves.push(tuple<int, int, int, int, int>(i, j, i + di[state.getActiveColor()], j + dj[k], isEnPassant ? 5 : -1));
+                pawnMoves.push(Move(i, j, i + di[state.getActiveColor()], j + dj[k], isEnPassant ? EN_PASSANT : NORMAL));
         }
         if (isEnPassant)
             state.setPiece(i, j + dj[k], state.getActiveColor() ? 'P' : 'p');
@@ -140,8 +145,8 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getPawnMoves(State& state, 
     }
     return pawnMoves;
 }
-queue<tuple<int, int, int, int, int>> MoveGenerator::getQueenMoves(State& state, int i, int j) {
-    queue<tuple<int, int, int, int, int>> queenMoves;
+queue<Move> MoveGenerator::getQueenMoves(State& state, int i, int j) {
+    queue<Move> queenMoves;
     int di[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
     int dj[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
     for (int k = 0; k < 8; k++)
@@ -154,7 +159,7 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getQueenMoves(State& state,
             state.setPiece(i, j, '.');
             state.setPiece(i + l * di[k], j + l * dj[k], state.getActiveColor() ? 'q' : 'Q');
             if (!state.isActiveColorInCheck())
-                queenMoves.push(tuple<int, int, int, int, int>(i, j, i + l * di[k], j + l * dj[k], -1));
+                queenMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], NORMAL));
             state.setPiece(i + l * di[k], j + l * dj[k], piece);
             state.setPiece(i, j, state.getActiveColor() ? 'q' : 'Q');
             if (state.isPiece(i + l * di[k], j + l * dj[k]))
@@ -162,8 +167,8 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getQueenMoves(State& state,
         }
     return queenMoves;
 }
-queue<tuple<int, int, int, int, int>> MoveGenerator::getRookMoves(State& state, int i, int j) {
-    queue<tuple<int, int, int, int, int>> rookMoves;
+queue<Move> MoveGenerator::getRookMoves(State& state, int i, int j) {
+    queue<Move> rookMoves;
     int di[4] = { -1, 0, 1, 0 };
     int dj[4] = { 0, 1, 0, -1 };
     for (int k = 0; k < 4; k++)
@@ -176,7 +181,7 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getRookMoves(State& state, 
             state.setPiece(i, j, '.');
             state.setPiece(i + l * di[k], j + l * dj[k], state.getActiveColor() ? 'r' : 'R');
             if (!state.isActiveColorInCheck())
-                rookMoves.push(tuple<int, int, int, int, int>(i, j, i + l * di[k], j + l * dj[k], 6));
+                rookMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], ROOK_MOVE));
             state.setPiece(i + l * di[k], j + l * dj[k], piece);
             state.setPiece(i, j, state.getActiveColor() ? 'r' : 'R');
             if (state.isPiece(i + l * di[k], j + l * dj[k]))
@@ -184,47 +189,47 @@ queue<tuple<int, int, int, int, int>> MoveGenerator::getRookMoves(State& state, 
         }
     return rookMoves;
 }
-vector<tuple<int, int, int, int, int>> MoveGenerator::getMoves(State& state) {
-    vector<tuple<int, int, int, int, int>> moves;
+vector<Move> MoveGenerator::getMoves(State& state) {
+    vector<Move> moves;
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++)
             if (state.isActiveColorPawn(i, j)) {
-                queue<tuple<int, int, int, int, int>> pawnMoves = getPawnMoves(state, i, j);
+                queue<Move> pawnMoves = getPawnMoves(state, i, j);
                 while (!pawnMoves.empty()) {
                     moves.push_back(pawnMoves.front());
                     pawnMoves.pop();
                 }
             }
             else if (state.isActiveColorKnight(i, j)) {
-                queue<tuple<int, int, int, int, int>> knightMoves = getKnightMoves(state, i, j);
+                queue<Move> knightMoves = getKnightMoves(state, i, j);
                 while (!knightMoves.empty()) {
                     moves.push_back(knightMoves.front());
                     knightMoves.pop();
                 }
             }
             else if (state.isActiveColorBishop(i, j)) {
-                queue<tuple<int, int, int, int, int>> bishopMoves = getBishopMoves(state, i, j);
+                queue<Move> bishopMoves = getBishopMoves(state, i, j);
                 while (!bishopMoves.empty()) {
                     moves.push_back(bishopMoves.front());
                     bishopMoves.pop();
                 }
             }
             else if (state.isActiveColorRook(i, j)) {
-                queue<tuple<int, int, int, int, int>> rookMoves = getRookMoves(state, i, j);
+                queue<Move> rookMoves = getRookMoves(state, i, j);
                 while (!rookMoves.empty()) {
                     moves.push_back(rookMoves.front());
                     rookMoves.pop();
                 }
             }
             else if (state.isActiveColorQueen(i, j)) {
-                queue<tuple<int, int, int, int, int>> queenMoves = getQueenMoves(state, i, j);
+                queue<Move> queenMoves = getQueenMoves(state, i, j);
                 while (!queenMoves.empty()) {
                     moves.push_back(queenMoves.front());
                     queenMoves.pop();
                 }
             }
             else if (state.isActiveColorKing(i, j)) {
-                queue<tuple<int, int, int, int, int>> kingMoves = getKingMoves(state, i, j);
+                queue<Move> kingMoves = getKingMoves(state, i, j);
                 while (!kingMoves.empty()) {
                     moves.push_back(kingMoves.front());
                     kingMoves.pop();

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <chrono>
+#include "Evaluation.h"
+#include "Move.h"
 #include "State.h"
 
 using namespace std;
@@ -8,9 +10,9 @@ using namespace std;
 class Engine {
     chrono::time_point<chrono::steady_clock> start;
     int seconds;
-    void makeMove(State& state, tuple<int, int, int, int, int> move);
-    tuple<int, int, int, int, int, double, int> negamax(State& state, int depths);
-    pair<double, int> negamax(State& state, int depths, double alpha, double beta);
+    void makeMove(State& state, Move move);
+    pair<Move, Evaluation> negamax(State& state, int depths);
+    Evaluation negamax(State& state, int depths, Evaluation alpha, Evaluation beta);
 public:
-    tuple<int, int, int, int, int, double, int, int> getOptimalMove(string FEN, int depths);
+    tuple<Move, Evaluation, int> getOptimalMove(string FEN, int depths);
 };
