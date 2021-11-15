@@ -3,7 +3,7 @@
 #include "MoveGenerator.h"
 #include "MoveType.h"
 #include <random>
-#include <iostream>
+
 void Engine::makeMove(State& state, Move move) {
     state.setPiece(move.getEndRow(), move.getEndColumn(), state.getPiece(move.getBeginRow(), move.getBeginColumn()));
     state.setPiece(move.getBeginRow(), move.getBeginColumn(), '.');
