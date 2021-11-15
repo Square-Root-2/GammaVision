@@ -4,13 +4,13 @@ class Evaluation {
 	int moves;
 	double pawns;
 public:
-	Evaluation() {};
+	Evaluation();
 	Evaluation(double pawns, int moves);
 	void operator=(Evaluation evaluation);
 	bool operator>(Evaluation evaluation);
 	bool operator==(Evaluation evaluation);
 	bool operator>=(Evaluation evaluation);
-	double getMoves();
+	int getMoves();
 	double getPawns();
 	void incrementMoves();
 	void negatePawns();

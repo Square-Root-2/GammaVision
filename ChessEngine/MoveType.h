@@ -1,6 +1,6 @@
 #pragma once
 
-enum MoveType {
+enum class MoveType {
 	CASTLE_KINGSIDE,
 	CASTLE_QUEENSIDE,
 	EN_PASSANT,

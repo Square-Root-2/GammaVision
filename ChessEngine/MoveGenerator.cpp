@@ -15,7 +15,7 @@ queue<Move> MoveGenerator::getBishopMoves(State& state, int i, int j) {
             state.setPiece(i, j, '.');
             state.setPiece(i + l * di[k], j + l * dj[k], state.getActiveColor() ? 'b' : 'B');
             if (!state.isActiveColorInCheck())
-                bishopMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], NORMAL));
+                bishopMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], MoveType::NORMAL));
             state.setPiece(i + l * di[k], j + l * dj[k], piece);
             state.setPiece(i, j, state.getActiveColor() ? 'b' : 'B');
             if (state.isPiece(i + l * di[k], j + l * dj[k]))
@@ -36,7 +36,7 @@ queue<Move> MoveGenerator::getKingMoves(State& state, int i, int j) {
         state.setPiece(i, j, '.');
         state.setPiece(i + di[k], j + dj[k], state.getActiveColor() ? 'k' : 'K');
         if (!state.isActiveColorInCheck())
-            kingMoves.push(Move(i, j, i + di[k], j + dj[k], KING_MOVE));
+            kingMoves.push(Move(i, j, i + di[k], j + dj[k], MoveType::KING_MOVE));
         state.setPiece(i + di[k], j + dj[k], piece);
         state.setPiece(i, j, state.getActiveColor() ? 'k' : 'K');
     }
@@ -49,7 +49,7 @@ queue<Move> MoveGenerator::getKingMoves(State& state, int i, int j) {
             state.setPiece(i, 5, '.');
             state.setPiece(i, 6, state.getActiveColor() ? 'k' : 'K');
             if (!state.isActiveColorInCheck())
-                kingMoves.push(Move(i, 4, i, 6, CASTLE_KINGSIDE));
+                kingMoves.push(Move(i, 4, i, 6, MoveType::CASTLE_KINGSIDE));
             state.setPiece(i, 6, '.');
             state.setPiece(i, 5, state.getActiveColor() ? 'k' : 'K');
         }
@@ -63,7 +63,7 @@ queue<Move> MoveGenerator::getKingMoves(State& state, int i, int j) {
             state.setPiece(i, 3, '.');
             state.setPiece(i, 2, state.getActiveColor() ? 'k' : 'K');
             if (!state.isActiveColorInCheck())
-                kingMoves.push(Move(i, 4, i, 2, CASTLE_QUEENSIDE));
+                kingMoves.push(Move(i, 4, i, 2, MoveType::CASTLE_QUEENSIDE));
             state.setPiece(i, 2, '.');
             state.setPiece(i, 3, state.getActiveColor() ? 'k' : 'K');
         }
@@ -85,7 +85,7 @@ queue<Move> MoveGenerator::getKnightMoves(State& state, int i, int j) {
         state.setPiece(i, j, '.');
         state.setPiece(i + di[k], j + dj[k], state.getActiveColor() ? 'n' : 'N');
         if (!state.isActiveColorInCheck())
-            knightMoves.push(Move(i, j, i + di[k], j + dj[k], NORMAL));
+            knightMoves.push(Move(i, j, i + di[k], j + dj[k], MoveType::NORMAL));
         state.setPiece(i + di[k], j + dj[k], piece);
         state.setPiece(i, j, state.getActiveColor() ? 'n' : 'N');
     }
@@ -99,12 +99,12 @@ queue<Move> MoveGenerator::getPawnMoves(State& state, int i, int j) {
         state.setPiece(i + di[state.getActiveColor()], j, state.getActiveColor() ? 'p' : 'P');
         if (!state.isActiveColorInCheck()) {
             if (abs((i + di[state.getActiveColor()]) - 3.5) == 3.5) {
-                MoveType moveTypes[4] = { PROMOTION_TO_BISHOP, PROMOTION_TO_KNIGHT, PROMOTION_TO_QUEEN, PROMOTION_TO_ROOK };
+                MoveType moveTypes[4] = { MoveType::PROMOTION_TO_BISHOP, MoveType::PROMOTION_TO_KNIGHT, MoveType::PROMOTION_TO_QUEEN, MoveType::PROMOTION_TO_ROOK };
                 for (int k = 0; k < 4; k++)
                     pawnMoves.push(Move(i, j, i + di[state.getActiveColor()], j, moveTypes[k]));
             }
             else
-                pawnMoves.push(Move(i, j, i + di[state.getActiveColor()], j, NORMAL));
+                pawnMoves.push(Move(i, j, i + di[state.getActiveColor()], j, MoveType::NORMAL));
         }
         state.setPiece(i + di[state.getActiveColor()], j, '.');
         state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
@@ -113,7 +113,7 @@ queue<Move> MoveGenerator::getPawnMoves(State& state, int i, int j) {
         state.setPiece(i, j, '.');
         state.setPiece(i + 2 * di[state.getActiveColor()], j, state.getActiveColor() ? 'p' : 'P');
         if (!state.isActiveColorInCheck())
-            pawnMoves.push(Move(i, j, i + 2 * di[state.getActiveColor()], j, PAWN_FORWARD_TWO));
+            pawnMoves.push(Move(i, j, i + 2 * di[state.getActiveColor()], j, MoveType::PAWN_FORWARD_TWO));
         state.setPiece(i + 2 * di[state.getActiveColor()], j, '.');
         state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
     }
@@ -131,12 +131,12 @@ queue<Move> MoveGenerator::getPawnMoves(State& state, int i, int j) {
             state.setPiece(i, j + dj[k], '.');
         if (!state.isActiveColorInCheck()) {
             if (abs((i + di[state.getActiveColor()]) - 3.5) == 3.5) {
-                MoveType moveTypes[4] = { PROMOTION_TO_BISHOP, PROMOTION_TO_KNIGHT, PROMOTION_TO_QUEEN, PROMOTION_TO_ROOK };
+                MoveType moveTypes[4] = { MoveType::PROMOTION_TO_BISHOP, MoveType::PROMOTION_TO_KNIGHT, MoveType::PROMOTION_TO_QUEEN, MoveType::PROMOTION_TO_ROOK };
                 for (int l = 0; l < 4; l++)
                     pawnMoves.push(Move(i, j, i + di[state.getActiveColor()], j + dj[k], moveTypes[l]));
             }
             else
-                pawnMoves.push(Move(i, j, i + di[state.getActiveColor()], j + dj[k], isEnPassant ? EN_PASSANT : NORMAL));
+                pawnMoves.push(Move(i, j, i + di[state.getActiveColor()], j + dj[k], isEnPassant ? MoveType::EN_PASSANT : MoveType::NORMAL));
         }
         if (isEnPassant)
             state.setPiece(i, j + dj[k], state.getActiveColor() ? 'P' : 'p');
@@ -159,7 +159,7 @@ queue<Move> MoveGenerator::getQueenMoves(State& state, int i, int j) {
             state.setPiece(i, j, '.');
             state.setPiece(i + l * di[k], j + l * dj[k], state.getActiveColor() ? 'q' : 'Q');
             if (!state.isActiveColorInCheck())
-                queenMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], NORMAL));
+                queenMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], MoveType::NORMAL));
             state.setPiece(i + l * di[k], j + l * dj[k], piece);
             state.setPiece(i, j, state.getActiveColor() ? 'q' : 'Q');
             if (state.isPiece(i + l * di[k], j + l * dj[k]))
@@ -181,7 +181,7 @@ queue<Move> MoveGenerator::getRookMoves(State& state, int i, int j) {
             state.setPiece(i, j, '.');
             state.setPiece(i + l * di[k], j + l * dj[k], state.getActiveColor() ? 'r' : 'R');
             if (!state.isActiveColorInCheck())
-                rookMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], ROOK_MOVE));
+                rookMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], MoveType::ROOK_MOVE));
             state.setPiece(i + l * di[k], j + l * dj[k], piece);
             state.setPiece(i, j, state.getActiveColor() ? 'r' : 'R');
             if (state.isPiece(i + l * di[k], j + l * dj[k]))

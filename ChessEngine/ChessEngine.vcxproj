@@ -144,15 +144,24 @@
   <ItemGroup>
     <ClCompile Include="ChessEngine.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Evaluation.cpp" />
     <ClCompile Include="Evaluator.cpp" />
+    <ClCompile Include="Move.cpp" />
     <ClCompile Include="MoveGenerator.cpp" />
     <ClCompile Include="State.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="Evaluation.h" />
     <ClInclude Include="Evaluator.h" />
+    <ClInclude Include="Move.h" />
     <ClInclude Include="MoveGenerator.h" />
+    <ClInclude Include="MoveType.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="State.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ChessEngine.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

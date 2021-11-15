@@ -3,10 +3,10 @@
 #include "MoveType.h"
 
 class Move {
-	int beginColumn, beingRow, endColumn, endRow;
+	int beginColumn, beginRow, endColumn, endRow;
 	MoveType type;
 public:
-	Move() {};
+	Move();
 	Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type);
 	int getBeginColumn();
 	int getBeginRow();
