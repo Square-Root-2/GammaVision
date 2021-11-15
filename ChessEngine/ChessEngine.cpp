@@ -10,7 +10,7 @@ int main() {
     while (true) {
         string FEN;
         getline(cin, FEN);
-        tuple<Move, Evaluation, int> optimalMove = e.getOptimalMove(FEN, 15);
+        tuple<Move, Evaluation, int> optimalMove = e.getOptimalMove(FEN, 60);
         cout << "Move: " << char(get<0>(optimalMove).getBeginColumn() + 'a') << " " << 8 - get<0>(optimalMove).getBeginRow() << " " << char(get<0>(optimalMove).getEndColumn() + 'a') << " " << 8 - get<0>(optimalMove).getEndRow() << "\n";
         cout << "Pawn Advantage: " << get<1>(optimalMove).getPawns() << "\n";
         cout << "Moves Until Checkmate/Stalemate: " << get<1>(optimalMove).getMoves() << "\n";
