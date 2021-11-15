@@ -1,5 +1,8 @@
 #include "State.h"
 
+State::State() {
+
+}
 bool State::isBishop(int i, int j) {
     return getPiece(i, j) == 'B' || getPiece(i, j) == 'b';
 }
@@ -181,6 +184,45 @@ bool State::isInactiveColorRook(int i, int j) {
 }
 bool State::isPiece(int i, int j) {
     return getPiece(i, j) != '.';
+}
+void State::makeMove(Move move) {
+    setPiece(move.getEndRow(), move.getEndColumn(), getPiece(move.getBeginRow(), move.getBeginColumn()));
+    setPiece(move.getBeginRow(), move.getBeginColumn(), '.');
+    if (move.getType() == MoveType::CASTLE_KINGSIDE) {
+        setPiece(move.getBeginRow(), 7, '.');
+        setPiece(move.getBeginRow(), 5, getActiveColor() ? 'r' : 'R');
+    }
+    else if (move.getType() == MoveType::CASTLE_QUEENSIDE) {
+        setPiece(move.getBeginRow(), 0, '.');
+        setPiece(move.getBeginRow(), 3, getActiveColor() ? 'r' : 'R');
+    }
+    else if (move.getType() == MoveType::EN_PASSANT)
+        setPiece(move.getBeginRow(), move.getEndColumn(), '.');
+    else if (move.getType() == MoveType::PROMOTION_TO_BISHOP)
+        setPiece(move.getEndRow(), move.getEndColumn(), getActiveColor() ? 'b' : 'B');
+    else if (move.getType() == MoveType::PROMOTION_TO_KNIGHT)
+        setPiece(move.getEndRow(), move.getEndColumn(), getActiveColor() ? 'n' : 'N');
+    else if (move.getType() == MoveType::PROMOTION_TO_QUEEN)
+        setPiece(move.getEndRow(), move.getEndColumn(), getActiveColor() ? 'q' : 'Q');
+    else if (move.getType() == MoveType::PROMOTION_TO_ROOK)
+        setPiece(move.getEndRow(), move.getEndColumn(), getActiveColor() ? 'r' : 'R');
+    if (move.getType() == MoveType::CASTLE_KINGSIDE || move.getType() == MoveType::CASTLE_QUEENSIDE) {
+        setCanActiveColorCastleKingside(false);
+        setCanActiveColorCastleQueenside(false);
+    }
+    else if (move.getType() == MoveType::KING_MOVE) {
+        setCanActiveColorCastleKingside(false);
+        setCanActiveColorCastleQueenside(false);
+    }
+    else if (move.getType() == MoveType::ROOK_MOVE && abs(move.getBeginRow() - 3.5) == 3.5 && move.getBeginColumn() == 7)
+        setCanActiveColorCastleKingside(false);
+    else if (move.getType() == MoveType::ROOK_MOVE && abs(move.getBeginRow() - 3.5) == 3.5 && move.getBeginColumn() == 0)
+        setCanActiveColorCastleQueenside(false);
+    if (move.getType() == MoveType::PAWN_FORWARD_TWO)
+        setPossibleEnPassantTargetColumn(move.getBeginColumn());
+    else
+        setPossibleEnPassantTargetColumn(-1);
+    toggleActiveColor();
 }
 void State::setCanActiveColorCastleKingside(bool canActiveColorCastleKingside) {
     get<2>(hashCode) += (8 - 6 * getActiveColor()) * (canActiveColorCastleKingside - ((get<2>(hashCode) & 1 << (3 - 2 * getActiveColor())) > 0));

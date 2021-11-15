@@ -6,12 +6,10 @@ class Evaluation {
 public:
 	Evaluation();
 	Evaluation(double pawns, int moves);
-	void operator=(Evaluation evaluation);
+	Evaluation operator=(Evaluation evaluation);
 	bool operator>(Evaluation evaluation);
 	bool operator==(Evaluation evaluation);
 	bool operator>=(Evaluation evaluation);
 	int getMoves();
 	double getPawns();
-	void incrementMoves();
-	void negatePawns();
 };

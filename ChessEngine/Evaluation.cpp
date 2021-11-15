@@ -10,9 +10,10 @@ Evaluation::Evaluation(double pawns, int moves) {
 	this->pawns = pawns;
 	this->moves = moves;
 }
-void Evaluation::operator=(Evaluation evaluation) {
+Evaluation Evaluation::operator=(Evaluation evaluation) {
 	this->pawns = evaluation.getPawns();
 	this->moves = evaluation.getMoves();
+	return *this;
 }
 bool Evaluation::operator>(Evaluation evaluation) {
 	if (this->pawns != evaluation.getPawns())
@@ -34,12 +35,4 @@ int Evaluation::getMoves() {
 }
 double Evaluation::getPawns() {
 	return pawns;
-}
-void Evaluation::incrementMoves() {
-	if (moves == INT32_MAX)
-		return;
-	moves++;
-}
-void Evaluation::negatePawns() {
-	pawns = -pawns;
 }
