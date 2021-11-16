@@ -34,10 +34,11 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
         return -(Evaluator::getMaximumEvaluation() + maximumDepth + 1 - currentDepth);
     if (currentDepth >= depth)
         return Evaluator::getEvaluation(state);
+    bool failHigh = -negamax(state, currentDepth + 1, depth - 3, -beta, -alpha) >= beta;
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         state.makeMove(moves[i]);
-        double evaluation = -negamax(state, currentDepth + 1, depth, -beta, -alpha);
+        double evaluation = -negamax(state, currentDepth + 1, depth - failHigh, -beta, -alpha);
         if (evaluation == Evaluator::getMaximumEvaluation() + maximumDepth + 2)
             return -(Evaluator::getMaximumEvaluation() + maximumDepth + 2);
         if (evaluation >= beta)

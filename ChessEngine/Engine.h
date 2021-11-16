@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <map>
 #include "Move.h"
 #include "State.h"
 #include <vector>
@@ -8,6 +9,7 @@
 using namespace std;
 
 class Engine {
+    map<pair<tuple<string, bool, int, int>, int>, double> evaluations;
     chrono::time_point<chrono::steady_clock> start;
     int maximumDepth, seconds;
     pair<Move, double> negamax(State& state, int depth);
