@@ -10,9 +10,10 @@
 using namespace std;
 
 class Engine {
-    map<pair<tuple<string, bool, int, int>, int>, pair<Move, Evaluation>> principalMoves;
+    map<pair<tuple<string, bool, int, int>, int>, Evaluation> evaluations;
     chrono::time_point<chrono::steady_clock> start;
     int seconds;
+    void getPrincipalVariation(vector<Move>& principalVariation, State& state, int depths);
     pair<Move, Evaluation> negamax(State& state, int depths);
     Evaluation negamax(State& state, int depths, Evaluation alpha, Evaluation beta);
 public:

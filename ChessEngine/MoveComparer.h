@@ -2,14 +2,13 @@
 
 #include "Evaluation.h"
 #include <map>
-#include "Move.h"
 #include "State.h"
 
 class MoveComparer {
 	int depths;
-	map<pair<tuple<string, bool, int, int>, int>, pair<Move, Evaluation>> principalVariation;
+	map<pair<tuple<string, bool, int, int>, int>, Evaluation> evaluations;
 	State state;
 public:
-	MoveComparer(map<pair<tuple<string, bool, int, int>, int>, pair<Move, Evaluation>>& principalVariation, State state, int depths);
+	MoveComparer(map<pair<tuple<string, bool, int, int>, int>, Evaluation>& principalVariation, State state, int depths);
 	bool operator()(Move move1, Move move2);
 };
