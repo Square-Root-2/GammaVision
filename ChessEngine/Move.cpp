@@ -5,7 +5,7 @@ Move::Move() {
 	beginColumn = 0;
 	endRow = 0;
 	endColumn = 0;
-	type = MoveType::NORMAL;
+	type = MoveType::DEFAULT;
 }
 Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type) {
 	this->beginRow = beginRow;

@@ -15,5 +15,10 @@ int main() {
         cout << "Pawn Advantage: " << get<1>(optimalMove).getPawns() << "\n";
         cout << "Moves Until Checkmate/Stalemate: " << get<1>(optimalMove).getMoves() << "\n";
         cout << "Depth: " << get<2>(optimalMove) << "\n\n";
+        vector<Move> principalVariation = e.getPrincipalVariation(FEN, get<2>(optimalMove));
+        cout << "Principal Variation: " << "\n";
+        for (Move move: principalVariation)
+            cout << "Move: " << char(move.getBeginColumn() + 'a') << " " << 8 - move.getBeginRow() << " " << char(move.getEndColumn() + 'a') << " " << 8 - move.getEndRow() << "\n";
+        cout << "\n";
     }
 }
