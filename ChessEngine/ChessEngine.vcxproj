@@ -144,19 +144,15 @@
   <ItemGroup>
     <ClCompile Include="ChessEngine.cpp" />
     <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="Evaluation.cpp" />
     <ClCompile Include="Evaluator.cpp" />
     <ClCompile Include="Move.cpp" />
-    <ClCompile Include="MoveComparer.cpp" />
     <ClCompile Include="MoveGenerator.cpp" />
     <ClCompile Include="State.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="Evaluation.h" />
     <ClInclude Include="Evaluator.h" />
     <ClInclude Include="Move.h" />
-    <ClInclude Include="MoveComparer.h" />
     <ClInclude Include="MoveGenerator.h" />
     <ClInclude Include="MoveType.h" />
     <ClInclude Include="State.h" />

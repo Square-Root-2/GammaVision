@@ -20,3 +20,6 @@ double Evaluator::getEvaluation(State& state) {
             evaluation += (state.isActiveColorPiece(i, j) ? 1 : -1) * getPawnEquivalent(state.getPiece(i, j));
     return evaluation;
 }
+double Evaluator::getMaximumEvaluation() {
+    return MAXIMUM_EVALUATION;
+}
