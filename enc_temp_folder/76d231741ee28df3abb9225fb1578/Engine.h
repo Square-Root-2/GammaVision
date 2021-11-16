@@ -10,7 +10,7 @@
 using namespace std;
 
 class Engine {
-    map<pair<tuple<string, bool, int, int>, int>, Evaluation> currentEvaluations, previousvaluations;
+    map<pair<tuple<string, bool, int, int>, int>, Evaluation> currentEvaluations, previousEvaluations;
     chrono::time_point<chrono::steady_clock> start;
     int seconds;
     void getPrincipalVariation(vector<Move>& principalVariation, State& state, int depths);
