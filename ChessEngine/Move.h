@@ -7,7 +7,7 @@ class Move {
 	bool capture;
 	MoveType type;
 public:
-	Move() {};
+	Move();
 	Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type, bool capture);
 	int getBeginColumn();
 	int getBeginRow();

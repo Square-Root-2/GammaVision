@@ -1,5 +1,8 @@
 #include "Move.h"
 
+Move::Move() {
+	type = MoveType::DEFAULT;
+}
 Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type, bool capture) {
 	this->beginRow = beginRow;
 	this->beginColumn = beginColumn;
