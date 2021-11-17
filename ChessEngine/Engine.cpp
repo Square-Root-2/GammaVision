@@ -76,6 +76,12 @@ double Engine::quiescenceSearch(State& state, int currentDepth, double alpha, do
     }
     return alpha;
 }
+int Engine::getMaximumNegamaxDepth() {
+    return maximumNegamaxDepth;
+}
+int Engine::getMaximumQuiescenceDepth() {
+    return maximumQuiescenceDepth;
+}
 tuple<Move, double, int> Engine::getOptimalMove(string FEN, int seconds) {
     pair<Move, double> optimalMove;
     this->seconds = seconds;
