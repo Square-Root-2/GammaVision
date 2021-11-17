@@ -30,7 +30,7 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
     if (moves.empty())
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 1 - currentDepth) : 0;
     if (currentDepth >= depth)
-        return quiescenceSearch(state, currentDepth, alpha, beta);
+        return Evaluator::getEvaluation(state);
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         state.makeMove(moves[i]);
