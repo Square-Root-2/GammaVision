@@ -60,6 +60,8 @@ double Engine::quiescenceSearch(State& state, int currentDepth, double alpha, do
             continue;
         state.makeMove(moves[i]);
         double evaluation = -quiescenceSearch(state, currentDepth + 1, -beta, -alpha);
+        if (evaluation == Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 2)
+            return -(Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 2);
         state.setHashCode(hashCode);
         if (evaluation >= beta)
             return beta;
