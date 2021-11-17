@@ -31,7 +31,7 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
         return -(Evaluator::getMaximumEvaluation() + maximumDepth + 2);
     vector<Move> moves = MoveGenerator::getMoves(state);
     if (moves.empty())
-        return -(Evaluator::getMaximumEvaluation() + maximumDepth + 1 - currentDepth);
+        return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + maximumDepth + 1 - currentDepth) : 0;
     if (currentDepth >= depth)
         return Evaluator::getEvaluation(state);
     tuple<string, bool, int, int> hashCode = state.getHashCode();
@@ -46,6 +46,20 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
         state.setHashCode(hashCode);
     }
     return alpha;
+}
+double Engine::quiescenceSearch(State& state, int currentDepth, double alpha, double beta) {
+    if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
+        return -(Evaluator::getMaximumEvaluation() + maximumDepth + 2);
+    vector<Move> moves = MoveGenerator::getMoves(state);
+    if (moves.empty())
+        return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + maximumDepth + 1 - currentDepth) : 0;
+    double standPat = Evaluator::getEvaluation(state);
+    if (standPat >= beta)
+        return beta;
+    alpha = max(alpha, standPat);
+    for (int i = 0; i < moves.size(); i++) {
+        
+    }
 }
 tuple<Move, double, int> Engine::getOptimalMove(string FEN, int seconds) {
     pair<Move, double> optimalMove;
