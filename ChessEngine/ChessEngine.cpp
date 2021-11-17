@@ -5,7 +5,7 @@
 using namespace std;
 
 int main() {
-    Engine e(100);
+    Engine e;
     while (true) {
         string FEN;
         getline(cin, FEN);

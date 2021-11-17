@@ -1,18 +1,12 @@
 #include "Move.h"
 
-Move::Move() {
-	beginRow = 0;
-	beginColumn = 0;
-	endRow = 0;
-	endColumn = 0;
-	type = MoveType::DEFAULT;
-}
-Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type) {
+Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type, bool capture) {
 	this->beginRow = beginRow;
 	this->beginColumn = beginColumn;
 	this->endRow = endRow;
 	this->endColumn = endColumn;
 	this->type = type;
+	this->capture = capture;
 }
 int Move::getBeginColumn() {
 	return beginColumn;
@@ -28,4 +22,7 @@ int Move::getEndRow() {
 }
 MoveType Move::getType() {
 	return type;
+}
+bool Move::isCapture() {
+	return capture;
 }

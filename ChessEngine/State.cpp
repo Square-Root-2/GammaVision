@@ -188,11 +188,11 @@ bool State::isPiece(int i, int j) {
 void State::makeMove(Move move) {
     setPiece(move.getEndRow(), move.getEndColumn(), getPiece(move.getBeginRow(), move.getBeginColumn()));
     setPiece(move.getBeginRow(), move.getBeginColumn(), '.');
-    if (move.getType() == MoveType::CASTLE_KINGSIDE) {
+    if (move.getType() == MoveType::KINGSIDE_CASTLE) {
         setPiece(move.getBeginRow(), 7, '.');
         setPiece(move.getBeginRow(), 5, getActiveColor() ? 'r' : 'R');
     }
-    else if (move.getType() == MoveType::CASTLE_QUEENSIDE) {
+    else if (move.getType() == MoveType::QUEENSIDE_CASTLE) {
         setPiece(move.getBeginRow(), 0, '.');
         setPiece(move.getBeginRow(), 3, getActiveColor() ? 'r' : 'R');
     }
@@ -206,7 +206,7 @@ void State::makeMove(Move move) {
         setPiece(move.getEndRow(), move.getEndColumn(), getActiveColor() ? 'q' : 'Q');
     else if (move.getType() == MoveType::PROMOTION_TO_ROOK)
         setPiece(move.getEndRow(), move.getEndColumn(), getActiveColor() ? 'r' : 'R');
-    if (move.getType() == MoveType::CASTLE_KINGSIDE || move.getType() == MoveType::CASTLE_QUEENSIDE) {
+    if (move.getType() == MoveType::KINGSIDE_CASTLE || move.getType() == MoveType::QUEENSIDE_CASTLE) {
         setCanActiveColorCastleKingside(false);
         setCanActiveColorCastleQueenside(false);
     }
