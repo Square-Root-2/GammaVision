@@ -98,7 +98,7 @@ bool State::isActiveColorInCheck() {
         for (int j = 0; j < 8; j++) {
             if (!isActiveColorKing(i, j))
                 continue;
-            if ((getActiveColor() ? i <= 5 : i >= 2) && (isInactiveColorPawn(i + (getActiveColor() ? 1 : -1), j - 1) || isInactiveColorPawn(i + (getActiveColor() ? 1 : -1), j + 1)))
+            if ((getActiveColor() ? i <= 5 : i >= 2) && (j - 1 >= 0 && isInactiveColorPawn(i + (getActiveColor() ? 1 : -1), j - 1) || j + 1 < 8 && isInactiveColorPawn(i + (getActiveColor() ? 1 : -1), j + 1)))
                 return true;
             int di[16] = { -2, -1, 1, 2, 2, 1, -1, -2, -1, -1, 1, 1, -1, 0, 1, 0 };
             int dj[16] = { 1, 2, 2, 1, -1, -2, -2, -1, -1, 1, 1, -1, 0, 1, 0, -1 };

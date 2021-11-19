@@ -3,15 +3,15 @@
 #include "MoveGenerator.h"
 #include "MoveType.h"
 #include <random>
-
+#include <iostream>
 pair<Move, double> Engine::negamax(State& state, int depth) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return pair<Move, double>(Move(0, 0, 0, 0, MoveType::TIMEOUT, false), 0);
     vector<Move> moves = MoveGenerator::getMoves(state);
     Move optimalMove;
     double alpha = -INFINITY;
-    //mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    //shuffle(moves.begin(), moves.end(), rng);
+    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    shuffle(moves.begin(), moves.end(), rng);
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         state.makeMove(moves[i]);
@@ -34,8 +34,8 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 1 - currentDepth) : 0;
     if (currentDepth == depth)
         return quiescenceSearch(state, currentDepth, alpha, beta);
-    //mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    //shuffle(moves.begin(), moves.end(), rng);
+    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    shuffle(moves.begin(), moves.end(), rng);
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         state.makeMove(moves[i]);
@@ -59,8 +59,8 @@ double Engine::quiescenceSearch(State& state, int currentDepth, double alpha, do
     if (standPat >= beta)
         return beta;
     alpha = max(alpha, standPat);
-    //mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    //shuffle(moves.begin(), moves.end(), rng);
+    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    shuffle(moves.begin(), moves.end(), rng);
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         if (!moves[i].isCapture())
@@ -83,7 +83,6 @@ int Engine::getMaximumQuiescenceDepth() {
     return maximumQuiescenceDepth;
 }
 tuple<Move, double, int> Engine::getOptimalMove(string FEN, int seconds) {
-    // 5k2/8/6Kp/p6P/P7/8/8/7r b - - 3 61
     pair<Move, double> optimalMove;
     this->seconds = seconds;
     start = chrono::steady_clock::now();
