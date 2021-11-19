@@ -3,7 +3,7 @@
 #include "MoveGenerator.h"
 #include "MoveType.h"
 #include <random>
-#include <iostream>
+
 pair<Move, double> Engine::negamax(State& state, int depth) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return pair<Move, double>(Move(0, 0, 0, 0, MoveType::TIMEOUT, false), 0);
