@@ -15,7 +15,7 @@ pair<Move, double> Engine::negamax(State& state, int depth) {
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         state.makeMove(moves[i]);
-        double evaluation = -negamax(state, 1, depth, -INFINITY, -alpha, 0);
+        double evaluation = -negamax(state, 1, depth, -INFINITY, -alpha);
         if (evaluation == Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 2)
             return pair<Move, double>(Move(0, 0, 0, 0, MoveType::TIMEOUT, false), 0);
         state.setHashCode(hashCode);
@@ -26,7 +26,7 @@ pair<Move, double> Engine::negamax(State& state, int depth) {
     }
     return pair<Move, double>(optimalMove, alpha);
 }
-double Engine::negamax(State& state, int currentDepth, int depth, double alpha, double beta, int nullMoves) {
+double Engine::negamax(State& state, int currentDepth, int depth, double alpha, double beta) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return -(Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 2);
     vector<Move> moves = MoveGenerator::getMoves(state);
@@ -34,9 +34,9 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 1 - currentDepth) : 0;
     if (currentDepth >= depth)
         return quiescenceSearch(state, currentDepth, alpha, beta);
-    if (nullMoves < 2 && !state.isActiveColorInCheck()) {
+    if (!state.isActiveColorInCheck()) {
         state.toggleActiveColor();
-        double evaluation = -negamax(state, currentDepth + 1, depth - R, -beta, -alpha, nullMoves + 1);
+        double evaluation = -negamax(state, currentDepth + 1, depth - R, -beta, -alpha);
         state.toggleActiveColor();
         if (evaluation >= beta)
             return beta;
@@ -46,7 +46,7 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         state.makeMove(moves[i]);
-        double evaluation = -negamax(state, currentDepth + 1, depth, -beta, -alpha, 0);
+        double evaluation = -negamax(state, currentDepth + 1, depth, -beta, -alpha);
         if (evaluation == Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 2)
             return -(Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 2);
         state.setHashCode(hashCode);
