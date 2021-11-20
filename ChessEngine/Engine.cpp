@@ -32,15 +32,8 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
     vector<Move> moves = MoveGenerator::getMoves(state);
     if (moves.empty())
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 1 - currentDepth) : 0;
-    if (currentDepth >= depth)
+    if (currentDepth == depth)
         return quiescenceSearch(state, currentDepth, alpha, beta);
-    if (!state.isActiveColorInCheck()) {
-        state.toggleActiveColor();
-        double evaluation = -negamax(state, currentDepth + 1, depth - R, -beta, -alpha);
-        state.toggleActiveColor();
-        if (evaluation >= beta)
-            return beta;
-    }
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
     tuple<string, bool, int, int> hashCode = state.getHashCode();

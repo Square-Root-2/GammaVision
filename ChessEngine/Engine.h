@@ -9,7 +9,7 @@
 using namespace std;
 
 class Engine {
-    static const int maximumNegamaxDepth = 14, maximumQuiescenceDepth = 30, R = 3;
+    static const int maximumNegamaxDepth = 14, maximumQuiescenceDepth = 30;
     map<pair<tuple<string, bool, int, int>, int>, double> evaluations;
     chrono::time_point<chrono::steady_clock> start;
     int seconds;
