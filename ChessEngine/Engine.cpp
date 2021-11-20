@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include "Evaluator.h"
+#include "MoveComparator.h"
 #include "MoveGenerator.h"
 #include "MoveType.h"
 #include <random>
@@ -12,6 +13,7 @@ pair<Move, double> Engine::negamax(State& state, int depth) {
     double alpha = -INFINITY;
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
+    sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         state.makeMove(moves[i]);
@@ -24,6 +26,7 @@ pair<Move, double> Engine::negamax(State& state, int depth) {
             alpha = evaluation;
         }
     }
+    killerMoves[1].clear();
     return pair<Move, double>(optimalMove, alpha);
 }
 double Engine::negamax(State& state, int currentDepth, int depth, double alpha, double beta) {
@@ -45,6 +48,7 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
     }
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
+    sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
     double optimalEvaluation = -INFINITY;
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
@@ -53,11 +57,16 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
         if (evaluation == Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 2)
             return -(Evaluator::getMaximumEvaluation() + maximumNegamaxDepth + maximumQuiescenceDepth + 2);
         state.setHashCode(hashCode);
-        if (evaluation >= beta)
+        if (evaluation >= beta) {
+            if (moves[i].isQuiet())
+                killerMoves[currentDepth].insert(moves[i]);
+            killerMoves[currentDepth + 1].clear();
             return evaluation;
+        }
         optimalEvaluation = max(optimalEvaluation, evaluation);
         alpha = max(alpha, evaluation);
     }
+    killerMoves[currentDepth + 1].clear();
     return alpha;
 }
 double Engine::quiescenceSearch(State& state, int currentDepth, double alpha, double beta) {
@@ -72,9 +81,10 @@ double Engine::quiescenceSearch(State& state, int currentDepth, double alpha, do
     alpha = max(alpha, standPat);
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
+    sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
-        if (!moves[i].isCapture())
+        if (!moves[i].isQuiet())
             continue;
         state.makeMove(moves[i]);
         double evaluation = -quiescenceSearch(state, currentDepth + 1, -beta, -alpha);

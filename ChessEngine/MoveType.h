@@ -1,7 +1,6 @@
 #pragma once
 
 enum class MoveType {
-	DEFAULT,
 	EN_PASSANT,
 	KING_MOVE,
 	KINGSIDE_CASTLE,

@@ -1,7 +1,13 @@
 #include "Move.h"
 
+bool Move::isCapture() {
+	return capture;
+}
+bool Move::isPromotion() {
+	return getType() == MoveType::PROMOTION_TO_BISHOP || getType() == MoveType::PROMOTION_TO_KNIGHT || getType() == MoveType::PROMOTION_TO_QUEEN || getType() == MoveType::PROMOTION_TO_ROOK;
+}
 Move::Move() {
-	type = MoveType::DEFAULT;
+
 }
 Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type, bool capture) {
 	this->beginRow = beginRow;
@@ -10,6 +16,9 @@ Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType ty
 	this->endColumn = endColumn;
 	this->type = type;
 	this->capture = capture;
+}
+bool Move::operator==(Move move) const {
+	return beginRow == move.getBeginRow() && beginColumn == move.getBeginColumn() && endRow == move.getEndRow() && endColumn == move.getEndColumn();
 }
 int Move::getBeginColumn() {
 	return beginColumn;
@@ -26,6 +35,9 @@ int Move::getEndRow() {
 MoveType Move::getType() {
 	return type;
 }
-bool Move::isCapture() {
-	return capture;
+bool Move::isQuiet() {
+	return !isCapture() && !isPromotion();
+}
+int std::hash<Move>::operator()(Move move) const {
+	return 512 * move.getBeginRow() + 64 * move.getBeginColumn() + 8 * move.getEndRow() + move.getEndColumn();
 }
