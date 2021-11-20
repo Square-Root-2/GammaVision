@@ -4,20 +4,22 @@
 #include "MoveType.h"
 
 class Move {
+	char aggressor, victim;
 	int beginColumn, beginRow, endColumn, endRow;
-	bool capture;
 	MoveType type;
-	bool isCapture();
-	bool isPromotion();
 public:
 	Move();
-	Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type, bool capture);
+	Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type, char aggressor, char victim);
 	bool operator==(Move move) const;
+	char getAggressor();
 	int getBeginColumn();
 	int getBeginRow();
 	int getEndColumn();
 	int getEndRow();
 	MoveType getType();
+	char getVictim();
+	bool isCapture();
+	bool isPromotion();
 	bool isQuiet();
 };
 

@@ -7,7 +7,7 @@
 
 pair<Move, double> Engine::negamax(State& state, int depth) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
-        return pair<Move, double>(Move(0, 0, 0, 0, MoveType::TIMEOUT, false), 0);
+        return pair<Move, double>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
     vector<Move> moves = MoveGenerator::getMoves(state);
     Move optimalMove;
     double alpha = -INFINITY;
@@ -19,7 +19,7 @@ pair<Move, double> Engine::negamax(State& state, int depth) {
         state.makeMove(moves[i]);
         double evaluation = -negamax(state, 1, depth, -INFINITY, -alpha);
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
-            return pair<Move, double>(Move(0, 0, 0, 0, MoveType::TIMEOUT, false), 0);
+            return pair<Move, double>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
         state.setHashCode(hashCode);
         if (evaluation > alpha) {
             optimalMove = moves[i];
@@ -98,10 +98,10 @@ double Engine::quiescenceSearch(State& state, int currentDepth, double alpha, do
     return standPat;
 }
 int Engine::getMaximumNegamaxDepth() {
-    return maximumNegamaxDepth;
+    return MAXIMUM_NEGAMAX_DEPTH;
 }
 int Engine::getMaximumQuiescenceDepth() {
-    return maximumQuiescenceDepth;
+    return MAXIMUM_QUIESCENCE_DEPTH;
 }
 tuple<Move, double, int> Engine::getOptimalMove(string FEN, int seconds) {
     pair<Move, double> optimalMove;

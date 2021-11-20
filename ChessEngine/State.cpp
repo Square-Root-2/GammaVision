@@ -186,7 +186,7 @@ bool State::isPiece(int i, int j) {
     return getPiece(i, j) != '.';
 }
 void State::makeMove(Move move) {
-    setPiece(move.getEndRow(), move.getEndColumn(), getPiece(move.getBeginRow(), move.getBeginColumn()));
+    setPiece(move.getEndRow(), move.getEndColumn(), move.getAggressor());
     setPiece(move.getBeginRow(), move.getBeginColumn(), '.');
     if (move.getType() == MoveType::KINGSIDE_CASTLE) {
         setPiece(move.getBeginRow(), 7, '.');

@@ -1,24 +1,22 @@
 #include "Move.h"
 
-bool Move::isCapture() {
-	return capture;
-}
-bool Move::isPromotion() {
-	return getType() == MoveType::PROMOTION_TO_BISHOP || getType() == MoveType::PROMOTION_TO_KNIGHT || getType() == MoveType::PROMOTION_TO_QUEEN || getType() == MoveType::PROMOTION_TO_ROOK;
-}
 Move::Move() {
 
 }
-Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type, bool capture) {
+Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type, char aggressor, char victim) {
 	this->beginRow = beginRow;
 	this->beginColumn = beginColumn;
 	this->endRow = endRow;
 	this->endColumn = endColumn;
 	this->type = type;
-	this->capture = capture;
+	this->aggressor = aggressor;
+	this->victim = victim;
 }
 bool Move::operator==(Move move) const {
 	return beginRow == move.getBeginRow() && beginColumn == move.getBeginColumn() && endRow == move.getEndRow() && endColumn == move.getEndColumn();
+}
+char Move::getAggressor() {
+	return aggressor;
 }
 int Move::getBeginColumn() {
 	return beginColumn;
@@ -34,6 +32,15 @@ int Move::getEndRow() {
 }
 MoveType Move::getType() {
 	return type;
+}
+char Move::getVictim() {
+	return victim;
+}
+bool Move::isCapture() {
+	return victim != '.';
+}
+bool Move::isPromotion() {
+	return getType() == MoveType::PROMOTION_TO_BISHOP || getType() == MoveType::PROMOTION_TO_KNIGHT || getType() == MoveType::PROMOTION_TO_QUEEN || getType() == MoveType::PROMOTION_TO_ROOK;
 }
 bool Move::isQuiet() {
 	return !isCapture() && !isPromotion();
