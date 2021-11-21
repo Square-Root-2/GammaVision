@@ -9,11 +9,11 @@ pair<Move, double> Engine::negamax(State& state, int depth) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return pair<Move, double>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
     vector<Move> moves = MoveGenerator::getMoves(state);
-    Move optimalMove;
-    double alpha = -INFINITY;
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
     sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
+    Move optimalMove;
+    double alpha = -INFINITY;
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         state.makeMove(moves[i]);
@@ -81,10 +81,11 @@ double Engine::quiescenceSearch(State& state, int currentDepth, double alpha, do
     alpha = max(alpha, standPat);
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
+    sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         if (moves[i].isQuiet())
-            continue;
+            break;
         state.makeMove(moves[i]);
         double evaluation = -quiescenceSearch(state, currentDepth + 1, -beta, -alpha);
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
