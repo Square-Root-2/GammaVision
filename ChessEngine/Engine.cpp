@@ -43,8 +43,11 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
             return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
         state.toggleActiveColor();
-        if (evaluation >= beta)
-            return negamax(state, currentDepth, depth - DR, alpha, beta, false);
+        if (evaluation >= beta) {
+            depth -= DR;
+            if (currentDepth >= depth)
+                return quiescenceSearch(state, currentDepth, alpha, beta);
+        }
     }
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
