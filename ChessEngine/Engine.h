@@ -10,7 +10,8 @@
 using namespace std;
 
 class Engine {
-    static const int MAXIMUM_NEGAMAX_DEPTH = 14, MAXIMUM_QUIESCENCE_DEPTH = 30, R = 2;
+    static const int MAXIMUM_NEGAMAX_DEPTH = 14, MAXIMUM_QUIESCENCE_DEPTH = 30;
+    int R;
     chrono::time_point<chrono::steady_clock> start;
     unordered_set<Move> killerMoves[MAXIMUM_NEGAMAX_DEPTH + 1];
     int seconds;
