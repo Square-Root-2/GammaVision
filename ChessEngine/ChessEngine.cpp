@@ -11,7 +11,7 @@ int main() {
     while (true) {
         string FEN;
         getline(cin, FEN);
-        tuple<Move, double, int> optimalMove = e.getOptimalMove(FEN, 40);
+        tuple<Move, double, int> optimalMove = e.getOptimalMove(FEN, 15);
         cout << "Move: " << char(get<0>(optimalMove).getBeginColumn() + 'a') << " " << 8 - get<0>(optimalMove).getBeginRow() << " " << char(get<0>(optimalMove).getEndColumn() + 'a') << " " << 8 - get<0>(optimalMove).getEndRow() << " ";
         if (get<0>(optimalMove).getType() == MoveType::PROMOTION_TO_BISHOP)
             cout << "Promotion to Bishop";
