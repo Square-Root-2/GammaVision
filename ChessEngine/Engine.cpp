@@ -37,7 +37,7 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 1 - currentDepth) : 0;
     if (currentDepth >= depth)
         return quiescenceSearch(state, currentDepth, alpha, beta);
-    if (nullMoves < 2 && !state.isActiveColorInCheck()) {
+    if (R > 0 && nullMoves < 2 && !state.isActiveColorInCheck()) {
         state.toggleActiveColor();
         double evaluation = -negamax(state, currentDepth + 1, depth - R, -beta, -beta + 1, nullMoves + 1);
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
