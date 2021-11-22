@@ -81,7 +81,7 @@ double Engine::quiescenceSearch(State& state, int currentDepth, double alpha, do
     alpha = max(alpha, standPat);
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
-    sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
+    sort(moves.begin(), moves.end(), MoveComparator(killerMoves[currentDepth]));
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
         if (moves[i].isQuiet())
