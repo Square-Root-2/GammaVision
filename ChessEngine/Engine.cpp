@@ -114,7 +114,7 @@ tuple<Move, double, int> Engine::getOptimalMove(string FEN, int seconds) {
     start = chrono::steady_clock::now();
     for (int depth = 1; depth <= getMaximumNegamaxDepth(); depth++) {
         State state(FEN);
-        R = min((depth - 3) / 2, 3);
+        R = min(max((depth - 4) / 2, 0), 3);
         pair<Move, double> move = negamax(state, depth);
         if (move.first.getType() == MoveType::TIMEOUT)
             return tuple<Move, double, int>(optimalMove.first, optimalMove.second, depth - 1);
