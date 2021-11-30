@@ -1,3 +1,4 @@
+#include "Evaluator.h"
 #include "State.h"
 
 State::State() {
@@ -161,6 +162,44 @@ bool State::isActiveColorQueen(int i, int j) {
 bool State::isActiveColorRook(int i, int j) {
     return getPiece(i, j) == (getActiveColor() ? 'r' : 'R');
 }
+bool State::isEndgame() {
+    bool isThereActiveColorQueen = false;
+    bool isThereInactiveColorQueen = false;
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++) {
+            isThereActiveColorQueen = isThereActiveColorQueen || isActiveColorQueen(i, j);
+            isThereInactiveColorQueen = isThereInactiveColorQueen || isInactiveColorQueen(i, j);
+        }
+    if (!isThereActiveColorQueen && !isThereInactiveColorQueen)
+        return true;
+    if (isThereActiveColorQueen) {
+        double evaluation = 0;
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++) {
+                if (isActiveColorRook(i, j))
+                    return false;
+                if (!isActiveColorKnight(i, j) && !isActiveColorBishop(i, j) && !isActiveColorQueen(i, j))
+                    continue;
+                evaluation += Evaluator::getPawnEquivalent(getPiece(i, j));
+            }
+        if (evaluation > 12)
+            return false;
+    }
+    if (isThereInactiveColorQueen) {
+        double evaluation = 0;
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++) {
+                if (isInactiveColorRook(i, j))
+                    return false;
+                if (!isInactiveColorKnight(i, j) && !isInactiveColorBishop(i, j) && !isInactiveColorQueen(i, j))
+                    continue;
+                evaluation += Evaluator::getPawnEquivalent(getPiece(i, j));
+            }
+        if (evaluation > 12)
+            return false;
+    }
+    return true;
+}
 bool State::isInactiveColorBishop(int i, int j) {
     return getPiece(i, j) == (getActiveColor() ? 'B' : 'b');
 }
@@ -184,20 +223,6 @@ bool State::isInactiveColorRook(int i, int j) {
 }
 bool State::isPiece(int i, int j) {
     return getPiece(i, j) != '.';
-}
-bool State::isThereActiveColorQueen() {
-    for (int i = 0; i < 8; i++)
-        for (int j = 0; j < 8; j++)
-            if (isActiveColorQueen(i, j))
-                return true;
-    return false;
-}
-bool State::isThereInactiveColorQueen() {
-    for (int i = 0; i < 8; i++)
-        for (int j = 0; j < 8; j++)
-            if (isInactiveColorQueen(i, j))
-                return true;
-    return false;
 }
 void State::makeMove(Move move) {
     setPiece(move.getEndRow(), move.getEndColumn(), move.getAggressor());

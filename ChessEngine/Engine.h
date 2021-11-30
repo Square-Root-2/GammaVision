@@ -15,7 +15,7 @@ class Engine {
     unordered_set<Move> killerMoves[MAXIMUM_NEGAMAX_DEPTH + 1];
     int seconds;
     pair<Move, double> negamax(State& state, int depth);
-    double negamax(State& state, int currentDepth, int depth, double alpha, double beta, int nullMoves);
+    double negamax(State& state, int currentDepth, int depth, double alpha, double beta);
     double quiescenceSearch(State& state, int currentDepth, double alpha, double beta);
 public:
     static int getMaximumNegamaxDepth();
