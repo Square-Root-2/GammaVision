@@ -4,7 +4,7 @@
 #include "MoveGenerator.h"
 #include "MoveType.h"
 #include <random>
-#include <iostream>
+
 pair<Move, double> Engine::negamax(State& state, int depth) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return pair<Move, double>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
@@ -43,8 +43,10 @@ double Engine::negamax(State& state, int currentDepth, int depth, double alpha, 
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
             return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
         state.toggleActiveColor();
-        if (evaluation >= beta)
+        if (evaluation >= beta) {
+            killerMoves[currentDepth + 1].clear();
             return evaluation;
+        }
     }
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
