@@ -27,5 +27,7 @@ int Evaluator::getPawnEquivalent(char piece) {
         return 5;
     if (piece == 'Q' || piece == 'q')
         return 9;
+    if (piece == 'K' || piece == 'k')
+        return 20;
     return 0;
 }
