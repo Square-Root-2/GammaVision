@@ -40,6 +40,8 @@ public:
     bool isInactiveColorQueen(int i, int j);
     bool isInactiveColorRook(int i, int j);
     bool isPiece(int i, int j);
+    bool isThereActiveColorQueen();
+    bool isThereInactiveColorQueen();
     void makeMove(Move move);
     void setCanActiveColorCastleKingside(bool canActiveColorCastleKingside);
     void setCanActiveColorCastleQueenside(bool canActiveColorCastleQueenside);

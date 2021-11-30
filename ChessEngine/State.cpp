@@ -185,6 +185,20 @@ bool State::isInactiveColorRook(int i, int j) {
 bool State::isPiece(int i, int j) {
     return getPiece(i, j) != '.';
 }
+bool State::isThereActiveColorQueen() {
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++)
+            if (isActiveColorQueen(i, j))
+                return true;
+    return false;
+}
+bool State::isThereInactiveColorQueen() {
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++)
+            if (isInactiveColorQueen(i, j))
+                return true;
+    return false;
+}
 void State::makeMove(Move move) {
     setPiece(move.getEndRow(), move.getEndColumn(), move.getAggressor());
     setPiece(move.getBeginRow(), move.getBeginColumn(), '.');
