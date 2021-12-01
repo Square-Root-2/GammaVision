@@ -16,7 +16,7 @@ class Engine {
     int seconds;
     pair<Move, int> negamax(State& state, int depth);
     int negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool nullOk);
-    int quiescenceSearch(State& state, int currentDepth, int alpha, int beta, bool isQuietMove);
+    int quiescenceSearch(State& state, int currentDepth, int alpha, int beta);
 public:
     static int getMaximumNegamaxDepth();
     static int getMaximumQuiescenceDepth();

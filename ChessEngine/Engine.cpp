@@ -36,7 +36,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
     if (moves.empty())
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 1 - currentDepth) : 0;
     if (currentDepth >= depth)
-        return quiescenceSearch(state, currentDepth, alpha, beta, false);
+        return quiescenceSearch(state, currentDepth, alpha, beta);
     if (nullOk && !state.isActiveColorInCheck()) {
         state.toggleActiveColor();
         int R = depth - currentDepth > 6 ? MAX_R : MIN_R;
@@ -45,7 +45,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
         if (evaluation >= beta) {
             depth -= DR;
             if (currentDepth >= depth)
-                return quiescenceSearch(state, currentDepth, alpha, beta, false);
+                return quiescenceSearch(state, currentDepth, alpha, beta);
         }
     }
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
@@ -77,16 +77,16 @@ int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta
     vector<Move> moves = MoveGenerator::getMoves(state);
     if (moves.empty())
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 1 - currentDepth) : 0;
-    if (isQuietMove)
-        return Evaluator::getEvaluation(state);
     int optimalEvaluation = -INT32_MAX;
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
     sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
+        if (!moves[i].isCapture())
+            break;
         state.makeMove(moves[i]);
-        int evaluation = -quiescenceSearch(state, currentDepth + 1, -beta, -alpha, moves[i].isQuiet());
+        int evaluation = -quiescenceSearch(state, currentDepth + 1, -beta, -alpha);
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
             return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
         state.setHashCode(hashCode);
