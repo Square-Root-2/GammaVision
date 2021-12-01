@@ -77,7 +77,10 @@ int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta
     vector<Move> moves = MoveGenerator::getMoves(state);
     if (moves.empty())
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 1 - currentDepth) : 0;
-    int optimalEvaluation = -INT32_MAX;
+    int standPat = Evaluator::getEvaluation(state);
+    if (standPat >= beta)
+        return standPat;
+    alpha = max(alpha, standPat);
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
     sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
@@ -92,10 +95,10 @@ int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta
         state.setHashCode(hashCode);
         if (evaluation >= beta)
             return evaluation;
-        optimalEvaluation = max(optimalEvaluation, evaluation);
+        standPat = max(standPat, evaluation);
         alpha = max(alpha, evaluation);
     }
-    return optimalEvaluation;
+    return standPat;
 }
 int Engine::getMaximumNegamaxDepth() {
     return MAXIMUM_NEGAMAX_DEPTH;
