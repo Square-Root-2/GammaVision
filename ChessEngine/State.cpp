@@ -173,29 +173,29 @@ bool State::isEndgame() {
     if (!isThereActiveColorQueen && !isThereInactiveColorQueen)
         return true;
     if (isThereActiveColorQueen) {
-        double evaluation = 0;
+        int centipawns = 0;
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++) {
                 if (isActiveColorRook(i, j))
                     return false;
                 if (!isActiveColorKnight(i, j) && !isActiveColorBishop(i, j) && !isActiveColorQueen(i, j))
                     continue;
-                evaluation += Evaluator::getPawnEquivalent(getPiece(i, j));
+                centipawns += Evaluator::getCentipawnEquivalent(getPiece(i, j));
             }
-        if (evaluation > 12)
+        if (centipawns > 1200)
             return false;
     }
     if (isThereInactiveColorQueen) {
-        double evaluation = 0;
+        int centipawns = 0;
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++) {
                 if (isInactiveColorRook(i, j))
                     return false;
                 if (!isInactiveColorKnight(i, j) && !isInactiveColorBishop(i, j) && !isInactiveColorQueen(i, j))
                     continue;
-                evaluation += Evaluator::getPawnEquivalent(getPiece(i, j));
+                centipawns += Evaluator::getCentipawnEquivalent(getPiece(i, j));
             }
-        if (evaluation > 12)
+        if (centipawns > 1200)
             return false;
     }
     return true;
