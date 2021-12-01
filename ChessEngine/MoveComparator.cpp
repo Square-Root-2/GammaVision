@@ -3,10 +3,10 @@
 #include <unordered_map>
 
 bool MoveComparator::compareCaptures(Move move1, Move move2) {
-	if (Evaluator::getPawnEquivalent(move1.getVictim()) != Evaluator::getPawnEquivalent(move2.getVictim()))
-		return Evaluator::getPawnEquivalent(move1.getVictim()) > Evaluator::getPawnEquivalent(move2.getVictim());
-	if (Evaluator::getPawnEquivalent(move1.getAggressor()) != Evaluator::getPawnEquivalent(move2.getAggressor()))
-		return Evaluator::getPawnEquivalent(move1.getAggressor()) < Evaluator::getPawnEquivalent(move2.getAggressor());
+	if (Evaluator::getCentipawnEquivalent(move1.getVictim()) != Evaluator::getCentipawnEquivalent(move2.getVictim()))
+		return Evaluator::getCentipawnEquivalent(move1.getVictim()) > Evaluator::getCentipawnEquivalent(move2.getVictim());
+	if (Evaluator::getCentipawnEquivalent(move1.getAggressor()) != Evaluator::getCentipawnEquivalent(move2.getAggressor()))
+		return Evaluator::getCentipawnEquivalent(move1.getAggressor()) < Evaluator::getCentipawnEquivalent(move2.getAggressor());
 	return false;
 }
 bool MoveComparator::comparePromotions(Move move1, Move move2) {
