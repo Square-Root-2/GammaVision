@@ -71,7 +71,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
     killerMoves[currentDepth + 1].clear();
     return optimalEvaluation;
 }
-int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta, bool isQuietMove) {
+int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
     vector<Move> moves = MoveGenerator::getMoves(state);
