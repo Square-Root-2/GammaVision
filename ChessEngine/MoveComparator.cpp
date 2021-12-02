@@ -1,6 +1,5 @@
 #include "Evaluator.h"
 #include "MoveComparator.h"
-#include <unordered_map>
 
 bool MoveComparator::compareCaptures(Move move1, Move move2) {
 	if (Evaluator::getCentipawnEquivalent(move1.getVictim()) != Evaluator::getCentipawnEquivalent(move2.getVictim()))

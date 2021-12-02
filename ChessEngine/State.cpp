@@ -182,7 +182,7 @@ bool State::isEndgame() {
                     continue;
                 centipawns += Evaluator::getCentipawnEquivalent(getPiece(i, j));
             }
-        if (centipawns > 1200)
+        if (centipawns > 1230)
             return false;
     }
     if (isThereInactiveColorQueen) {
@@ -195,7 +195,7 @@ bool State::isEndgame() {
                     continue;
                 centipawns += Evaluator::getCentipawnEquivalent(getPiece(i, j));
             }
-        if (centipawns > 1200)
+        if (centipawns > 1230)
             return false;
     }
     return true;
