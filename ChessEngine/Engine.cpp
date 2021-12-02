@@ -3,11 +3,14 @@
 #include "MoveComparator.h"
 #include "MoveGenerator.h"
 #include "MoveType.h"
+#include <random>
 
 pair<Move, int> Engine::negamax(State& state, int depth) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return pair<Move, int>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
     vector<Move> moves = MoveGenerator::getMoves(state); 
+    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    shuffle(moves.begin(), moves.end(), rng);
     sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
     Move optimalMove;
     int alpha = -INT32_MAX;
