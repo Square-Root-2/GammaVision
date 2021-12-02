@@ -3,14 +3,11 @@
 #include "MoveComparator.h"
 #include "MoveGenerator.h"
 #include "MoveType.h"
-#include <random>
 
 pair<Move, int> Engine::negamax(State& state, int depth) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return pair<Move, int>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
     vector<Move> moves = MoveGenerator::getMoves(state); 
-    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    shuffle(moves.begin(), moves.end(), rng);
     sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
     Move optimalMove;
     int alpha = -INT32_MAX;
@@ -41,15 +38,17 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
         state.toggleActiveColor();
         int R = depth - currentDepth > 6 ? MAX_R : MIN_R;
         int evaluation = -negamax(state, currentDepth + 1, depth - R, -beta, -beta + 1, false);
+        if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
+            return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
         state.toggleActiveColor();
         if (evaluation >= beta) {
             depth -= DR;
-            if (currentDepth >= depth)
+            if (currentDepth >= depth) {
+                killerMoves[currentDepth + 1].clear();
                 return quiescenceSearch(state, currentDepth, alpha, beta);
+            }
         }
     }
-    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    shuffle(moves.begin(), moves.end(), rng);
     sort(moves.begin(), moves.end(), MoveComparator(killerMoves[currentDepth]));
     int optimalEvaluation = -INT32_MAX;
     tuple<string, bool, int, int> hashCode = state.getHashCode();
@@ -81,8 +80,6 @@ int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta
     if (standPat >= beta)
         return standPat;
     alpha = max(alpha, standPat);
-    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    shuffle(moves.begin(), moves.end(), rng);
     sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < moves.size(); i++) {
