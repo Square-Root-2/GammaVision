@@ -107,7 +107,6 @@ int Engine::getMaximumQuiescenceDepth() {
     return MAXIMUM_QUIESCENCE_DEPTH;
 }
 tuple<Move, int, int> Engine::getOptimalMove(string FEN, int seconds) {
-    //8/ppp5/6KP/5P2/8/5k2/8/8 b - - 0 47
     pair<Move, int> optimalMove;
     this->seconds = seconds;
     start = chrono::steady_clock::now();
