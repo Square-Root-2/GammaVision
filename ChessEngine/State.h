@@ -16,6 +16,7 @@ class State {
     bool isRook(int i, int j);
 public:
     State();
+    State(State& state, Move& move);
     State(string FEN);
     bool canActiveColorCastleKingside();
     bool canActiveColorCastleQueenside();
@@ -41,7 +42,7 @@ public:
     bool isInactiveColorQueen(int i, int j);
     bool isInactiveColorRook(int i, int j);
     bool isPiece(int i, int j);
-    void makeMove(Move move);
+    void makeMove(Move& move);
     void setCanActiveColorCastleKingside(bool canActiveColorCastleKingside);
     void setCanActiveColorCastleQueenside(bool canActiveColorCastleQueenside);
     void setHashCode(tuple<string, bool, int, int> hashCode);

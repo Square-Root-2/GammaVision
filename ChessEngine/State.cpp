@@ -22,6 +22,12 @@ bool State::isQueen(int i, int j) {
 bool State::isRook(int i, int j) {
     return getPiece(i, j) == 'R' || getPiece(i, j) == 'r';
 }
+State::State(State& state, Move& move) {
+    tuple<string, bool, int, int> hashCode = state.getHashCode();
+    state.makeMove(move);
+    setHashCode(state.getHashCode());
+    state.setHashCode(hashCode);
+}
 State::State(string FEN) {
     reverse(FEN.begin(), FEN.end());
     for (int i = 0; i < 8; i++) {
@@ -224,7 +230,7 @@ bool State::isInactiveColorRook(int i, int j) {
 bool State::isPiece(int i, int j) {
     return getPiece(i, j) != '.';
 }
-void State::makeMove(Move move) {
+void State::makeMove(Move& move) {
     setPiece(move.getEndRow(), move.getEndColumn(), move.getAggressor());
     setPiece(move.getBeginRow(), move.getBeginColumn(), '.');
     if (move.getType() == MoveType::KINGSIDE_CASTLE) {

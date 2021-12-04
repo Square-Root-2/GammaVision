@@ -18,5 +18,5 @@ class Engine {
 public:
     static int getMaximumNegamaxDepth();
     static int getMaximumQuiescenceDepth();
-    tuple<Move, int, int> getOptimalMove(string FEN, int seconds);
+    tuple<Move, int, int> getOptimalMove(string& FEN, int seconds);
 };
