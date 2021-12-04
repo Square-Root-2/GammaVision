@@ -12,6 +12,30 @@ pair<Move, int> Engine::negamax(State& state, int depth) {
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
     sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0]));
+    /*
+    vector<future<int>> evaluations;
+    vector<State> states;
+    tuple<string, bool, int, int> hashCode = state.getHashCode();
+    for (int i = 0; i < moves.size(); i++) {
+        state.makeMove(moves[i]);
+        states.push_back(State(state));
+        state.setHashCode(hashCode);
+        evaluations.push_back(async(launch::async, [=, &states]() { return negamax(states[i], 1, depth, -INT32_MAX, INT32_MAX, true); }));
+    }
+    Move optimalMove;
+    int alpha = -INT32_MAX;
+    for (int i = 0; i < moves.size(); i++) {
+        int evaluation = evaluations[i].get();
+        if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
+            return pair<Move, int>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
+        if (evaluation > alpha) {
+            optimalMove = moves[i];
+            alpha = evaluation;
+        }
+    }
+    //killerMoves[1].clear();
+    return pair<Move, int>(optimalMove, alpha);
+    */
     Move optimalMove;
     int alpha = -INT32_MAX;
     tuple<string, bool, int, int> hashCode = state.getHashCode();

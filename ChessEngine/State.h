@@ -16,7 +16,6 @@ class State {
     bool isRook(int i, int j);
 public:
     State();
-    State(State& state, Move& move);
     State(string FEN);
     bool canActiveColorCastleKingside();
     bool canActiveColorCastleQueenside();
