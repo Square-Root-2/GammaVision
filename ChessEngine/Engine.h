@@ -1,8 +1,8 @@
 #pragma once
 
+#include "ChessBoard.h"
 #include <chrono>
 #include "Move.h"
-#include "State.h"
 #include <unordered_set>
 
 using namespace std;
@@ -12,10 +12,10 @@ class Engine {
     unordered_set<Move> killerMoves[MAXIMUM_NEGAMAX_DEPTH + 1];
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
-    void makeMove(State& state, Move& move);
-    pair<Move, int> negamax(State& state, int depth);
-    int negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool isNullOk);
-    int quiescenceSearch(State& state, int currentDepth, int alpha, int beta);
+    void makeMove(ChessBoard& chessBoard, Move& move);
+    pair<Move, int> negamax(ChessBoard& chessBoard, int depth);
+    int negamax(ChessBoard& chessBoard, int currentDepth, int depth, int alpha, int beta, bool isNullOk);
+    int quiescenceSearch(ChessBoard& chessBoard, int currentDepth, int alpha, int beta);
 public:
     static int getMaximumNegamaxDepth();
     static int getMaximumQuiescenceDepth();

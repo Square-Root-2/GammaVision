@@ -1,6 +1,6 @@
 #pragma once
 
-#include "State.h"
+#include "ChessBoard.h"
 #include <unordered_map>
 
 class Evaluator {
@@ -198,10 +198,10 @@ class Evaluator {
                                                              {-30, -20, -10, 0, 0, -10, -20, -30},
                                                              {-50, -40, -30, -20, -20, -30, -40, -50} } };
     static unordered_map<char, int> pieceToIndex;
-    static int getAdjustedCentipawnEquivalent(State& state, int i, int j);
-    static bool isEndgame(State& state);
+    static int getAdjustedCentipawnEquivalent(ChessBoard& chessBoard, int i, int j);
+    static bool isEndgame(ChessBoard& chessBoard);
 public:
     static int getCentipawnEquivalent(char piece);
-    static int getEvaluation(State& state);
+    static int getEvaluation(ChessBoard& chessBoard);
     static int getMaximumEvaluation();
 };

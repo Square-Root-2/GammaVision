@@ -1,13 +1,13 @@
 #include "Evaluator.h"
 
 unordered_map<char, int> Evaluator::pieceToIndex = { { 'P', 0 }, { 'p', 1 }, { 'N', 2 }, { 'n', 3 }, { 'B', 4 }, { 'b', 5 }, { 'R', 6 }, { 'r', 7 }, { 'Q', 8 }, { 'q', 9 }, { 'K', 10 }, { 'k', 11 } };
-bool Evaluator::isEndgame(State& state) {
+bool Evaluator::isEndgame(ChessBoard& chessBoard) {
     bool isThereActiveColorQueen = false;
     bool isThereInactiveColorQueen = false;
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++) {
-            isThereActiveColorQueen = isThereActiveColorQueen || state.isActiveColorQueen(i, j);
-            isThereInactiveColorQueen = isThereInactiveColorQueen || state.isInactiveColorQueen(i, j);
+            isThereActiveColorQueen = isThereActiveColorQueen || chessBoard.isActiveColorQueen(i, j);
+            isThereInactiveColorQueen = isThereInactiveColorQueen || chessBoard.isInactiveColorQueen(i, j);
         }
     if (!isThereActiveColorQueen && !isThereInactiveColorQueen)
         return true;
@@ -15,11 +15,11 @@ bool Evaluator::isEndgame(State& state) {
         int centipawns = 0;
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++) {
-                if (state.isActiveColorRook(i, j))
+                if (chessBoard.isActiveColorRook(i, j))
                     return false;
-                if (!state.isActiveColorKnight(i, j) && !state.isActiveColorBishop(i, j) && !state.isActiveColorQueen(i, j))
+                if (!chessBoard.isActiveColorKnight(i, j) && !chessBoard.isActiveColorBishop(i, j) && !chessBoard.isActiveColorQueen(i, j))
                     continue;
-                centipawns += getCentipawnEquivalent(state.getPiece(i, j));
+                centipawns += getCentipawnEquivalent(chessBoard.getPiece(i, j));
             }
         if (centipawns > 1230)
             return false;
@@ -28,21 +28,21 @@ bool Evaluator::isEndgame(State& state) {
         int centipawns = 0;
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++) {
-                if (state.isInactiveColorRook(i, j))
+                if (chessBoard.isInactiveColorRook(i, j))
                     return false;
-                if (!state.isInactiveColorKnight(i, j) && !state.isInactiveColorBishop(i, j) && !state.isInactiveColorQueen(i, j))
+                if (!chessBoard.isInactiveColorKnight(i, j) && !chessBoard.isInactiveColorBishop(i, j) && !chessBoard.isInactiveColorQueen(i, j))
                     continue;
-                centipawns += getCentipawnEquivalent(state.getPiece(i, j));
+                centipawns += getCentipawnEquivalent(chessBoard.getPiece(i, j));
             }
         if (centipawns > 1230)
             return false;
     }
     return true;
 }
-int Evaluator::getAdjustedCentipawnEquivalent(State& state, int i, int j) {
-    if (state.getPiece(i, j) == '.')
+int Evaluator::getAdjustedCentipawnEquivalent(ChessBoard& chessBoard, int i, int j) {
+    if (chessBoard.getPiece(i, j) == '.')
         return 0;
-    return getCentipawnEquivalent(state.getPiece(i, j)) + PIECE_SQUARE_TABLES[2 * pieceToIndex[state.getPiece(i, j)] + isEndgame(state)][i][j];
+    return getCentipawnEquivalent(chessBoard.getPiece(i, j)) + PIECE_SQUARE_TABLES[2 * pieceToIndex[chessBoard.getPiece(i, j)] + isEndgame(chessBoard)][i][j];
 }
 int Evaluator::getCentipawnEquivalent(char piece) {
     if (piece == 'P' || piece == 'p')
@@ -59,11 +59,11 @@ int Evaluator::getCentipawnEquivalent(char piece) {
         return 20000;
     return 0;
 }
-int Evaluator::getEvaluation(State& state) {
+int Evaluator::getEvaluation(ChessBoard& chessBoard) {
     int evaluation = 0;
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++)
-            evaluation += (state.isActiveColorPiece(i, j) ? 1 : -1) * getAdjustedCentipawnEquivalent(state, i, j);
+            evaluation += (chessBoard.isActiveColorPiece(i, j) ? 1 : -1) * getAdjustedCentipawnEquivalent(chessBoard, i, j);
     return evaluation;
 }
 int Evaluator::getMaximumEvaluation() {

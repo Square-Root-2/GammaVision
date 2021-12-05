@@ -1,8 +1,8 @@
 #include "Engine.h"
 #include "Evaluator.h"
+#include <iostream>
 #include "Move.h"
 #include "MoveType.h"
-#include <iostream>
 
 using namespace std;
 
