@@ -1,9 +1,6 @@
 #include "Evaluator.h"
 #include "State.h"
 
-State::State() {
-
-}
 bool State::isBishop(int i, int j) {
     return getPiece(i, j) == 'B' || getPiece(i, j) == 'b';
 }

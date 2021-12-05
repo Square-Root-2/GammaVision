@@ -68,7 +68,7 @@ pair<Move, int> Engine::negamax(State& state, int depth) {
     killerMoves[1].clear();
     return pair<Move, int>(optimalMove, alpha);
 }
-int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool nullOk) {
+int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool isNullOk) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
     vector<Move> moves = MoveGenerator::getMoves(state);
@@ -76,10 +76,9 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 1 - currentDepth) : 0;
     if (currentDepth >= depth)
         return quiescenceSearch(state, currentDepth, alpha, beta);
-    if (nullOk && !state.isActiveColorInCheck()) {
+    if (isNullOk && !state.isActiveColorInCheck()) {
         state.toggleActiveColor();
-        int R = depth - currentDepth > 6 ? MAX_R : MIN_R;
-        int evaluation = -negamax(state, currentDepth + 1, depth - R, -beta, -beta + 1, false);
+        int evaluation = -negamax(state, currentDepth + 1, depth - (depth - currentDepth > 6 ? MAX_R : MIN_R), -beta, -beta + 1, false);
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
             return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
         state.toggleActiveColor();

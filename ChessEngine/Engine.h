@@ -14,7 +14,7 @@ class Engine {
     chrono::time_point<chrono::steady_clock> start;
     void makeMove(State& state, Move& move);
     pair<Move, int> negamax(State& state, int depth);
-    int negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool nullOk);
+    int negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool isNullOk);
     int quiescenceSearch(State& state, int currentDepth, int alpha, int beta);
 public:
     static int getMaximumNegamaxDepth();
