@@ -198,8 +198,9 @@ class Evaluator {
                                                              {-30, -20, -10, 0, 0, -10, -20, -30},
                                                              {-50, -40, -30, -20, -20, -30, -40, -50} } };
     static unordered_map<char, int> pieceToIndex;
-public:
     static int getAdjustedCentipawnEquivalent(State& state, int i, int j);
+    static bool isEndgame(State& state);
+public:
     static int getCentipawnEquivalent(char piece);
     static int getEvaluation(State& state);
     static int getMaximumEvaluation();

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Move.h"
 #include <string>
 #include <tuple>
 
@@ -32,7 +31,6 @@ public:
     bool isActiveColorPiece(int i, int j);
     bool isActiveColorQueen(int i, int j);
     bool isActiveColorRook(int i, int j);
-    bool isEndgame();
     bool isInactiveColorBishop(int i, int j);
     bool isInactiveColorKing(int i, int j);
     bool isInactiveColorKnight(int i, int j);
@@ -41,7 +39,6 @@ public:
     bool isInactiveColorQueen(int i, int j);
     bool isInactiveColorRook(int i, int j);
     bool isPiece(int i, int j);
-    void makeMove(Move& move);
     void setCanActiveColorCastleKingside(bool canActiveColorCastleKingside);
     void setCanActiveColorCastleQueenside(bool canActiveColorCastleQueenside);
     void setHashCode(tuple<string, bool, int, int> hashCode);

@@ -12,6 +12,7 @@ class Engine {
     unordered_set<Move> killerMoves[MAXIMUM_NEGAMAX_DEPTH + 1];
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
+    void makeMove(State& state, Move& move);
     pair<Move, int> negamax(State& state, int depth);
     int negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool nullOk);
     int quiescenceSearch(State& state, int currentDepth, int alpha, int beta);

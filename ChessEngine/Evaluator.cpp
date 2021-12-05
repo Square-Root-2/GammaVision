@@ -1,10 +1,48 @@
 #include "Evaluator.h"
 
 unordered_map<char, int> Evaluator::pieceToIndex = { { 'P', 0 }, { 'p', 1 }, { 'N', 2 }, { 'n', 3 }, { 'B', 4 }, { 'b', 5 }, { 'R', 6 }, { 'r', 7 }, { 'Q', 8 }, { 'q', 9 }, { 'K', 10 }, { 'k', 11 } };
+bool Evaluator::isEndgame(State& state) {
+    bool isThereActiveColorQueen = false;
+    bool isThereInactiveColorQueen = false;
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++) {
+            isThereActiveColorQueen = isThereActiveColorQueen || state.isActiveColorQueen(i, j);
+            isThereInactiveColorQueen = isThereInactiveColorQueen || state.isInactiveColorQueen(i, j);
+        }
+    if (!isThereActiveColorQueen && !isThereInactiveColorQueen)
+        return true;
+    if (isThereActiveColorQueen) {
+        int centipawns = 0;
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++) {
+                if (state.isActiveColorRook(i, j))
+                    return false;
+                if (!state.isActiveColorKnight(i, j) && !state.isActiveColorBishop(i, j) && !state.isActiveColorQueen(i, j))
+                    continue;
+                centipawns += getCentipawnEquivalent(state.getPiece(i, j));
+            }
+        if (centipawns > 1230)
+            return false;
+    }
+    if (isThereInactiveColorQueen) {
+        int centipawns = 0;
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++) {
+                if (state.isInactiveColorRook(i, j))
+                    return false;
+                if (!state.isInactiveColorKnight(i, j) && !state.isInactiveColorBishop(i, j) && !state.isInactiveColorQueen(i, j))
+                    continue;
+                centipawns += getCentipawnEquivalent(state.getPiece(i, j));
+            }
+        if (centipawns > 1230)
+            return false;
+    }
+    return true;
+}
 int Evaluator::getAdjustedCentipawnEquivalent(State& state, int i, int j) {
     if (state.getPiece(i, j) == '.')
         return 0;
-    return getCentipawnEquivalent(state.getPiece(i, j)) + PIECE_SQUARE_TABLES[2 * pieceToIndex[state.getPiece(i, j)] + state.isEndgame()][i][j];
+    return getCentipawnEquivalent(state.getPiece(i, j)) + PIECE_SQUARE_TABLES[2 * pieceToIndex[state.getPiece(i, j)] + isEndgame(state)][i][j];
 }
 int Evaluator::getCentipawnEquivalent(char piece) {
     if (piece == 'P' || piece == 'p')

@@ -162,44 +162,6 @@ bool State::isActiveColorQueen(int i, int j) {
 bool State::isActiveColorRook(int i, int j) {
     return getPiece(i, j) == (getActiveColor() ? 'r' : 'R');
 }
-bool State::isEndgame() {
-    bool isThereActiveColorQueen = false;
-    bool isThereInactiveColorQueen = false;
-    for (int i = 0; i < 8; i++)
-        for (int j = 0; j < 8; j++) {
-            isThereActiveColorQueen = isThereActiveColorQueen || isActiveColorQueen(i, j);
-            isThereInactiveColorQueen = isThereInactiveColorQueen || isInactiveColorQueen(i, j);
-        }
-    if (!isThereActiveColorQueen && !isThereInactiveColorQueen)
-        return true;
-    if (isThereActiveColorQueen) {
-        int centipawns = 0;
-        for (int i = 0; i < 8; i++)
-            for (int j = 0; j < 8; j++) {
-                if (isActiveColorRook(i, j))
-                    return false;
-                if (!isActiveColorKnight(i, j) && !isActiveColorBishop(i, j) && !isActiveColorQueen(i, j))
-                    continue;
-                centipawns += Evaluator::getCentipawnEquivalent(getPiece(i, j));
-            }
-        if (centipawns > 1230)
-            return false;
-    }
-    if (isThereInactiveColorQueen) {
-        int centipawns = 0;
-        for (int i = 0; i < 8; i++)
-            for (int j = 0; j < 8; j++) {
-                if (isInactiveColorRook(i, j))
-                    return false;
-                if (!isInactiveColorKnight(i, j) && !isInactiveColorBishop(i, j) && !isInactiveColorQueen(i, j))
-                    continue;
-                centipawns += Evaluator::getCentipawnEquivalent(getPiece(i, j));
-            }
-        if (centipawns > 1230)
-            return false;
-    }
-    return true;
-}
 bool State::isInactiveColorBishop(int i, int j) {
     return getPiece(i, j) == (getActiveColor() ? 'B' : 'b');
 }
@@ -223,45 +185,6 @@ bool State::isInactiveColorRook(int i, int j) {
 }
 bool State::isPiece(int i, int j) {
     return getPiece(i, j) != '.';
-}
-void State::makeMove(Move& move) {
-    setPiece(move.getEndRow(), move.getEndColumn(), move.getAggressor());
-    setPiece(move.getBeginRow(), move.getBeginColumn(), '.');
-    if (move.getType() == MoveType::KINGSIDE_CASTLE) {
-        setPiece(move.getBeginRow(), 7, '.');
-        setPiece(move.getBeginRow(), 5, getActiveColor() ? 'r' : 'R');
-    }
-    else if (move.getType() == MoveType::QUEENSIDE_CASTLE) {
-        setPiece(move.getBeginRow(), 0, '.');
-        setPiece(move.getBeginRow(), 3, getActiveColor() ? 'r' : 'R');
-    }
-    else if (move.getType() == MoveType::EN_PASSANT)
-        setPiece(move.getBeginRow(), move.getEndColumn(), '.');
-    else if (move.getType() == MoveType::PROMOTION_TO_BISHOP)
-        setPiece(move.getEndRow(), move.getEndColumn(), getActiveColor() ? 'b' : 'B');
-    else if (move.getType() == MoveType::PROMOTION_TO_KNIGHT)
-        setPiece(move.getEndRow(), move.getEndColumn(), getActiveColor() ? 'n' : 'N');
-    else if (move.getType() == MoveType::PROMOTION_TO_QUEEN)
-        setPiece(move.getEndRow(), move.getEndColumn(), getActiveColor() ? 'q' : 'Q');
-    else if (move.getType() == MoveType::PROMOTION_TO_ROOK)
-        setPiece(move.getEndRow(), move.getEndColumn(), getActiveColor() ? 'r' : 'R');
-    if (move.getType() == MoveType::KINGSIDE_CASTLE || move.getType() == MoveType::QUEENSIDE_CASTLE) {
-        setCanActiveColorCastleKingside(false);
-        setCanActiveColorCastleQueenside(false);
-    }
-    else if (move.getType() == MoveType::KING_MOVE) {
-        setCanActiveColorCastleKingside(false);
-        setCanActiveColorCastleQueenside(false);
-    }
-    else if (move.getType() == MoveType::ROOK_MOVE && abs(move.getBeginRow() - 3.5) == 3.5 && move.getBeginColumn() == 7)
-        setCanActiveColorCastleKingside(false);
-    else if (move.getType() == MoveType::ROOK_MOVE && abs(move.getBeginRow() - 3.5) == 3.5 && move.getBeginColumn() == 0)
-        setCanActiveColorCastleQueenside(false);
-    if (move.getType() == MoveType::PAWN_FORWARD_TWO)
-        setPossibleEnPassantTargetColumn(move.getBeginColumn());
-    else
-        setPossibleEnPassantTargetColumn(-1);
-    toggleActiveColor();
 }
 void State::setCanActiveColorCastleKingside(bool canActiveColorCastleKingside) {
     get<2>(hashCode) += (8 - 6 * getActiveColor()) * (canActiveColorCastleKingside - ((get<2>(hashCode) & 1 << (3 - 2 * getActiveColor())) > 0));
