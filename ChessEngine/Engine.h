@@ -1,6 +1,8 @@
 #pragma once
 #include <chrono>
+#include <map>
 #include "Move.h"
+#include "NodeType.h"
 #include "State.h"
 #include <unordered_set>
 
@@ -11,6 +13,7 @@ class Engine {
     unordered_set<Move> killerMoves[MAXIMUM_NEGAMAX_DEPTH + 1];
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
+    map<tuple<string, bool, int, int>, pair<Move, NodeType>> transpositionTable;
     void makeMove(State& state, Move& move);
     pair<Move, int> negamax(State& state, int depth, int alpha, int beta);
     int negamax(State& state, int currentDepth, int depth, int alpha, int beta);
