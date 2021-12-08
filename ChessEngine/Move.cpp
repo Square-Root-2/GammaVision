@@ -13,7 +13,7 @@ Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType ty
 	this->victim = victim;
 }
 bool Move::operator==(Move move) const {
-	return beginRow == move.getBeginRow() && beginColumn == move.getBeginColumn() && endRow == move.getEndRow() && endColumn == move.getEndColumn();
+	return beginRow == move.getBeginRow() && beginColumn == move.getBeginColumn() && endRow == move.getEndRow() && endColumn == move.getEndColumn() && type == move.getType();
 }
 char Move::getAggressor() {
 	return aggressor;
