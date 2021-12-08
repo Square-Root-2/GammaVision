@@ -17,8 +17,8 @@ class Engine {
     map<tuple<string, bool, int, int>, tuple<int, NodeType, int, Move>> transpositionTable;
     void makeMove(State& state, Move& move);
     pair<Move, int> negamax(State& state, int depth, int alpha, int beta);
-    int negamax(State& state, int currentDepth, int depth, int alpha, int beta);
-    int quiescenceSearch(State& state, int currentDepth, int alpha, int beta);
+    int negamax(State& state, int currentDepth, int depth, int alpha, int beta, vector<Move>& moves);
+    int quiescenceSearch(State& state, int currentDepth, int alpha, int beta, vector<Move>& moves);
 public:
     static int getMaximumNegamaxDepth();
     static int getMaximumQuiescenceDepth();

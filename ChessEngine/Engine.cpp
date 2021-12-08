@@ -50,13 +50,19 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
     vector<Move> moves = MoveGenerator::getMoves(state); 
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     map<tuple<string, bool, int, int>, tuple<int, NodeType, int, Move>>::iterator it = transpositionTable.find(hashCode);
+    bool isActiveColorInCheck = state.isActiveColorInCheck();
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(moves.begin(), moves.end(), rng);
     sort(moves.begin(), moves.end(), MoveComparator(killerMoves[0], it != transpositionTable.end() ? get<3>(it->second) : move));
     Move optimalMove;
     for (int i = 0; i < moves.size(); i++) {
         makeMove(state, moves[i]);
-        int evaluation = -negamax(state, 1, depth, -beta, -alpha);
+        vector<Move> opponentMoves = MoveGenerator::getMoves(state);
+        int evaluation = -negamax(state, 1, depth - (i >= 4 && moves[i].isQuiet() && !isActiveColorInCheck && !state.isActiveColorInCheck() && opponentMoves.size() != 1 && depth >= 3), -beta, -alpha, opponentMoves);
+        if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
+            return pair<Move, int>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
+        if (evaluation > alpha)
+            evaluation = -negamax(state, 1, depth, -beta, -alpha, opponentMoves);
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
             return pair<Move, int>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
         state.setHashCode(hashCode);
@@ -76,7 +82,7 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
         transpositionTable[hashCode] = tuple<int, NodeType, int, Move>(depth, NodeType::PV_NODE, alpha, optimalMove);
     return pair<Move, int>(optimalMove, alpha);
 }
-int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int beta) {
+int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int beta, vector<Move>& moves) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
     tuple<string, bool, int, int> hashCode = state.getHashCode();
@@ -93,14 +99,15 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
         else if (get<1>(it->second) == NodeType::ALL_NODE)
             beta = min(beta, get<2>(it->second));
     }
-    vector<Move> moves = MoveGenerator::getMoves(state);
     if (moves.empty())
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 1 - currentDepth) : 0;
     if (currentDepth >= depth)
-        return quiescenceSearch(state, currentDepth, alpha, beta);
-    if (!state.isActiveColorInCheck()) {
+        return quiescenceSearch(state, currentDepth, alpha, beta, moves);
+    bool isActiveColorInCheck = state.isActiveColorInCheck();
+    if (!isActiveColorInCheck) {
         state.toggleActiveColor();
-        int evaluation = -negamax(state, currentDepth + 1, depth - R, -beta, -alpha);
+        vector<Move> opponentMoves = MoveGenerator::getMoves(state);
+        int evaluation = -negamax(state, currentDepth + 1, depth - R, -beta, -alpha, opponentMoves);
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
             return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
         state.toggleActiveColor();
@@ -111,7 +118,12 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
     Move optimalMove;
     for (int i = 0; i < moves.size(); i++) {
         makeMove(state, moves[i]);
-        int evaluation = -negamax(state, currentDepth + 1, depth, -beta, -alpha);
+        vector<Move> opponentMoves = MoveGenerator::getMoves(state);
+        int evaluation = -negamax(state, currentDepth + 1, depth - (i >= 4 && moves[i].isQuiet() && !isActiveColorInCheck && !state.isActiveColorInCheck() && opponentMoves.size() != 1 && depth - currentDepth >= 3), -beta, -alpha, opponentMoves);
+        if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
+            return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
+        if (evaluation > alpha)
+            evaluation = -negamax(state, currentDepth + 1, depth, -beta, -alpha, opponentMoves);
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
             return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
         state.setHashCode(hashCode);
@@ -136,10 +148,9 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
             transpositionTable[hashCode] = tuple<int, NodeType, int, Move>(depth - currentDepth, NodeType::PV_NODE, alpha, optimalMove);
     return alpha;
 }
-int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta) {
+int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta, vector<Move>& moves) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
-    vector<Move> moves = MoveGenerator::getMoves(state);
     if (moves.empty())
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 1 - currentDepth) : 0;
     int standPat = Evaluator::getEvaluation(state);
@@ -152,7 +163,8 @@ int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta
         if (!moves[i].isCapture())
             break;
         makeMove(state, moves[i]);
-        int evaluation = -quiescenceSearch(state, currentDepth + 1, -beta, -alpha);
+        vector<Move> opponentMoves = MoveGenerator::getMoves(state);
+        int evaluation = -quiescenceSearch(state, currentDepth + 1, -beta, -alpha, opponentMoves);
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
             return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
         state.setHashCode(hashCode);
