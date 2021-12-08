@@ -1,5 +1,7 @@
 #pragma once
+
 #include <chrono>
+#include "Evaluator.h"
 #include <map>
 #include "Move.h"
 #include "NodeType.h"
@@ -11,6 +13,7 @@ using namespace std;
 class Engine {
     static const int MAXIMUM_NEGAMAX_DEPTH = 30, MAXIMUM_QUIESCENCE_DEPTH = 30, R = 2;
     unordered_set<Move> killerMoves[MAXIMUM_NEGAMAX_DEPTH + 1];
+    int mateValue = Evaluator::getMaximumEvaluation() + MAXIMUM_NEGAMAX_DEPTH + MAXIMUM_QUIESCENCE_DEPTH + 1;
     Move move;
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
