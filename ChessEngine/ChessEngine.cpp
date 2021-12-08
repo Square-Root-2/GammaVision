@@ -24,7 +24,7 @@ int main() {
         cout << "\n";
         cout << "Evaluation: ";
         if (abs(get<1>(optimalMove)) > Evaluator::getMaximumEvaluation())
-            cout << "Mate in " << (Evaluator::getMaximumEvaluation() + Engine::getMaximumNegamaxDepth() + Engine::getMaximumQuiescenceDepth() + 1) - abs(get<1>(optimalMove)) << "\n";
+            cout << "Mate in " << e.getMateValue() - abs(get<1>(optimalMove)) << "\n";
         else
             cout << get<1>(optimalMove) << "\n";
         cout << "Depth: " << get<2>(optimalMove) << "\n\n";

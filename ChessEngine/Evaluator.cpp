@@ -2,42 +2,14 @@
 
 unordered_map<char, int> Evaluator::pieceToIndex = { { 'P', 0 }, { 'p', 1 }, { 'N', 2 }, { 'n', 3 }, { 'B', 4 }, { 'b', 5 }, { 'R', 6 }, { 'r', 7 }, { 'Q', 8 }, { 'q', 9 }, { 'K', 10 }, { 'k', 11 } };
 bool Evaluator::isEndgame(State& state) {
-    bool isThereActiveColorQueen = false;
-    bool isThereInactiveColorQueen = false;
+    int activeColorPieces = 0;
+    int inactiveColorPieces = 0;
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++) {
-            isThereActiveColorQueen = isThereActiveColorQueen || state.isActiveColorQueen(i, j);
-            isThereInactiveColorQueen = isThereInactiveColorQueen || state.isInactiveColorQueen(i, j);
+            activeColorPieces += state.isActiveColorPiece(i, j) && !state.isActiveColorPawn(i, j) && !state.isActiveColorKing(i, j);
+            inactiveColorPieces += state.isInactiveColorPiece(i, j) && !state.isInactiveColorPawn(i, j) && !state.isInactiveColorKing(i, j);
         }
-    if (!isThereActiveColorQueen && !isThereInactiveColorQueen)
-        return true;
-    if (isThereActiveColorQueen) {
-        int centipawns = 0;
-        for (int i = 0; i < 8; i++)
-            for (int j = 0; j < 8; j++) {
-                if (state.isActiveColorRook(i, j))
-                    return false;
-                if (!state.isActiveColorKnight(i, j) && !state.isActiveColorBishop(i, j) && !state.isActiveColorQueen(i, j))
-                    continue;
-                centipawns += getCentipawnEquivalent(state.getPiece(i, j));
-            }
-        if (centipawns > 1230)
-            return false;
-    }
-    if (isThereInactiveColorQueen) {
-        int centipawns = 0;
-        for (int i = 0; i < 8; i++)
-            for (int j = 0; j < 8; j++) {
-                if (state.isInactiveColorRook(i, j))
-                    return false;
-                if (!state.isInactiveColorKnight(i, j) && !state.isInactiveColorBishop(i, j) && !state.isInactiveColorQueen(i, j))
-                    continue;
-                centipawns += getCentipawnEquivalent(state.getPiece(i, j));
-            }
-        if (centipawns > 1230)
-            return false;
-    }
-    return true;
+    return activeColorPieces <= 2 && inactiveColorPieces <= 2;
 }
 int Evaluator::getAdjustedCentipawnEquivalent(State& state, int i, int j, bool endgame) {
     if (state.getPiece(i, j) == '.')
