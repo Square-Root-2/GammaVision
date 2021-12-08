@@ -58,10 +58,6 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
     int staticEvaluation = Evaluator::getEvaluation(state);
     for (int i = 0; i < moves.size(); i++) {
         makeMove(state, moves[i]);
-        /*
-        if (depth == 1 && !moves[i].isCapture() && !state.isActiveColorInCheck() && isActiveColorInCheck && staticEvaluation + 10 <= alpha)
-            continue;
-        */
         vector<Move> opponentMoves = MoveGenerator::getMoves(state);
         int evaluation = -negamax(state, 1, depth - (i >= 4 && moves[i].isQuiet() && !isActiveColorInCheck && !state.isActiveColorInCheck() && opponentMoves.size() != 1 && depth >= 3), -beta, -alpha, opponentMoves);
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
@@ -104,7 +100,6 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
         else if (get<1>(it->second) == NodeType::ALL_NODE)
             beta = min(beta, get<2>(it->second));
     }
-    //
     if (moves.empty())
         return state.isActiveColorInCheck() ? -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 1 - currentDepth) : 0;
     if (currentDepth >= depth)
@@ -117,8 +112,10 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
         if (evaluation == Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2)
             return -(Evaluator::getMaximumEvaluation() + getMaximumNegamaxDepth() + getMaximumQuiescenceDepth() + 2);
         state.toggleActiveColor();
-        if (evaluation >= beta)
+        if (evaluation >= beta) {
+            killerMoves[currentDepth + 1].clear();
             return beta;
+        }
     }
     sort(moves.begin(), moves.end(), MoveComparator(killerMoves[currentDepth], it != transpositionTable.end() ? get<3>(it->second) : move));
     Move optimalMove;
