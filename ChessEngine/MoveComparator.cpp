@@ -20,10 +20,15 @@ bool MoveComparator::compareQuietMoves(Move& move1, Move& move2) {
 		return true;
 	return false;
 }
-MoveComparator::MoveComparator(unordered_set<Move>& killerMoves) {
+MoveComparator::MoveComparator(unordered_set<Move>& killerMoves, Move& hashMove) {
 	this->killerMoves = killerMoves;
+	this->hashMove = hashMove;
 }
 bool MoveComparator::operator()(Move& move1, Move& move2) {
+	if (move1 == hashMove)
+		return true;
+	if (move2 == hashMove)
+		return false;
 	if (move1.isCapture() && !move2.isCapture())
 		return true;
 	if (move2.isCapture() && !move1.isCapture())

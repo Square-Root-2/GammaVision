@@ -39,10 +39,10 @@ bool Evaluator::isEndgame(State& state) {
     }
     return true;
 }
-int Evaluator::getAdjustedCentipawnEquivalent(State& state, int i, int j) {
+int Evaluator::getAdjustedCentipawnEquivalent(State& state, int i, int j, bool endgame) {
     if (state.getPiece(i, j) == '.')
         return 0;
-    return getCentipawnEquivalent(state.getPiece(i, j)) + PIECE_SQUARE_TABLES[2 * pieceToIndex[state.getPiece(i, j)] + isEndgame(state)][i][j];
+    return getCentipawnEquivalent(state.getPiece(i, j)) + PIECE_SQUARE_TABLES[2 * pieceToIndex[state.getPiece(i, j)] + endgame][i][j];
 }
 int Evaluator::getCentipawnEquivalent(char piece) {
     if (piece == 'P' || piece == 'p')
@@ -60,10 +60,11 @@ int Evaluator::getCentipawnEquivalent(char piece) {
     return 0;
 }
 int Evaluator::getEvaluation(State& state) {
+    bool endgame = isEndgame(state);
     int evaluation = 0;
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++)
-            evaluation += (state.isActiveColorPiece(i, j) ? 1 : -1) * getAdjustedCentipawnEquivalent(state, i, j);
+            evaluation += (state.isActiveColorPiece(i, j) ? 1 : -1) * getAdjustedCentipawnEquivalent(state, i, j, endgame);
     return evaluation;
 }
 int Evaluator::getMaximumEvaluation() {
