@@ -190,7 +190,6 @@ int Engine::getMateValue() {
     return mateValue;
 }
 tuple<Move, int, int> Engine::getOptimalMove(string& FEN, int seconds) {
-    // 4b3/8/8/6P1/2k1pN1p/4P3/PBPK2r1/8 w - - 0 13
     transpositionTable.clear();
     pair<Move, int> optimalMove;
     this->seconds = seconds;
