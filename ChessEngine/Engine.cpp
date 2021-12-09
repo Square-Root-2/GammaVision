@@ -58,7 +58,7 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
     for (int i = 0; i < activeColorMoves.size(); i++) {
         makeMove(state, activeColorMoves[i]);
         bool isInactiveColorInCheck = state.isActiveColorInCheck();
-        if (depth == 1 && !activeColorMoves[i].isCapture() && !isInactiveColorInCheck && !isActiveColorInCheck && abs(alpha) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && abs(beta) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && staticEvaluation + 25 <= alpha) {
+        if (depth == 1 && !activeColorMoves[i].isCapture() && !isInactiveColorInCheck && !isActiveColorInCheck && abs(alpha) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && abs(beta) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && staticEvaluation + 320 <= alpha) {
             state.setHashCode(hashCode);
             continue;
         }
@@ -136,7 +136,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
     for (int i = 0; i < activeColorMoves.size(); i++) {
         makeMove(state, activeColorMoves[i]);
         bool isInactiveColorInCheck = state.isActiveColorInCheck();
-        if (depth - currentDepth == 1 && !activeColorMoves[i].isCapture() && !isInactiveColorInCheck && !isActiveColorInCheck && abs(alpha) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && abs(beta) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && staticEvaluation + 25 <= alpha) {
+        if (depth - currentDepth == 1 && !activeColorMoves[i].isCapture() && !isInactiveColorInCheck && !isActiveColorInCheck && abs(alpha) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && abs(beta) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && staticEvaluation + 320 <= alpha) {
             state.setHashCode(hashCode);
             continue;
         }
