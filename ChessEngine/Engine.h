@@ -4,6 +4,7 @@
 #include "Evaluator.h"
 #include <map>
 #include "Move.h"
+#include "MoveGenerator.h"
 #include "NodeType.h"
 #include "State.h"
 #include <unordered_set>
@@ -15,6 +16,7 @@ class Engine {
     unordered_set<Move> killerMoves[MAXIMUM_NEGAMAX_DEPTH + 1];
     int mateValue = Evaluator::getMaximumEvaluation() + MAXIMUM_NEGAMAX_DEPTH + MAXIMUM_QUIESCENCE_DEPTH + 1;
     Move move;
+    MoveGenerator moveGenerator;
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
     map<tuple<string, bool, int, int>, tuple<int, NodeType, int, Move>> transpositionTable;

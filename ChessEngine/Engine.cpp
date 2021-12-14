@@ -1,6 +1,5 @@
 #include "Engine.h"
 #include "MoveComparator.h"
-#include "MoveGenerator.h"
 #include "MoveType.h"
 #include <random>
 
@@ -46,7 +45,7 @@ void Engine::makeMove(State& state, Move& move) {
 pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return pair<Move, int>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
-    vector<Move> activeColorMoves = MoveGenerator::getMoves(state); 
+    vector<Move> activeColorMoves = moveGenerator.getMoves(state); 
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     map<tuple<string, bool, int, int>, tuple<int, NodeType, int, Move>>::iterator it = transpositionTable.find(hashCode);
     bool isActiveColorInCheck = state.isActiveColorInCheck();
@@ -63,7 +62,7 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
             state.setHashCode(hashCode);
             continue;
         }
-        vector<Move> inactiveColorMoves = MoveGenerator::getMoves(state);
+        vector<Move> inactiveColorMoves = moveGenerator.getMoves(state);
         int evaluation = -negamax(state, 1, depth - (searchedMoves++ >= 4 && activeColorMoves[i].isQuiet() && !isActiveColorInCheck && !isInactiveColorInCheck && inactiveColorMoves.size() != 1 && depth >= 3), -beta, -alpha, true, inactiveColorMoves, isInactiveColorInCheck);
         if (evaluation == mateValue + 1)
             return pair<Move, int>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
@@ -112,7 +111,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
     }
     if (isNullOk && !isActiveColorInCheck) {
         state.toggleActiveColor();
-        vector<Move> inactiveColorMoves = MoveGenerator::getMoves(state);
+        vector<Move> inactiveColorMoves = moveGenerator.getMoves(state);
         int evaluation = -negamax(state, currentDepth + 1, depth - (depth - currentDepth > 6 ? MAXIMUM_R : MINIMUM_R), -beta, -beta + 1, false, inactiveColorMoves, false);
         if (evaluation == mateValue + 1)
             return -(mateValue + 1);
@@ -138,7 +137,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
             state.setHashCode(hashCode);
             continue;
         }
-        vector<Move> inactiveColorMoves = MoveGenerator::getMoves(state);
+        vector<Move> inactiveColorMoves = moveGenerator.getMoves(state);
         int evaluation = -negamax(state, currentDepth + 1, depth - (searchedMoves++ >= 4 && activeColorMoves[i].isQuiet() && !isActiveColorInCheck && !isInactiveColorInCheck && inactiveColorMoves.size() != 1 && depth - currentDepth >= 3), -beta, -alpha, true, inactiveColorMoves, isInactiveColorInCheck);
         if (evaluation == mateValue + 1)
             return -(mateValue + 1);
@@ -183,7 +182,7 @@ int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta
         if (!activeColorMoves[i].isCapture())
             break;
         makeMove(state, activeColorMoves[i]);
-        vector<Move> inactiveColorMoves = MoveGenerator::getMoves(state);
+        vector<Move> inactiveColorMoves = moveGenerator.getMoves(state);
         int evaluation = -quiescenceSearch(state, currentDepth + 1, -beta, -alpha, inactiveColorMoves);
         if (evaluation == mateValue + 1)
             return -(mateValue + 1);

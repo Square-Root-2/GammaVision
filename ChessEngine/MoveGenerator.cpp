@@ -237,3 +237,4 @@ vector<Move> MoveGenerator::getMoves(State& state) {
             }
     return moves;
 }
+
