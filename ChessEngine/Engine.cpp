@@ -55,6 +55,7 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
     sort(activeColorMoves.begin(), activeColorMoves.end(), MoveComparator(killerMoves[0], it != transpositionTable.end() ? get<3>(it->second) : move));
     Move optimalMove;
     int staticEvaluation = Evaluator::getEvaluation(state);
+    int searchedMoves = 0;
     for (int i = 0; i < activeColorMoves.size(); i++) {
         makeMove(state, activeColorMoves[i]);
         bool isInactiveColorInCheck = state.isActiveColorInCheck();
@@ -63,7 +64,7 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
             continue;
         }
         vector<Move> inactiveColorMoves = MoveGenerator::getMoves(state);
-        int evaluation = -negamax(state, 1, depth - (i >= 4 && activeColorMoves[i].isQuiet() && !isActiveColorInCheck && !isInactiveColorInCheck && inactiveColorMoves.size() != 1 && depth >= 3), -beta, -alpha, true, inactiveColorMoves, isInactiveColorInCheck);
+        int evaluation = -negamax(state, 1, depth - (searchedMoves++ >= 4 && activeColorMoves[i].isQuiet() && !isActiveColorInCheck && !isInactiveColorInCheck && inactiveColorMoves.size() != 1 && depth >= 3), -beta, -alpha, true, inactiveColorMoves, isInactiveColorInCheck);
         if (evaluation == mateValue + 1)
             return pair<Move, int>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
         if (evaluation > alpha)
@@ -99,10 +100,6 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
             return alpha;
         if (get<1>(it->second) == NodeType::PV_NODE)
             return get<2>(it->second);
-        if (get<1>(it->second) == NodeType::CUT_NODE)
-            alpha = max(alpha, get<2>(it->second));
-        else if (get<1>(it->second) == NodeType::ALL_NODE)
-            beta = min(beta, get<2>(it->second));
     }
     if (activeColorMoves.empty()) {
         transpositionTable[hashCode] = tuple<int, NodeType, int, Move>(MAXIMUM_NEGAMAX_DEPTH, NodeType::PV_NODE, isActiveColorInCheck ? -(mateValue - currentDepth) : 0, move);
@@ -132,6 +129,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
     }
     sort(activeColorMoves.begin(), activeColorMoves.end(), MoveComparator(killerMoves[currentDepth], it != transpositionTable.end() ? get<3>(it->second) : move));
     Move optimalMove;
+    int searchedMoves = 0;
     int staticEvaluation = Evaluator::getEvaluation(state);
     for (int i = 0; i < activeColorMoves.size(); i++) {
         makeMove(state, activeColorMoves[i]);
@@ -141,7 +139,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
             continue;
         }
         vector<Move> inactiveColorMoves = MoveGenerator::getMoves(state);
-        int evaluation = -negamax(state, currentDepth + 1, depth - (i >= 4 && activeColorMoves[i].isQuiet() && !isActiveColorInCheck && !isInactiveColorInCheck && inactiveColorMoves.size() != 1 && depth - currentDepth >= 3), -beta, -alpha, true, inactiveColorMoves, isInactiveColorInCheck);
+        int evaluation = -negamax(state, currentDepth + 1, depth - (searchedMoves++ >= 4 && activeColorMoves[i].isQuiet() && !isActiveColorInCheck && !isInactiveColorInCheck && inactiveColorMoves.size() != 1 && depth - currentDepth >= 3), -beta, -alpha, true, inactiveColorMoves, isInactiveColorInCheck);
         if (evaluation == mateValue + 1)
             return -(mateValue + 1);
         if (evaluation > alpha)
