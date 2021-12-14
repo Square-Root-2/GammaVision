@@ -153,7 +153,6 @@
   <ItemGroup>
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Evaluator.h" />
-    <ClInclude Include="NodeType.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="MoveComparator.h" />
     <ClInclude Include="MoveGenerator.h" />

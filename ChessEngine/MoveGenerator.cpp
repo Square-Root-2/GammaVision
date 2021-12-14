@@ -1,3 +1,4 @@
+#include <bitset>
 #include "MoveGenerator.h"
 #include "MoveType.h"
 
@@ -113,7 +114,7 @@ queue<Move> MoveGenerator::getPawnMoves(State& state, int i, int j) {
         state.setPiece(i, j, '.');
         state.setPiece(i + 2 * di[state.getActiveColor()], j, state.getActiveColor() ? 'p' : 'P');
         if (!state.isActiveColorInCheck())
-            pawnMoves.push(Move(i, j, i + 2 * di[state.getActiveColor()], j, MoveType::PAWN_FORWARD_TWO, state.getActiveColor() ? 'p' : 'P', '.'));
+            pawnMoves.push(Move(i, j, i + 2 * di[state.getActiveColor()], j, MoveType::PAWN_DOUBLE_PUSH, state.getActiveColor() ? 'p' : 'P', '.'));
         state.setPiece(i + 2 * di[state.getActiveColor()], j, '.');
         state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
     }
@@ -144,6 +145,11 @@ queue<Move> MoveGenerator::getPawnMoves(State& state, int i, int j) {
         state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
     }
     return pawnMoves;
+}
+queue<Move> MoveGenerator::getPawnSinglePushes(State& state) {
+    bitset<64> pawns(state.getActiveColorPawns() & (state.getActiveColor() ? ~state.getOccupiedSquares() >> 8 : ~state.getOccupiedSquares() << 8));
+    queue<Move> pawnSinglePushes;
+    return pawnSinglePushes;
 }
 queue<Move> MoveGenerator::getQueenMoves(State& state, int i, int j) {
     queue<Move> queenMoves;
@@ -188,6 +194,9 @@ queue<Move> MoveGenerator::getRookMoves(State& state, int i, int j) {
                 break;
         }
     return rookMoves;
+}
+unsigned long long MoveGenerator::shiftUp(unsigned long long bitboard, int k) {
+    return bitboards >> 
 }
 vector<Move> MoveGenerator::getMoves(State& state) {
     vector<Move> moves;

@@ -36,7 +36,7 @@ void Engine::makeMove(State& state, Move& move) {
         state.setCanActiveColorCastleKingside(false);
     else if (move.getType() == MoveType::ROOK_MOVE && abs(move.getBeginRow() - 3.5) == 3.5 && move.getBeginColumn() == 0)
         state.setCanActiveColorCastleQueenside(false);
-    if (move.getType() == MoveType::PAWN_FORWARD_TWO)
+    if (move.getType() == MoveType::PAWN_DOUBLE_PUSH)
         state.setPossibleEnPassantTargetColumn(move.getBeginColumn());
     else
         state.setPossibleEnPassantTargetColumn(-1);

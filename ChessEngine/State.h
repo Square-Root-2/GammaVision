@@ -7,8 +7,23 @@
 using namespace std;
 
 class State {
-    unsigned long long bitboards[12];
-    unordered_map<char, int> pieceToIndex = { {'P', 0}, {'p', 1}, {'N', 2}, {'n', 3}, {'B', 4}, {'b', 5}, {'R', 6}, {'r', 7}, {'Q', 8}, {'q', 9}, {'K', 10}, {'k', 11} };
+    enum BitboardType {
+        WHITE_PAWNS,
+        BLACK_PAWNS,
+        WHITE_KNIGHTS,
+        BLACK_KNIGHTS,
+        WHITE_BISHOPS,
+        BLACK_BISHOPS,
+        WHITE_ROOKS,
+        BLACK_ROOKS,
+        WHITE_QUEENS,
+        BLACK_QUEENS,
+        WHITE_KINGS,
+        BLACK_KINGS,
+        OCCUPIED
+    };
+    unsigned long long bitboards[13];
+    unordered_map<char, BitboardType> pieceToIndex = { {'P', WHITE_PAWNS}, {'p',  BLACK_PAWNS}, {'N',  WHITE_KNIGHTS}, {'n',  BLACK_KNIGHTS}, {'B',  WHITE_BISHOPS}, {'b',  BLACK_BISHOPS}, {'R',  WHITE_ROOKS}, {'r',  BLACK_ROOKS}, {'Q',  WHITE_QUEENS}, {'q',  BLACK_QUEENS}, {'K',  WHITE_KINGS}, {'k',  BLACK_KINGS} };
     tuple<string, bool, int, int> hashCode;
     bool isBishop(int i, int j);
     bool isBlackBishop(int i, int j);
@@ -34,6 +49,8 @@ public:
     bool canActiveColorCastleQueenside();
     bool getActiveColor();
     tuple<string, bool, int, int> getHashCode();
+    unsigned long long getActiveColorPawns();
+    unsigned long long getOccupiedSquares();
     char getPiece(int i, int j);
     int getPossibleEnPassantTargetColumn();
     int getPossibleEnPassantTargetRow();

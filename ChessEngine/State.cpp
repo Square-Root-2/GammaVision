@@ -56,13 +56,14 @@ bool State::isWhiteRook(int i, int j) {
     return bitboards[pieceToIndex['R']] & (unsigned long long)1 << (8 * i + j);
 }
 State::State(string FEN) {
-    for (int k = 0; k < 12; k++)
+    for (int k = 0; k < 13; k++)
         bitboards[k] = 0;
     reverse(FEN.begin(), FEN.end());
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; ) {
             if (isalpha(FEN[FEN.size() - 1])) {
                 bitboards[pieceToIndex[FEN[FEN.size() - 1]]] += (unsigned long long)1 << (8 * i + j);
+                bitboards[OCCUPIED] += (unsigned long long)1 << (8 * i + j);
                 get<0>(hashCode) += FEN[FEN.size() - 1];
                 j++;
             }
@@ -117,6 +118,12 @@ bool State::getActiveColor() {
 }
 tuple<string, bool, int, int> State::getHashCode() {
     return hashCode;
+}
+unsigned long long State::getActiveColorPawns() {
+    return bitboards[getActiveColor() ? BLACK_PAWNS : WHITE_PAWNS];
+}
+unsigned long long State::getOccupiedSquares() {
+    return bitboards[OCCUPIED];
 }
 char State::getPiece(int i, int j) {
     return get<0>(hashCode)[8 * i + j];
@@ -229,21 +236,26 @@ void State::setCanActiveColorCastleQueenside(bool canActiveColorCastleQueenside)
     get<2>(hashCode) += (4 - 3 * getActiveColor()) * (canActiveColorCastleQueenside - ((get<2>(hashCode) & 1 << (2 - 2 * getActiveColor())) > 0));
 }
 void State::setHashCode(tuple<string, bool, int, int> hashCode) {
-    for (int k = 0; k < 12; k++)
+    for (int k = 0; k < 13; k++)
         bitboards[k] = 0;
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++) {
             if (get<0>(hashCode)[8 * i + j] == '.')
                 continue;
             bitboards[pieceToIndex[get<0>(hashCode)[8 * i + j]]] += (unsigned long long)1 << (8 * i + j);
+            bitboards[OCCUPIED] += (unsigned long long)1 << (8 * i + j);
         }
     this->hashCode = hashCode;
 }
 void State::setPiece(int i, int j, char piece) {
-    if (isPiece(i, j))
+    if (isPiece(i, j)) {
         bitboards[pieceToIndex[getPiece(i, j)]] -= (unsigned long long)1 << (8 * i + j);
-    if (piece != '.')
+        bitboards[OCCUPIED] -= (unsigned long long)1 << (8 * i + j);
+    }
+    if (piece != '.') {
         bitboards[pieceToIndex[piece]] += (unsigned long long)1 << (8 * i + j);
+        bitboards[OCCUPIED] += (unsigned long long)1 << (8 * i + j);
+    }
     get<0>(hashCode)[8 * i + j] = piece;
 }
 void State::setPossibleEnPassantTargetColumn(int possibleEnPassantTargetColumn) {

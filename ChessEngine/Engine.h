@@ -5,13 +5,17 @@
 #include <map>
 #include "Move.h"
 #include "MoveGenerator.h"
-#include "NodeType.h"
 #include "State.h"
 #include <unordered_set>
 
 using namespace std;
 
 class Engine {
+    enum class NodeType {
+        ALL_NODE,
+        CUT_NODE,
+        PV_NODE
+    };
     static const int DR = 4, MAXIMUM_NEGAMAX_DEPTH = 30, MAXIMUM_QUIESCENCE_DEPTH = 30, MAXIMUM_R = 4, MINIMUM_R = 3;
     unordered_set<Move> killerMoves[MAXIMUM_NEGAMAX_DEPTH + 1];
     int mateValue = Evaluator::getMaximumEvaluation() + MAXIMUM_NEGAMAX_DEPTH + MAXIMUM_QUIESCENCE_DEPTH + 1;

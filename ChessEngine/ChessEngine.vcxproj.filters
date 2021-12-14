@@ -59,9 +59,6 @@
     <ClInclude Include="MoveComparator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NodeType.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ChessEngine.rc">
