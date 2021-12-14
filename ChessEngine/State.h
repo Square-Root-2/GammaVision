@@ -2,17 +2,32 @@
 
 #include <string>
 #include <tuple>
+#include <unordered_map>
 
 using namespace std;
 
 class State {
+    unsigned long long bitboards[12];
+    unordered_map<char, int> pieceToIndex = { {'P', 0}, {'p', 1}, {'N', 2}, {'n', 3}, {'B', 4}, {'b', 5}, {'R', 6}, {'r', 7}, {'Q', 8}, {'q', 9}, {'K', 10}, {'k', 11} };
     tuple<string, bool, int, int> hashCode;
     bool isBishop(int i, int j);
+    bool isBlackBishop(int i, int j);
+    bool isWhiteBishop(int i, int j);
+    bool isBlackKing(int i, int j);
     bool isKing(int i, int j);
+    bool isWhiteKing(int i, int j);
+    bool isBlackKnight(int i, int j);
     bool isKnight(int i, int j);
+    bool isWhiteKnight(int i, int j);
+    bool isBlackPawn(int i, int j);
     bool isPawn(int i, int j);
+    bool isWhitePawn(int i, int j);
+    bool isBlackQueen(int i, int j);
     bool isQueen(int i, int j);
+    bool isWhiteQueen(int i, int j);
+    bool isBlackRook(int i, int j);
     bool isRook(int i, int j);
+    bool isWhiteRook(int i, int j);
 public:
     State(string FEN);
     bool canActiveColorCastleKingside();
