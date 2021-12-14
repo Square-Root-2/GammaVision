@@ -1,4 +1,3 @@
-#include <bitset>
 #include "MoveGenerator.h"
 #include "MoveType.h"
 
@@ -147,8 +146,13 @@ queue<Move> MoveGenerator::getPawnMoves(State& state, int i, int j) {
     return pawnMoves;
 }
 queue<Move> MoveGenerator::getPawnSinglePushes(State& state) {
-    bitset<64> pawns(state.getActiveColorPawns() & (state.getActiveColor() ? ~state.getOccupiedSquares() >> 8 : ~state.getOccupiedSquares() << 8));
+    unsigned long long pawns = state.getActiveColorPawns() & (state.getActiveColor() ? ~state.getOccupiedSquares() >> 8 : ~state.getOccupiedSquares() << 8);
     queue<Move> pawnSinglePushes;
+    while (pawns > 0) {
+        unsigned long i;
+        _BitScanForward(&i, pawns);
+
+    }
     return pawnSinglePushes;
 }
 queue<Move> MoveGenerator::getQueenMoves(State& state, int i, int j) {
