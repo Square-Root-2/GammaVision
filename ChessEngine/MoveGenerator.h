@@ -9,6 +9,8 @@ class MoveGenerator {
     queue<Move> getKingMoves(State& state, int i, int j);
     queue<Move> getKnightMoves(State& state, int i, int j);
     queue<Move> getPawnMoves(State& state, int i, int j);
+    queue<Move> getPawnCaptures(State& state);
+    queue<Move> getPawnDoublePushes(State& state);
     queue<Move> getPawnSinglePushes(State& state);
     queue<Move> getQueenMoves(State& state, int i, int j);
     queue<Move> getRookMoves(State& state, int i, int j);

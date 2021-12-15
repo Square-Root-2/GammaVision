@@ -63,7 +63,6 @@ State::State(string FEN) {
         for (int j = 0; j < 8; ) {
             if (isalpha(FEN[FEN.size() - 1])) {
                 bitboards[pieceToIndex[FEN[FEN.size() - 1]]] += (unsigned long long)1 << (8 * i + j);
-                bitboards[OCCUPIED] += (unsigned long long)1 << (8 * i + j);
                 get<0>(hashCode) += FEN[FEN.size() - 1];
                 j++;
             }
@@ -122,8 +121,11 @@ tuple<string, bool, int, int> State::getHashCode() {
 unsigned long long State::getActiveColorPawns() {
     return bitboards[getActiveColor() ? BLACK_PAWNS : WHITE_PAWNS];
 }
-unsigned long long State::getOccupiedSquares() {
-    return bitboards[OCCUPIED];
+unsigned long long State::getEmptySquares() {
+    unsigned long long emptySquares = ULLONG_MAX;
+    for (int i = 0; i < 12; i++)
+        emptySquares &= ~bitboards[i];
+    return emptySquares;
 }
 char State::getPiece(int i, int j) {
     return get<0>(hashCode)[8 * i + j];
@@ -243,19 +245,14 @@ void State::setHashCode(tuple<string, bool, int, int> hashCode) {
             if (get<0>(hashCode)[8 * i + j] == '.')
                 continue;
             bitboards[pieceToIndex[get<0>(hashCode)[8 * i + j]]] += (unsigned long long)1 << (8 * i + j);
-            bitboards[OCCUPIED] += (unsigned long long)1 << (8 * i + j);
         }
     this->hashCode = hashCode;
 }
 void State::setPiece(int i, int j, char piece) {
-    if (isPiece(i, j)) {
+    if (isPiece(i, j))
         bitboards[pieceToIndex[getPiece(i, j)]] -= (unsigned long long)1 << (8 * i + j);
-        bitboards[OCCUPIED] -= (unsigned long long)1 << (8 * i + j);
-    }
-    if (piece != '.') {
+    if (piece != '.')
         bitboards[pieceToIndex[piece]] += (unsigned long long)1 << (8 * i + j);
-        bitboards[OCCUPIED] += (unsigned long long)1 << (8 * i + j);
-    }
     get<0>(hashCode)[8 * i + j] = piece;
 }
 void State::setPossibleEnPassantTargetColumn(int possibleEnPassantTargetColumn) {

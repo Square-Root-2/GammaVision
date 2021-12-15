@@ -20,9 +20,8 @@ class State {
         BLACK_QUEENS,
         WHITE_KINGS,
         BLACK_KINGS,
-        OCCUPIED
     };
-    unsigned long long bitboards[13];
+    unsigned long long bitboards[12];
     unordered_map<char, BitboardType> pieceToIndex = { {'P', WHITE_PAWNS}, {'p',  BLACK_PAWNS}, {'N',  WHITE_KNIGHTS}, {'n',  BLACK_KNIGHTS}, {'B',  WHITE_BISHOPS}, {'b',  BLACK_BISHOPS}, {'R',  WHITE_ROOKS}, {'r',  BLACK_ROOKS}, {'Q',  WHITE_QUEENS}, {'q',  BLACK_QUEENS}, {'K',  WHITE_KINGS}, {'k',  BLACK_KINGS} };
     tuple<string, bool, int, int> hashCode;
     bool isBishop(int i, int j);
@@ -50,7 +49,7 @@ public:
     bool getActiveColor();
     tuple<string, bool, int, int> getHashCode();
     unsigned long long getActiveColorPawns();
-    unsigned long long getOccupiedSquares();
+    unsigned long long getEmptySquares();
     char getPiece(int i, int j);
     int getPossibleEnPassantTargetColumn();
     int getPossibleEnPassantTargetRow();

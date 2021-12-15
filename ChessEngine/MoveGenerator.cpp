@@ -145,9 +145,47 @@ queue<Move> MoveGenerator::getPawnMoves(State& state, int i, int j) {
     }
     return pawnMoves;
 }
+queue<Move> MoveGenerator::getPawnDoublePushes(State& state) {
+    unsigned long long pawns = state.getActiveColorPawns() & (state.getActiveColor() ? 0x0000000000FF00 & state.getEmptySquares() >> 8 & state.getEmptySquares() >> 16: 0x00FF0000000000 & state.getEmptySquares() << 8 & state.getEmptySquares() << 16);
+    queue<Move> pawnDoublePushes;
+    while (pawns > 0) {
+        unsigned long k;
+        _BitScanForward(&k, pawns);
+        int i = k / 8;
+        int j = k % 8;
+        state.setPiece(i, j, '.');
+        state.setPiece(i + 2 * (state.getActiveColor() ? 1 : -1), j, state.getActiveColor() ? 'p' : 'P');
+        if (!state.isActiveColorInCheck())
+            pawnDoublePushes.push(Move(i, j, i + 2 * (state.getActiveColor() ? 1 : -1), j, MoveType::PAWN_DOUBLE_PUSH, state.getActiveColor() ? 'p' : 'P', '.'));
+        state.setPiece(i + 2 * (state.getActiveColor() ? 1 : -1), j, '.');
+        state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
+        pawns -= (unsigned long long)1 << k;
+    }
+    return pawnDoublePushes;
+}
 queue<Move> MoveGenerator::getPawnSinglePushes(State& state) {
-    unsigned long long pawns = state.getActiveColorPawns() & (state.getActiveColor() ? ~state.getOccupiedSquares() >> 8 : ~state.getOccupiedSquares() << 8);
+    unsigned long long pawns = state.getActiveColorPawns() & (state.getActiveColor() ? state.getEmptySquares() >> 8 : state.getEmptySquares() << 8);
     queue<Move> pawnSinglePushes;
+    while (pawns > 0) {
+        unsigned long k;
+        _BitScanForward(&k, pawns);
+        int i = k / 8;
+        int j = k % 8;
+        state.setPiece(i, j, '.');
+        state.setPiece(i + (state.getActiveColor() ? 1 : -1), j, state.getActiveColor() ? 'p' : 'P');
+        if (!state.isActiveColorInCheck()) {
+            if (abs((i + (state.getActiveColor() ? 1 : -1)) - 3.5) == 3.5) {
+                MoveType moveTypes[4] = { MoveType::PROMOTION_TO_BISHOP, MoveType::PROMOTION_TO_KNIGHT, MoveType::PROMOTION_TO_QUEEN, MoveType::PROMOTION_TO_ROOK };
+                for (int k = 0; k < 4; k++)
+                    pawnSinglePushes.push(Move(i, j, i + (state.getActiveColor() ? 1 : -1), j, moveTypes[k], state.getActiveColor() ? 'p' : 'P', '.'));
+            }
+            else
+                pawnSinglePushes.push(Move(i, j, i + (state.getActiveColor() ? 1 : -1), j, MoveType::NORMAL, state.getActiveColor() ? 'p' : 'P', '.'));
+        }
+        state.setPiece(i + (state.getActiveColor() ? 1 : -1), j, '.');
+        state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
+        pawns -= (unsigned long long)1 << k;
+    }
     return pawnSinglePushes;
 }
 queue<Move> MoveGenerator::getQueenMoves(State& state, int i, int j) {
