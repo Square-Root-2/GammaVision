@@ -49,8 +49,8 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     map<tuple<string, bool, int, int>, tuple<int, NodeType, int, Move>>::iterator it = transpositionTable.find(hashCode);
     bool isActiveColorInCheck = state.isActiveColorInCheck();
-    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    shuffle(activeColorMoves.begin(), activeColorMoves.end(), rng);
+    //mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    //shuffle(activeColorMoves.begin(), activeColorMoves.end(), rng);
     sort(activeColorMoves.begin(), activeColorMoves.end(), MoveComparator(killerMoves[0], it != transpositionTable.end() ? get<3>(it->second) : move));
     Move optimalMove;
     int staticEvaluation = Evaluator::getEvaluation(state);
@@ -218,4 +218,19 @@ tuple<Move, int, int> Engine::getOptimalMove(string& FEN, int seconds) {
         optimalMove = move;
     }
     return tuple<Move, int, int>(optimalMove.first, optimalMove.second, MAXIMUM_NEGAMAX_DEPTH);
+}
+int Engine::perft(State& state, int depth) {
+    vector<Move> activeColorMoves = moveGenerator.getMoves(state);
+    if (activeColorMoves.empty())
+        return 1;
+    if (depth == 0)
+        return 1;
+    int nodes = 0;
+    tuple<string, bool, int, int> hashCode = state.getHashCode();
+    for (int i = 0; i < activeColorMoves.size(); i++) {
+        makeMove(state, activeColorMoves[i]);
+        nodes += perft(state, depth - 1);
+        state.setHashCode(hashCode);
+    }
+    return nodes;
 }

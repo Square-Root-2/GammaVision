@@ -56,7 +56,7 @@ bool State::isWhiteRook(int i, int j) {
     return bitboards[pieceToIndex['R']] & (unsigned long long)1 << (8 * i + j);
 }
 State::State(string FEN) {
-    for (int k = 0; k < 13; k++)
+    for (int k = 0; k < 12; k++)
         bitboards[k] = 0;
     reverse(FEN.begin(), FEN.end());
     for (int i = 0; i < 8; i++) {
@@ -118,14 +118,35 @@ bool State::getActiveColor() {
 tuple<string, bool, int, int> State::getHashCode() {
     return hashCode;
 }
+unsigned long long State::getActiveColorKnights() {
+    return bitboards[getActiveColor() ? BLACK_KNIGHTS : WHITE_KNIGHTS];
+}
 unsigned long long State::getActiveColorPawns() {
     return bitboards[getActiveColor() ? BLACK_PAWNS : WHITE_PAWNS];
+}
+unsigned long long State::getActiveColorPieces() {
+    unsigned long long activeColorPieces = 0;
+    for (int i = 0; i < 12; i++) {
+        if (i % 2 != (getActiveColor() ? 1 : 0))
+            continue;
+        activeColorPieces |= bitboards[i];
+    }
+    return activeColorPieces;
 }
 unsigned long long State::getEmptySquares() {
     unsigned long long emptySquares = ULLONG_MAX;
     for (int i = 0; i < 12; i++)
         emptySquares &= ~bitboards[i];
     return emptySquares;
+}
+unsigned long long State::getInactiveColorPieces() {
+    unsigned long long inactiveColorPieces = 0;
+    for (int i = 0; i < 12; i++) {
+        if (i % 2 == (getActiveColor() ? 1 : 0))
+            continue;
+        inactiveColorPieces |= bitboards[i];
+    }
+    return inactiveColorPieces;
 }
 char State::getPiece(int i, int j) {
     return get<0>(hashCode)[8 * i + j];
@@ -188,6 +209,7 @@ bool State::isActiveColorInCheck() {
             }
             return false;
         }
+    return false;
 }
 bool State::isActiveColorKing(int i, int j) {
     return getActiveColor() ? isBlackKing(i, j) : isWhiteKing(i, j);
@@ -238,7 +260,7 @@ void State::setCanActiveColorCastleQueenside(bool canActiveColorCastleQueenside)
     get<2>(hashCode) += (4 - 3 * getActiveColor()) * (canActiveColorCastleQueenside - ((get<2>(hashCode) & 1 << (2 - 2 * getActiveColor())) > 0));
 }
 void State::setHashCode(tuple<string, bool, int, int> hashCode) {
-    for (int k = 0; k < 13; k++)
+    for (int k = 0; k < 12; k++)
         bitboards[k] = 0;
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++) {

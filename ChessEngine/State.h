@@ -48,8 +48,11 @@ public:
     bool canActiveColorCastleQueenside();
     bool getActiveColor();
     tuple<string, bool, int, int> getHashCode();
+    unsigned long long getActiveColorKnights();
     unsigned long long getActiveColorPawns();
+    unsigned long long getActiveColorPieces();
     unsigned long long getEmptySquares();
+    unsigned long long getInactiveColorPieces();
     char getPiece(int i, int j);
     int getPossibleEnPassantTargetColumn();
     int getPossibleEnPassantTargetRow();

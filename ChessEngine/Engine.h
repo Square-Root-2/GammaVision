@@ -31,4 +31,5 @@ class Engine {
 public:
     int getMateValue();
     tuple<Move, int, int> getOptimalMove(string& FEN, int seconds);
+    int perft(State& state, int depth);
 };
