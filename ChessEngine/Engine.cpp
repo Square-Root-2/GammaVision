@@ -204,7 +204,15 @@ tuple<Move, int, int> Engine::getOptimalMove(string& FEN, int seconds) {
     State state(FEN);
     for (int depth = 1; depth <= MAXIMUM_NEGAMAX_DEPTH; depth++) {
         State state(FEN);
-        pair<Move, int> move = negamax(state, depth, -INT32_MAX, INT32_MAX);
+        int alpha = optimalMove.second - 25;
+        int beta = optimalMove.second + 25;
+        pair<Move, int> move = negamax(state, depth, alpha, beta);
+        if (move.first.getType() == MoveType::TIMEOUT)
+            return tuple<Move, int, int>(optimalMove.first, optimalMove.second, depth - 1);
+        if (move.second == alpha)
+            move = negamax(state, depth, -INT32_MAX, alpha + 1);
+        else if (move.second == beta)
+            move = negamax(state, depth, beta - 1, INT32_MAX);
         if (move.first.getType() == MoveType::TIMEOUT)
             return tuple<Move, int, int>(optimalMove.first, optimalMove.second, depth - 1);
         optimalMove = move;

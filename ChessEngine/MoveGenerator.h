@@ -12,7 +12,6 @@ class MoveGenerator {
     queue<Move> getPawnSinglePushes(State& state);
     queue<Move> getQueenMoves(State& state, int i, int j);
     queue<Move> getRookMoves(State& state, int i, int j);
-    unsigned long long shiftUp(unsigned long long bitboard, int k);
 public:
     vector<Move> getMoves(State& state);
 };
