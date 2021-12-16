@@ -219,13 +219,13 @@ tuple<Move, int, int> Engine::getOptimalMove(string& FEN, int seconds) {
     }
     return tuple<Move, int, int>(optimalMove.first, optimalMove.second, MAXIMUM_NEGAMAX_DEPTH);
 }
-int Engine::perft(State& state, int depth) {
+unsigned long long Engine::perft(State& state, int depth) {
     vector<Move> activeColorMoves = moveGenerator.getMoves(state);
     if (activeColorMoves.empty())
         return 1;
     if (depth == 0)
         return 1;
-    int nodes = 0;
+    unsigned long long nodes = 0;
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < activeColorMoves.size(); i++) {
         makeMove(state, activeColorMoves[i]);

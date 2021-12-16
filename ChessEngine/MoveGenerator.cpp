@@ -1,8 +1,27 @@
 #include "MoveGenerator.h"
 #include "MoveType.h"
 
-void MoveGenerator::generateBishopAttackSets() {
-
+void MoveGenerator::generateEastAttackSets() {
+    for (int i = 0; i < 8; i++) {
+        unsigned long long eastAttackSet = 0;
+        for (int j = 7; j >= 0; j--) {
+            slidingPieceAttackSets[EAST][8 * i + j] = eastAttackSet;
+            eastAttackSet |= (unsigned long long)1 << (8 * i + j);
+        }
+    }
+}
+void MoveGenerator::generateKingAttackSets() {
+    int di[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
+    int dj[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++) {
+            kingAttackSets[8 * i + j] = 0;
+            for (int k = 0; k < 8; k++) {
+                if (i + di[k] < 0 || i + di[k] >= 8 || j + dj[k] < 0 || j + dj[k] >= 8)
+                    continue;
+                kingAttackSets[8 * i + j] |= (unsigned long long)1 << (8 * (i + di[k]) + (j + dj[k]));
+            }
+        }
 }
 void MoveGenerator::generateKnightAttackSets() {
     int di[8] = { -2, -1, 1, 2, 2, 1, -1, -2 };
@@ -15,6 +34,63 @@ void MoveGenerator::generateKnightAttackSets() {
             if (i + di[l] < 0 || i + di[l] >= 8 || j + dj[l] < 0 || j + dj[l] >= 8)
                 continue;
             knightAttackSets[k] |= (unsigned long long)1 << (8 * (i + di[l]) + (j + dj[l]));
+        }
+    }
+}
+void MoveGenerator::generateNorthAttackSets() {
+    for (int j = 0; j < 8; j++) {
+        unsigned long long northAttackSet = 0;
+        for (int i = 0; i < 8; i++) {
+            slidingPieceAttackSets[NORTH][8 * i + j] = northAttackSet;
+            northAttackSet |= (unsigned long long)1 << (8 * i + j);
+        }
+    }
+}
+void MoveGenerator::generateNortheastAttackSets() {
+    for (int k = 0; k < 8; k++) {
+        unsigned long long northeastAttackSet = 0;
+        int i = 0;
+        int j = k;
+        while (i < 8 && j >= 0) {
+            slidingPieceAttackSets[NORTHEAST][8 * i + j] = northeastAttackSet;
+            northeastAttackSet |= (unsigned long long)1 << (8 * i + j);
+            i++;
+            j--;
+        }
+    }
+    for (int k = 1; k < 8; k++) {
+        unsigned long long northeastAttackSet = 0;
+        int i = k;
+        int j = 7;
+        while (i < 8 && j >= 0) {
+            slidingPieceAttackSets[NORTHEAST][8 * i + j] = northeastAttackSet;
+            northeastAttackSet |= (unsigned long long)1 << (8 * i + j);
+            i++;
+            j--;
+        }
+    }
+}
+void MoveGenerator::generateNorthwestAttackSets() {
+    for (int k = 0; k < 8; k++) {
+        unsigned long long northwestAttackSet = 0;
+        int i = 0;
+        int j = k;
+        while (i < 8 && j < 8) {
+            slidingPieceAttackSets[NORTHWEST][8 * i + j] = northwestAttackSet;
+            northwestAttackSet |= (unsigned long long)1 << (8 * i + j);
+            i++;
+            j++;
+        }
+    }
+    for (int k = 1; k < 8; k++) {
+        unsigned long long northwestAttackSet = 0;
+        int i = k;
+        int j = 0;
+        while (i < 8 && j < 8) {
+            slidingPieceAttackSets[NORTHWEST][8 * i + j] = northwestAttackSet;
+            northwestAttackSet |= (unsigned long long)1 << (8 * i + j);
+            i++;
+            j++;
         }
     }
 }
@@ -33,27 +109,187 @@ void MoveGenerator::generatePawnAttackSets() {
             }
         }
 }
-queue<Move> MoveGenerator::getBishopMoves(State& state, int i, int j) {
-    queue<Move> bishopMoves;
-    int di[4] = { -1, 1, 1, -1 };
-    int dj[4] = { 1, 1, -1, -1 };
-    for (int k = 0; k < 4; k++)
-        for (int l = 1; ; l++) {
-            if (i + l * di[k] < 0 || i + l * di[k] >= 8 || j + l * dj[k] < 0 || j + l * dj[k] >= 8)
-                break;
-            if (state.isActiveColorPiece(i + l * di[k], j + l * dj[k]))
-                break;
-            char piece = state.getPiece(i + l * di[k], j + l * dj[k]);
-            state.setPiece(i, j, '.');
-            state.setPiece(i + l * di[k], j + l * dj[k], state.getActiveColor() ? 'b' : 'B');
-            if (!state.isActiveColorInCheck())
-                bishopMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], MoveType::NORMAL, state.getActiveColor() ? 'b' : 'B', piece));
-            state.setPiece(i + l * di[k], j + l * dj[k], piece);
-            state.setPiece(i, j, state.getActiveColor() ? 'b' : 'B');
-            if (state.isPiece(i + l * di[k], j + l * dj[k]))
-                break;
+void MoveGenerator::generateSlidingPieceAttackSets() {
+    generateNorthAttackSets();
+    generateNortheastAttackSets();
+    generateEastAttackSets();
+    generateSoutheastAttackSets();
+    generateSouthAttackSets();
+    generateSouthwestAttackSets();
+    generateWestAttackSets();
+    generateNorthwestAttackSets();
+}
+void MoveGenerator::generateSouthAttackSets() {
+    for (int j = 0; j < 8; j++) {
+        unsigned long long southAttackSet = 0;
+        for (int i = 7; i >= 0; i--) {
+            slidingPieceAttackSets[SOUTH][8 * i + j] = southAttackSet;
+            southAttackSet |= (unsigned long long)1 << (8 * i + j);
         }
-    return bishopMoves;
+    }
+}
+void MoveGenerator::generateSoutheastAttackSets() {
+    for (int k = 0; k < 8; k++) {
+        unsigned long long southeastAttackSet = 0;
+        int i = 7;
+        int j = k;
+        while (i >= 0 && j >= 0) {
+            slidingPieceAttackSets[SOUTHEAST][8 * i + j] = southeastAttackSet;
+            southeastAttackSet |= (unsigned long long)1 << (8 * i + j);
+            i--;
+            j--;
+        }
+    }
+    for (int k = 0; k < 7; k++) {
+        unsigned long long southeastAttackSet = 0;
+        int i = k;
+        int j = 7;
+        while (i >= 0 && j >= 0) {
+            slidingPieceAttackSets[SOUTHEAST][8 * i + j] = southeastAttackSet;
+            southeastAttackSet |= (unsigned long long)1 << (8 * i + j);
+            i--;
+            j--;
+        }
+    }
+}
+void MoveGenerator::generateSouthwestAttackSets() {
+    for (int k = 0; k < 8; k++) {
+        unsigned long long southwestAttackSet = 0;
+        int i = 7;
+        int j = k;
+        while (i >= 0 && j < 8) {
+            slidingPieceAttackSets[SOUTHWEST][8 * i + j] = southwestAttackSet;
+            southwestAttackSet |= (unsigned long long)1 << (8 * i + j);
+            i--;
+            j++;
+        }
+    }
+    for (int k = 0; k < 7; k++) {
+        unsigned long long southwestAttackSet = 0;
+        int i = k;
+        int j = 0;
+        while (i >= 0 && j < 8) {
+            slidingPieceAttackSets[SOUTHWEST][8 * i + j] = southwestAttackSet;
+            southwestAttackSet |= (unsigned long long)1 << (8 * i + j);
+            i--;
+            j++;
+        }
+    }
+}
+void MoveGenerator::generateWestAttackSets() {
+    for (int i = 0; i < 8; i++) {
+        unsigned long long westAttackSet = 0;
+        for (int j = 0; j < 8; j++) {
+            slidingPieceAttackSets[WEST][8 * i + j] = westAttackSet;
+            westAttackSet |= (unsigned long long)1 << (8 * i + j);
+        }
+    }
+}
+queue<Move> MoveGenerator::getCastlings(State& state) {
+    queue<Move> castlings;
+    if (state.isActiveColorInCheck())
+        return castlings;
+    if (state.canActiveColorCastleKingside() && !state.isPiece(state.getActiveColor() ? 0 : 7, 5) && !state.isPiece(state.getActiveColor() ? 0 : 7, 6)) {
+        state.setPiece(state.getActiveColor() ? 0 : 7, 4, '.');
+        state.setPiece(state.getActiveColor() ? 0 : 7, 5, state.getActiveColor() ? 'k' : 'K');
+        if (!state.isActiveColorInCheck()) {
+            state.setPiece(state.getActiveColor() ? 0 : 7, 5, '.');
+            state.setPiece(state.getActiveColor() ? 0 : 7, 6, state.getActiveColor() ? 'k' : 'K');
+            if (!state.isActiveColorInCheck())
+                castlings.push(Move(state.getActiveColor() ? 0 : 7, 4, state.getActiveColor() ? 0 : 7, 6, MoveType::KINGSIDE_CASTLE, state.getActiveColor() ? 'k' : 'K', '.'));
+            state.setPiece(state.getActiveColor() ? 0 : 7, 6, '.');
+            state.setPiece(state.getActiveColor() ? 0 : 7, 5, state.getActiveColor() ? 'k' : 'K');
+        }
+        state.setPiece(state.getActiveColor() ? 0 : 7, 5, '.');
+        state.setPiece(state.getActiveColor() ? 0 : 7, 4, state.getActiveColor() ? 'k' : 'K');
+    }
+    if (state.canActiveColorCastleQueenside() && !state.isPiece(state.getActiveColor() ? 0 : 7, 1) && !state.isPiece(state.getActiveColor() ? 0 : 7, 2) && !state.isPiece(state.getActiveColor() ? 0 : 7, 3)) {
+        state.setPiece(state.getActiveColor() ? 0 : 7, 4, '.');
+        state.setPiece(state.getActiveColor() ? 0 : 7, 3, state.getActiveColor() ? 'k' : 'K');
+        if (!state.isActiveColorInCheck()) {
+            state.setPiece(state.getActiveColor() ? 0 : 7, 3, '.');
+            state.setPiece(state.getActiveColor() ? 0 : 7, 2, state.getActiveColor() ? 'k' : 'K');
+            if (!state.isActiveColorInCheck())
+                castlings.push(Move(state.getActiveColor() ? 0 : 7, 4, state.getActiveColor() ? 0 : 7, 2, MoveType::QUEENSIDE_CASTLE, state.getActiveColor() ? 'k' : 'K', '.'));
+            state.setPiece(state.getActiveColor() ? 0 : 7, 2, '.');
+            state.setPiece(state.getActiveColor() ? 0 : 7, 3, state.getActiveColor() ? 'k' : 'K');
+        }
+        state.setPiece(state.getActiveColor() ? 0 : 7, 3, '.');
+        state.setPiece(state.getActiveColor() ? 0 : 7, 4, state.getActiveColor() ? 'k' : 'K');
+    }
+    return castlings;
+}
+queue<Move> MoveGenerator::getColumnAttackerMoves(State& state) {
+    queue<Move> columnAttackerMoves;
+    unsigned long long columnAttackers = state.getActiveColorColumnAttackers();
+    while (columnAttackers > 0) {
+        unsigned long m;
+        _BitScanForward64(&m, columnAttackers);
+        int i = m / 8;
+        int j = m % 8;
+        unsigned long long columnAttackerAttackSet = getNorthAttackSet(state, i, j) | getEastAttackSet(state, i, j) | getSouthAttackSet(state, i, j) | getWestAttackSet(state, i, j);
+        while (columnAttackerAttackSet > 0) {
+            unsigned long n;
+            _BitScanForward64(&n, columnAttackerAttackSet);
+            int k = n / 8;
+            int l = n % 8;
+            if (state.isActiveColorPiece(k, l)) {
+                columnAttackerAttackSet -= (unsigned long long)1 << n;
+                continue;
+            }
+            char activeColorPiece = state.getPiece(i, j);
+            char inactiveColorPiece = state.getPiece(k, l);
+            state.setPiece(i, j, '.');
+            state.setPiece(k, l, activeColorPiece);
+            if (!state.isActiveColorInCheck())
+                columnAttackerMoves.push(Move(i, j, k, l, MoveType::NORMAL, activeColorPiece, inactiveColorPiece));
+            state.setPiece(k, l, inactiveColorPiece);
+            state.setPiece(i, j, activeColorPiece);
+            columnAttackerAttackSet -= (unsigned long long)1 << n;
+        }
+        columnAttackers -= (unsigned long long)1 << m;
+    }
+    return columnAttackerMoves;
+}
+queue<Move> MoveGenerator::getDiagonalAttackerMoves(State& state) {
+    queue<Move> diagonalAttackerMoves;
+    unsigned long long diagonalAttackers = state.getActiveColorDiagonalAttackers();
+    while (diagonalAttackers > 0) {
+        unsigned long m;
+        _BitScanForward64(&m, diagonalAttackers);
+        int i = m / 8;
+        int j = m % 8;
+        unsigned long long diagonalAttackerAttackSet = getNortheastAttackSet(state, i, j) | getSoutheastAttackSet(state, i, j) | getSouthwestAttackSet(state, i, j) | getNorthwestAttackSet(state, i, j);
+        while (diagonalAttackerAttackSet > 0) {
+            unsigned long n;
+            _BitScanForward64(&n, diagonalAttackerAttackSet);
+            int k = n / 8;
+            int l = n % 8;
+            if (state.isActiveColorPiece(k, l)) {
+                diagonalAttackerAttackSet -= (unsigned long long)1 << n;
+                continue;
+            }
+            char activeColorPiece = state.getPiece(i, j);
+            char inactiveColorPiece = state.getPiece(k, l);
+            state.setPiece(i, j, '.');
+            state.setPiece(k, l, activeColorPiece);
+            if (!state.isActiveColorInCheck())
+                diagonalAttackerMoves.push(Move(i, j, k, l, MoveType::NORMAL, activeColorPiece, inactiveColorPiece));
+            state.setPiece(k, l, inactiveColorPiece);
+            state.setPiece(i, j, activeColorPiece);
+            diagonalAttackerAttackSet -= (unsigned long long)1 << n;
+        }
+        diagonalAttackers -= (unsigned long long)1 << m;
+    }
+    return diagonalAttackerMoves;
+}
+unsigned long long MoveGenerator::getEastAttackSet(State& state, int i, int j) {
+    unsigned long long eastAttackSet = slidingPieceAttackSets[EAST][8 * i + j];
+    unsigned long k;
+    if (_BitScanForward64(&k, slidingPieceAttackSets[EAST][8 * i + j] & ~state.getEmptySquares()) == 0)
+        return eastAttackSet;
+    eastAttackSet &= ~slidingPieceAttackSets[EAST][k];
+    return eastAttackSet;
 }
 queue<Move> MoveGenerator::getEnPassants(State& state) {
     queue<Move> enPassants;
@@ -74,52 +310,30 @@ queue<Move> MoveGenerator::getEnPassants(State& state) {
     }
     return enPassants;
 }
-queue<Move> MoveGenerator::getKingMoves(State& state, int i, int j) {
+queue<Move> MoveGenerator::getKingMoves(State& state) {
     queue<Move> kingMoves;
-    int di[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
-    int dj[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
-    for (int k = 0; k < 8; k++) {
-        if (i + di[k] < 0 || i + di[k] >= 8 || j + dj[k] < 0 || j + dj[k] >= 8)
-            continue;
-        if (state.isActiveColorPiece(i + di[k], j + dj[k]))
-            continue;
-        char piece = state.getPiece(i + di[k], j + dj[k]);
-        state.setPiece(i, j, '.');
-        state.setPiece(i + di[k], j + dj[k], state.getActiveColor() ? 'k' : 'K');
-        if (!state.isActiveColorInCheck())
-            kingMoves.push(Move(i, j, i + di[k], j + dj[k], MoveType::KING_MOVE, state.getActiveColor() ? 'k' : 'K', piece));
-        state.setPiece(i + di[k], j + dj[k], piece);
-        state.setPiece(i, j, state.getActiveColor() ? 'k' : 'K');
-    }
-    if (state.isActiveColorInCheck())
-        return kingMoves;
-    if (state.canActiveColorCastleKingside() && !state.isPiece(i, 5) && !state.isPiece(i, 6)) {
-        state.setPiece(i, 4, '.');
-        state.setPiece(i, 5, state.getActiveColor() ? 'k' : 'K');
-        if (!state.isActiveColorInCheck()) {
-            state.setPiece(i, 5, '.');
-            state.setPiece(i, 6, state.getActiveColor() ? 'k' : 'K');
+    unsigned long long kings = state.getActiveColorKings();
+    while (kings > 0) {
+        unsigned long m;
+        _BitScanForward64(&m, kings);
+        int i = m / 8;
+        int j = m % 8;
+        unsigned long long kingAttackSet = kingAttackSets[m] & ~state.getActiveColorPieces();
+        while (kingAttackSet > 0) {
+            unsigned long n;
+            _BitScanForward64(&n, kingAttackSet);
+            int k = n / 8;
+            int l = n % 8;
+            char inactiveColorPiece = state.getPiece(k, l);
+            state.setPiece(i, j, '.');
+            state.setPiece(k, l, state.getActiveColor() ? 'k' : 'K');
             if (!state.isActiveColorInCheck())
-                kingMoves.push(Move(i, 4, i, 6, MoveType::KINGSIDE_CASTLE, state.getActiveColor() ? 'k' : 'K', '.'));
-            state.setPiece(i, 6, '.');
-            state.setPiece(i, 5, state.getActiveColor() ? 'k' : 'K');
+                kingMoves.push(Move(i, j, k, l, MoveType::KING_MOVE, state.getActiveColor() ? 'k' : 'K', inactiveColorPiece));
+            state.setPiece(k, l, inactiveColorPiece);
+            state.setPiece(i, j, state.getActiveColor() ? 'k' : 'K');
+            kingAttackSet -= (unsigned long long)1 << n;
         }
-        state.setPiece(i, 5, '.');
-        state.setPiece(i, 4, state.getActiveColor() ? 'k' : 'K');
-    }
-    if (state.canActiveColorCastleQueenside() && !state.isPiece(i, 1) && !state.isPiece(i, 2) && !state.isPiece(i, 3)) {
-        state.setPiece(i, 4, '.');
-        state.setPiece(i, 3, state.getActiveColor() ? 'k' : 'K');
-        if (!state.isActiveColorInCheck()) {
-            state.setPiece(i, 3, '.');
-            state.setPiece(i, 2, state.getActiveColor() ? 'k' : 'K');
-            if (!state.isActiveColorInCheck())
-                kingMoves.push(Move(i, 4, i, 2, MoveType::QUEENSIDE_CASTLE, state.getActiveColor() ? 'k' : 'K', '.'));
-            state.setPiece(i, 2, '.');
-            state.setPiece(i, 3, state.getActiveColor() ? 'k' : 'K');
-        }
-        state.setPiece(i, 3, '.');
-        state.setPiece(i, 4, state.getActiveColor() ? 'k' : 'K');
+        kings -= (unsigned long long)1 << m;
     }
     return kingMoves;
 }
@@ -137,18 +351,42 @@ queue<Move> MoveGenerator::getKnightMoves(State& state) {
             _BitScanForward64(&n, knightAttackSet);
             int k = n / 8;
             int l = n % 8;
-            char piece = state.getPiece(k, l);
+            char inactiveColorPiece = state.getPiece(k, l);
             state.setPiece(i, j, '.');
             state.setPiece(k, l, state.getActiveColor() ? 'n' : 'N');
             if (!state.isActiveColorInCheck())
-                knightMoves.push(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'n' : 'N', piece));
-            state.setPiece(k, l, piece);
+                knightMoves.push(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'n' : 'N', inactiveColorPiece));
+            state.setPiece(k, l, inactiveColorPiece);
             state.setPiece(i, j, state.getActiveColor() ? 'n' : 'N');
             knightAttackSet -= (unsigned long long)1 << n;
         }
         activeColorKnights -= (unsigned long long)1 << m;
     }
     return knightMoves;
+}
+unsigned long long MoveGenerator::getNorthAttackSet(State& state, int i, int j) {
+    unsigned long long northAttackSet = slidingPieceAttackSets[NORTH][8 * i + j];
+    unsigned long k;
+    if (_BitScanReverse64(&k, slidingPieceAttackSets[NORTH][8 * i + j] & ~state.getEmptySquares()) == 0)
+        return northAttackSet;
+    northAttackSet &= ~slidingPieceAttackSets[NORTH][k];
+    return northAttackSet;
+}
+unsigned long long MoveGenerator::getNortheastAttackSet(State& state, int i, int j) {
+    unsigned long long northeastAttackSet = slidingPieceAttackSets[NORTHEAST][8 * i + j];
+    unsigned long k;
+    if (_BitScanReverse64(&k, slidingPieceAttackSets[NORTHEAST][8 * i + j] & ~state.getEmptySquares()) == 0)
+        return northeastAttackSet;
+    northeastAttackSet &= ~slidingPieceAttackSets[NORTHEAST][k];
+    return northeastAttackSet;
+}
+unsigned long long MoveGenerator::getNorthwestAttackSet(State& state, int i, int j) {
+    unsigned long long northwestAttackSet = slidingPieceAttackSets[NORTHWEST][8 * i + j];
+    unsigned long k;
+    if (_BitScanReverse64(&k, slidingPieceAttackSets[NORTHWEST][8 * i + j] & ~state.getEmptySquares()) == 0)
+        return northwestAttackSet;
+    northwestAttackSet &= ~slidingPieceAttackSets[NORTHWEST][k];
+    return northwestAttackSet;
 }
 queue<Move> MoveGenerator::getPawnCaptures(State& state) {
     queue<Move> pawnCaptures;
@@ -164,19 +402,19 @@ queue<Move> MoveGenerator::getPawnCaptures(State& state) {
             _BitScanForward64(&n, pawnAttackSet);
             int k = n / 8;
             int l = n % 8;
-            char piece = state.getPiece(k, l);
+            char inactiveColorPiece = state.getPiece(k, l);
             state.setPiece(i, j, '.');
             state.setPiece(k, l, state.getActiveColor() ? 'p' : 'P');
             if (!state.isActiveColorInCheck()) {
                 if (abs(k - 3.5) == 3.5) {
                     MoveType moveTypes[4] = { MoveType::PROMOTION_TO_BISHOP, MoveType::PROMOTION_TO_KNIGHT, MoveType::PROMOTION_TO_QUEEN, MoveType::PROMOTION_TO_ROOK };
                     for (int l = 0; l < 4; l++)
-                        pawnCaptures.push(Move(i, j, k, l, moveTypes[l], state.getActiveColor() ? 'p' : 'P', piece));
+                        pawnCaptures.push(Move(i, j, k, l, moveTypes[l], state.getActiveColor() ? 'p' : 'P', inactiveColorPiece));
                 }
                 else
-                    pawnCaptures.push(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'p' : 'P', piece));
+                    pawnCaptures.push(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'p' : 'P', inactiveColorPiece));
             }
-            state.setPiece(k, l, piece);
+            state.setPiece(k, l, inactiveColorPiece);
             state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
             pawnAttackSet -= (unsigned long long)1 << n;
         }
@@ -227,54 +465,43 @@ queue<Move> MoveGenerator::getPawnSinglePushes(State& state) {
     }
     return pawnSinglePushes;
 }
-queue<Move> MoveGenerator::getQueenMoves(State& state, int i, int j) {
-    queue<Move> queenMoves;
-    int di[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
-    int dj[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
-    for (int k = 0; k < 8; k++)
-        for (int l = 1; ; l++) {
-            if (i + l * di[k] < 0 || i + l * di[k] >= 8 || j + l * dj[k] < 0 || j + l * dj[k] >= 8)
-                break;
-            if (state.isActiveColorPiece(i + l * di[k], j + l * dj[k]))
-                break;
-            char piece = state.getPiece(i + l * di[k], j + l * dj[k]);
-            state.setPiece(i, j, '.');
-            state.setPiece(i + l * di[k], j + l * dj[k], state.getActiveColor() ? 'q' : 'Q');
-            if (!state.isActiveColorInCheck())
-                queenMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], MoveType::NORMAL, state.getActiveColor() ? 'q' : 'Q', piece));
-            state.setPiece(i + l * di[k], j + l * dj[k], piece);
-            state.setPiece(i, j, state.getActiveColor() ? 'q' : 'Q');
-            if (state.isPiece(i + l * di[k], j + l * dj[k]))
-                break;
-        }
-    return queenMoves;
+unsigned long long MoveGenerator::getSouthAttackSet(State& state, int i, int j) {
+    unsigned long long southAttackSet = slidingPieceAttackSets[SOUTH][8 * i + j];
+    unsigned long k;
+    if (_BitScanForward64(&k, slidingPieceAttackSets[SOUTH][8 * i + j] & ~state.getEmptySquares()) == 0)
+        return southAttackSet;
+    southAttackSet &= ~slidingPieceAttackSets[SOUTH][k];
+    return southAttackSet;
 }
-queue<Move> MoveGenerator::getRookMoves(State& state, int i, int j) {
-    queue<Move> rookMoves;
-    int di[4] = { -1, 0, 1, 0 };
-    int dj[4] = { 0, 1, 0, -1 };
-    for (int k = 0; k < 4; k++)
-        for (int l = 1; ; l++) {
-            if (i + l * di[k] < 0 || i + l * di[k] >= 8 || j + l * dj[k] < 0 || j + l * dj[k] >= 8)
-                break;
-            if (state.isActiveColorPiece(i + l * di[k], j + l * dj[k]))
-                break;
-            char piece = state.getPiece(i + l * di[k], j + l * dj[k]);
-            state.setPiece(i, j, '.');
-            state.setPiece(i + l * di[k], j + l * dj[k], state.getActiveColor() ? 'r' : 'R');
-            if (!state.isActiveColorInCheck())
-                rookMoves.push(Move(i, j, i + l * di[k], j + l * dj[k], MoveType::ROOK_MOVE, state.getActiveColor() ? 'r' : 'R', piece));
-            state.setPiece(i + l * di[k], j + l * dj[k], piece);
-            state.setPiece(i, j, state.getActiveColor() ? 'r' : 'R');
-            if (state.isPiece(i + l * di[k], j + l * dj[k]))
-                break;
-        }
-    return rookMoves;
+unsigned long long MoveGenerator::getSoutheastAttackSet(State& state, int i, int j) {
+    unsigned long long southeastAttackSet = slidingPieceAttackSets[SOUTHEAST][8 * i + j];
+    unsigned long k;
+    if (_BitScanForward64(&k, slidingPieceAttackSets[SOUTHEAST][8 * i + j] & ~state.getEmptySquares()) == 0)
+        return southeastAttackSet;
+    southeastAttackSet &= ~slidingPieceAttackSets[SOUTHEAST][k];
+    return southeastAttackSet;
+}
+unsigned long long MoveGenerator::getSouthwestAttackSet(State& state, int i, int j) {
+    unsigned long long southwestAttackSet = slidingPieceAttackSets[SOUTHWEST][8 * i + j];
+    unsigned long k;
+    if (_BitScanForward64(&k, slidingPieceAttackSets[SOUTHWEST][8 * i + j] & ~state.getEmptySquares()) == 0)
+        return southwestAttackSet;
+    southwestAttackSet &= ~slidingPieceAttackSets[SOUTHWEST][k];
+    return southwestAttackSet;
+}
+unsigned long long MoveGenerator::getWestAttackSet(State& state, int i, int j) {
+    unsigned long long westAttackSet = slidingPieceAttackSets[WEST][8 * i + j];
+    unsigned long k;
+    if (_BitScanReverse64(&k, slidingPieceAttackSets[WEST][8 * i + j] & ~state.getEmptySquares()) == 0)
+        return westAttackSet;
+    westAttackSet &= ~slidingPieceAttackSets[WEST][k];
+    return westAttackSet;
 }
 MoveGenerator::MoveGenerator() {
     generatePawnAttackSets();
     generateKnightAttackSets();
-    generateBishopAttackSets();
+    generateSlidingPieceAttackSets();
+    generateKingAttackSets();
 }
 vector<Move> MoveGenerator::getMoves(State& state) {
     vector<Move> moves;
@@ -303,36 +530,26 @@ vector<Move> MoveGenerator::getMoves(State& state) {
         moves.push_back(knightsMoves.front());
         knightsMoves.pop();
     }
-    for (int i = 0; i < 8; i++)
-        for (int j = 0; j < 8; j++)
-            if (state.isActiveColorBishop(i, j)) {
-                queue<Move> bishopMoves = getBishopMoves(state, i, j);
-                while (!bishopMoves.empty()) {
-                    moves.push_back(bishopMoves.front());
-                    bishopMoves.pop();
-                }
-            }
-            else if (state.isActiveColorRook(i, j)) {
-                queue<Move> rookMoves = getRookMoves(state, i, j);
-                while (!rookMoves.empty()) {
-                    moves.push_back(rookMoves.front());
-                    rookMoves.pop();
-                }
-            }
-            else if (state.isActiveColorQueen(i, j)) {
-                queue<Move> queenMoves = getQueenMoves(state, i, j);
-                while (!queenMoves.empty()) {
-                    moves.push_back(queenMoves.front());
-                    queenMoves.pop();
-                }
-            }
-            else if (state.isActiveColorKing(i, j)) {
-                queue<Move> kingMoves = getKingMoves(state, i, j);
-                while (!kingMoves.empty()) {
-                    moves.push_back(kingMoves.front());
-                    kingMoves.pop();
-                }
-            }
+    queue<Move> diagonalAttackerMoves = getDiagonalAttackerMoves(state);
+    while (!diagonalAttackerMoves.empty()) {
+        moves.push_back(diagonalAttackerMoves.front());
+        diagonalAttackerMoves.pop();
+    }
+    queue<Move> columnAttackerMoves = getColumnAttackerMoves(state);
+    while (!columnAttackerMoves.empty()) {
+        moves.push_back(columnAttackerMoves.front());
+        columnAttackerMoves.pop();
+    }
+    queue<Move> kingMoves = getKingMoves(state);
+    while (!kingMoves.empty()) {
+        moves.push_back(kingMoves.front());
+        kingMoves.pop();
+    }
+    queue<Move> castlings = getCastlings(state);
+    while (!castlings.empty()) {
+        moves.push_back(castlings.front());
+        castlings.pop();
+    }
     return moves;
 }
 

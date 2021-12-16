@@ -48,6 +48,9 @@ public:
     bool canActiveColorCastleQueenside();
     bool getActiveColor();
     tuple<string, bool, int, int> getHashCode();
+    unsigned long long getActiveColorColumnAttackers();
+    unsigned long long getActiveColorDiagonalAttackers();
+    unsigned long long getActiveColorKings();
     unsigned long long getActiveColorKnights();
     unsigned long long getActiveColorPawns();
     unsigned long long getActiveColorPieces();

@@ -3,7 +3,6 @@
 #include <iostream>
 #include "Move.h"
 #include "MoveType.h"
-#include "State.h"
 
 using namespace std;
 
