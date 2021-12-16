@@ -49,8 +49,8 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     map<tuple<string, bool, int, int>, tuple<int, NodeType, int, Move>>::iterator it = transpositionTable.find(hashCode);
     bool isActiveColorInCheck = state.isActiveColorInCheck();
-    //mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
-    //shuffle(activeColorMoves.begin(), activeColorMoves.end(), rng);
+    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    shuffle(activeColorMoves.begin(), activeColorMoves.end(), rng);
     sort(activeColorMoves.begin(), activeColorMoves.end(), MoveComparator(killerMoves[0], it != transpositionTable.end() ? get<3>(it->second) : move));
     Move optimalMove;
     int staticEvaluation = Evaluator::getEvaluation(state);
@@ -126,6 +126,8 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
             }
         }
     }
+    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    shuffle(activeColorMoves.begin(), activeColorMoves.end(), rng);
     sort(activeColorMoves.begin(), activeColorMoves.end(), MoveComparator(killerMoves[currentDepth], it != transpositionTable.end() ? get<3>(it->second) : move));
     Move optimalMove;
     int searchedMoves = 0;
@@ -176,6 +178,8 @@ int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta
     if (standPat >= beta)
         return beta;
     alpha = max(alpha, standPat);
+    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    shuffle(activeColorMoves.begin(), activeColorMoves.end(), rng);
     sort(activeColorMoves.begin(), activeColorMoves.end(), MoveComparator(killerMoves[0], move));
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < activeColorMoves.size(); i++) {
