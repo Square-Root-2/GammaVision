@@ -227,16 +227,12 @@ queue<Move> MoveGenerator::getColumnAttackerMoves(State& state) {
         _BitScanForward64(&m, columnAttackers);
         int i = m / 8;
         int j = m % 8;
-        unsigned long long columnAttackerAttackSet = getNorthAttackSet(state, i, j) | getEastAttackSet(state, i, j) | getSouthAttackSet(state, i, j) | getWestAttackSet(state, i, j);
+        unsigned long long columnAttackerAttackSet = getNorthAttackSet(state, i, j) | getEastAttackSet(state, i, j) | getSouthAttackSet(state, i, j) | getWestAttackSet(state, i, j) & ~state.getActiveColorPieces();
         while (columnAttackerAttackSet > 0) {
             unsigned long n;
             _BitScanForward64(&n, columnAttackerAttackSet);
             int k = n / 8;
             int l = n % 8;
-            if (state.isActiveColorPiece(k, l)) {
-                columnAttackerAttackSet -= (unsigned long long)1 << n;
-                continue;
-            }
             char activeColorPiece = state.getPiece(i, j);
             char inactiveColorPiece = state.getPiece(k, l);
             state.setPiece(i, j, '.');
@@ -259,7 +255,7 @@ queue<Move> MoveGenerator::getDiagonalAttackerMoves(State& state) {
         _BitScanForward64(&m, diagonalAttackers);
         int i = m / 8;
         int j = m % 8;
-        unsigned long long diagonalAttackerAttackSet = getNortheastAttackSet(state, i, j) | getSoutheastAttackSet(state, i, j) | getSouthwestAttackSet(state, i, j) | getNorthwestAttackSet(state, i, j);
+        unsigned long long diagonalAttackerAttackSet = getNortheastAttackSet(state, i, j) | getSoutheastAttackSet(state, i, j) | getSouthwestAttackSet(state, i, j) | getNorthwestAttackSet(state, i, j) & ~state.getActiveColorPieces();
         while (diagonalAttackerAttackSet > 0) {
             unsigned long n;
             _BitScanForward64(&n, diagonalAttackerAttackSet);
@@ -328,7 +324,7 @@ queue<Move> MoveGenerator::getKingMoves(State& state) {
             state.setPiece(i, j, '.');
             state.setPiece(k, l, state.getActiveColor() ? 'k' : 'K');
             if (!state.isActiveColorInCheck())
-                kingMoves.push(Move(i, j, k, l, MoveType::KING_MOVE, state.getActiveColor() ? 'k' : 'K', inactiveColorPiece));
+                kingMoves.push(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'k' : 'K', inactiveColorPiece));
             state.setPiece(k, l, inactiveColorPiece);
             state.setPiece(i, j, state.getActiveColor() ? 'k' : 'K');
             kingAttackSet -= (unsigned long long)1 << n;
