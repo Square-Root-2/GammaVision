@@ -6,25 +6,25 @@
 void Engine::makeMove(State& state, Move& move) {
     state.setPiece(move.getEndRow(), move.getEndColumn(), move.getAggressor());
     state.setPiece(move.getBeginRow(), move.getBeginColumn(), '.');
-    if (move.getType() == MoveType::KINGSIDE_CASTLE) {
+    if (move.getMoveType() == MoveType::KINGSIDE_CASTLE) {
         state.setPiece(move.getBeginRow(), 7, '.');
         state.setPiece(move.getBeginRow(), 5, state.getActiveColor() ? 'r' : 'R');
     }
-    else if (move.getType() == MoveType::QUEENSIDE_CASTLE) {
+    else if (move.getMoveType() == MoveType::QUEENSIDE_CASTLE) {
         state.setPiece(move.getBeginRow(), 0, '.');
         state.setPiece(move.getBeginRow(), 3, state.getActiveColor() ? 'r' : 'R');
     }
-    else if (move.getType() == MoveType::EN_PASSANT)
+    else if (move.getMoveType() == MoveType::EN_PASSANT)
         state.setPiece(move.getBeginRow(), move.getEndColumn(), '.');
-    else if (move.getType() == MoveType::PROMOTION_TO_BISHOP)
+    else if (move.getMoveType() == MoveType::PROMOTION_TO_BISHOP)
         state.setPiece(move.getEndRow(), move.getEndColumn(), state.getActiveColor() ? 'b' : 'B');
-    else if (move.getType() == MoveType::PROMOTION_TO_KNIGHT)
+    else if (move.getMoveType() == MoveType::PROMOTION_TO_KNIGHT)
         state.setPiece(move.getEndRow(), move.getEndColumn(), state.getActiveColor() ? 'n' : 'N');
-    else if (move.getType() == MoveType::PROMOTION_TO_QUEEN)
+    else if (move.getMoveType() == MoveType::PROMOTION_TO_QUEEN)
         state.setPiece(move.getEndRow(), move.getEndColumn(), state.getActiveColor() ? 'q' : 'Q');
-    else if (move.getType() == MoveType::PROMOTION_TO_ROOK)
+    else if (move.getMoveType() == MoveType::PROMOTION_TO_ROOK)
         state.setPiece(move.getEndRow(), move.getEndColumn(), state.getActiveColor() ? 'r' : 'R');
-    if (move.getType() == MoveType::KINGSIDE_CASTLE || move.getType() == MoveType::QUEENSIDE_CASTLE) {
+    if (move.getMoveType() == MoveType::KINGSIDE_CASTLE || move.getMoveType() == MoveType::QUEENSIDE_CASTLE) {
         state.setCanActiveColorCastleKingside(false);
         state.setCanActiveColorCastleQueenside(false);
     }
@@ -36,7 +36,7 @@ void Engine::makeMove(State& state, Move& move) {
         state.setCanActiveColorCastleKingside(false);
     else if ((move.getAggressor() == 'R' || move.getAggressor() == 'r') && abs(move.getBeginRow() - 3.5) == 3.5 && move.getBeginColumn() == 0)
         state.setCanActiveColorCastleQueenside(false);
-    if (move.getType() == MoveType::PAWN_DOUBLE_PUSH)
+    if (move.getMoveType() == MoveType::PAWN_DOUBLE_PUSH)
         state.setPossibleEnPassantTargetColumn(move.getBeginColumn());
     else
         state.setPossibleEnPassantTargetColumn(-1);
@@ -45,7 +45,7 @@ void Engine::makeMove(State& state, Move& move) {
 pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return pair<Move, int>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
-    vector<Move> activeColorMoves = moveGenerator.getMoves(state); 
+    vector<Move> activeColorMoves = moveGenerator.getMoves(state);
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     map<tuple<string, bool, int, int>, tuple<int, NodeType, int, Move>>::iterator it = transpositionTable.find(hashCode);
     bool isActiveColorInCheck = state.isActiveColorInCheck();
@@ -81,7 +81,7 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
         }
     }
     killerMoves[1].clear();
-    if (optimalMove.getType() == MoveType::NULL_MOVE)
+    if (optimalMove.getMoveType() == MoveType::NULL_MOVE)
         transpositionTable[hashCode] = tuple<int, NodeType, int, Move>(depth, NodeType::ALL_NODE, alpha, optimalMove);
     else
         transpositionTable[hashCode] = tuple<int, NodeType, int, Move>(depth, NodeType::PV_NODE, alpha, optimalMove);
@@ -165,7 +165,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
     }
     killerMoves[currentDepth + 1].clear();
     if (it == transpositionTable.end() || depth - currentDepth > get<0>(it->second))
-        if (optimalMove.getType() == MoveType::NULL_MOVE)
+        if (optimalMove.getMoveType() == MoveType::NULL_MOVE)
             transpositionTable[hashCode] = tuple<int, NodeType, int, Move>(depth - currentDepth, NodeType::ALL_NODE, alpha, optimalMove);
         else
             transpositionTable[hashCode] = tuple<int, NodeType, int, Move>(depth - currentDepth, NodeType::PV_NODE, alpha, optimalMove);
@@ -208,16 +208,8 @@ tuple<Move, int, int> Engine::getOptimalMove(string& FEN, int seconds) {
     State state(FEN);
     for (int depth = 1; depth <= MAXIMUM_NEGAMAX_DEPTH; depth++) {
         State state(FEN);
-        int alpha = optimalMove.second - 25;
-        int beta = optimalMove.second + 25;
-        pair<Move, int> move = negamax(state, depth, alpha, beta);
-        if (move.first.getType() == MoveType::TIMEOUT)
-            return tuple<Move, int, int>(optimalMove.first, optimalMove.second, depth - 1);
-        if (move.second == alpha)
-            move = negamax(state, depth, -INT32_MAX, alpha + 1);
-        else if (move.second == beta)
-            move = negamax(state, depth, beta - 1, INT32_MAX);
-        if (move.first.getType() == MoveType::TIMEOUT)
+        pair<Move, int> move = negamax(state, depth, -INT32_MAX, INT32_MAX);
+        if (move.first.getMoveType() == MoveType::TIMEOUT)
             return tuple<Move, int, int>(optimalMove.first, optimalMove.second, depth - 1);
         optimalMove = move;
     }
@@ -227,13 +219,13 @@ unsigned long long Engine::perft(State& state, int depth) {
     vector<Move> activeColorMoves = moveGenerator.getMoves(state);
     if (activeColorMoves.empty())
         return 1;
-    if (depth == 0)
-        return 1;
+    if (depth == 1)
+        return activeColorMoves.size();
     unsigned long long nodes = 0;
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < activeColorMoves.size(); i++) {
         makeMove(state, activeColorMoves[i]);
-        nodes += perft(state, depth - 1);
+        nodes += perft(state, depth - 1);;
         state.setHashCode(hashCode);
     }
     return nodes;

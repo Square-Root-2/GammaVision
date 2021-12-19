@@ -1,19 +1,19 @@
 #include "Move.h"
 
 Move::Move() {
-	type = MoveType::NULL_MOVE;
+	moveType = MoveType::NULL_MOVE;
 }
-Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType type, char aggressor, char victim) {
+Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType moveType, char aggressor, char victim) {
 	this->beginRow = beginRow;
 	this->beginColumn = beginColumn;
 	this->endRow = endRow;
 	this->endColumn = endColumn;
-	this->type = type;
+	this->moveType = moveType;
 	this->aggressor = aggressor;
 	this->victim = victim;
 }
 bool Move::operator==(Move move) const {
-	return beginRow == move.getBeginRow() && beginColumn == move.getBeginColumn() && endRow == move.getEndRow() && endColumn == move.getEndColumn() && type == move.getType();
+	return beginRow == move.getBeginRow() && beginColumn == move.getBeginColumn() && endRow == move.getEndRow() && endColumn == move.getEndColumn() && moveType == move.getMoveType();
 }
 char Move::getAggressor() {
 	return aggressor;
@@ -30,8 +30,8 @@ int Move::getEndColumn() {
 int Move::getEndRow() {
 	return endRow;
 }
-MoveType Move::getType() {
-	return type;
+MoveType Move::getMoveType() {
+	return moveType;
 }
 char Move::getVictim() {
 	return victim;
@@ -40,7 +40,7 @@ bool Move::isCapture() {
 	return victim != '.';
 }
 bool Move::isPromotion() {
-	return getType() == MoveType::PROMOTION_TO_BISHOP || getType() == MoveType::PROMOTION_TO_KNIGHT || getType() == MoveType::PROMOTION_TO_QUEEN || getType() == MoveType::PROMOTION_TO_ROOK;
+	return getMoveType() == MoveType::PROMOTION_TO_BISHOP || getMoveType() == MoveType::PROMOTION_TO_KNIGHT || getMoveType() == MoveType::PROMOTION_TO_QUEEN || getMoveType() == MoveType::PROMOTION_TO_ROOK;
 }
 bool Move::isQuiet() {
 	return !isCapture() && !isPromotion();

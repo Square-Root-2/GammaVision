@@ -9,17 +9,18 @@ using namespace std;
 int main() {
     Engine e;
     while (true) {
+        cout << "FEN: ";
         string FEN;
         getline(cin, FEN);
         tuple<Move, int, int> optimalMove = e.getOptimalMove(FEN, 30);
         cout << "Move: " << char(get<0>(optimalMove).getBeginColumn() + 'a') << " " << 8 - get<0>(optimalMove).getBeginRow() << " " << char(get<0>(optimalMove).getEndColumn() + 'a') << " " << 8 - get<0>(optimalMove).getEndRow() << " ";
-        if (get<0>(optimalMove).getType() == MoveType::PROMOTION_TO_BISHOP)
+        if (get<0>(optimalMove).getMoveType() == MoveType::PROMOTION_TO_BISHOP)
             cout << "Promotion to Bishop";
-        else if (get<0>(optimalMove).getType() == MoveType::PROMOTION_TO_KNIGHT)
+        else if (get<0>(optimalMove).getMoveType() == MoveType::PROMOTION_TO_KNIGHT)
             cout << "Promotion to Knight";
-        else if (get<0>(optimalMove).getType() == MoveType::PROMOTION_TO_QUEEN)
+        else if (get<0>(optimalMove).getMoveType() == MoveType::PROMOTION_TO_QUEEN)
             cout << "Promotion to Queen";
-        else if (get<0>(optimalMove).getType() == MoveType::PROMOTION_TO_ROOK)
+        else if (get<0>(optimalMove).getMoveType() == MoveType::PROMOTION_TO_ROOK)
             cout << "Promotion to Rook";
         cout << "\n";
         cout << "Evaluation: ";

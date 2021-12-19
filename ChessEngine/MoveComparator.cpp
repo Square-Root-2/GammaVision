@@ -9,7 +9,7 @@ bool MoveComparator::compareCaptures(Move& move1, Move& move2) {
 	return false;
 }
 bool MoveComparator::comparePromotions(Move& move1, Move& move2) {
-	return move1.getType() < move2.getType();
+	return move1.getMoveType() < move2.getMoveType();
 }
 bool MoveComparator::compareQuietMoves(Move& move1, Move& move2) {
 	unordered_set<Move>::iterator it1 = killerMoves.find(move1);

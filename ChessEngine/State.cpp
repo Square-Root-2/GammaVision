@@ -1,68 +1,31 @@
-#include "Evaluator.h"
 #include "State.h"
 
-bool State::isBishop(int i, int j) {
-    return isWhiteBishop(i, j) || isBlackBishop(i, j);
+bool State::isInactiveColorBishop(int i, int j) {
+    return bitboards[getActiveColor() ? WHITE_BISHOPS : BLACK_BISHOPS] & ((unsigned long long)1 << (8 * i + j));
 }
-bool State::isBlackBishop(int i, int j) {
-    return bitboards[pieceToIndex['b']] & (unsigned long long)1 << (8 * i + j);
+bool State::isInactiveColorKnight(int i, int j) {
+    return bitboards[getActiveColor() ? WHITE_KNIGHTS : BLACK_KNIGHTS] & ((unsigned long long)1 << (8 * i + j));
 }
-bool State::isWhiteBishop(int i, int j) {
-    return bitboards[pieceToIndex['B']] & (unsigned long long)1 << (8 * i + j);
+bool State::isInactiveColorQueen(int i, int j) {
+    return bitboards[getActiveColor() ? WHITE_QUEENS : BLACK_QUEENS] & ((unsigned long long)1 << (8 * i + j));
 }
-bool State::isBlackKing(int i, int j) {
-    return bitboards[pieceToIndex['k']] & (unsigned long long)1 << (8 * i + j);
+bool State::isInactiveColorRook(int i, int j) {
+    return bitboards[getActiveColor() ? WHITE_ROOKS : BLACK_ROOKS] & ((unsigned long long)1 << (8 * i + j));
 }
-bool State::isKing(int i, int j) {
-    return isWhiteKing(i, j) || isBlackKing(i, j);
-}
-bool State::isWhiteKing(int i, int j) {
-    return bitboards[pieceToIndex['K']] & (unsigned long long)1 << (8 * i + j);
-}
-bool State::isBlackKnight(int i, int j) {
-    return bitboards[pieceToIndex['n']] & (unsigned long long)1 << (8 * i + j);
-}
-bool State::isKnight(int i, int j) {
-    return isWhiteKnight(i, j) || isBlackKnight(i, j);
-}
-bool State::isWhiteKnight(int i, int j) {
-    return bitboards[pieceToIndex['N']] & (unsigned long long)1 << (8 * i + j);
-}
-bool State::isBlackPawn(int i, int j) {
-    return bitboards[pieceToIndex['p']] & (unsigned long long)1 << (8 * i + j);
-}
-bool State::isPawn(int i, int j) {
-    return isWhitePawn(i, j) || isBlackPawn(i, j);
-}
-bool State::isWhitePawn(int i, int j) {
-    return bitboards[pieceToIndex['P']] & (unsigned long long)1 << (8 * i + j);
-}
-bool State::isBlackQueen(int i, int j) {
-    return bitboards[pieceToIndex['q']] & (unsigned long long)1 << (8 * i + j);
-}
-bool State::isQueen(int i, int j) {
-    return isWhiteQueen(i, j) || isBlackQueen(i, j);
-}
-bool State::isWhiteQueen(int i, int j) {
-    return bitboards[pieceToIndex['Q']] & (unsigned long long)1 << (8 * i + j);
-}
-bool State::isBlackRook(int i, int j) {
-    return bitboards[pieceToIndex['r']] & (unsigned long long)1 << (8 * i + j);
-}
-bool State::isRook(int i, int j) {
-    return isWhiteRook(i, j) || isBlackRook(i, j);
-}
-bool State::isWhiteRook(int i, int j) {
-    return bitboards[pieceToIndex['R']] & (unsigned long long)1 << (8 * i + j);
+bool State::isWhite(char piece) {
+    if (piece == '.')
+        return false;
+    return isupper(piece);
 }
 State::State(string FEN) {
-    for (int k = WHITE_PAWNS; k <= BLACK_KINGS; k++)
+    for (int k = WHITE_PAWNS; k <= BLACK_PIECES; k++)
         bitboards[k] = 0;
     reverse(FEN.begin(), FEN.end());
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; ) {
             if (isalpha(FEN[FEN.size() - 1])) {
                 bitboards[pieceToIndex[FEN[FEN.size() - 1]]] |= (unsigned long long)1 << (8 * i + j);
+                bitboards[isWhite(FEN[FEN.size() - 1]) ? WHITE_PIECES : BLACK_PIECES] |= (unsigned long long)1 << (8 * i + j);
                 get<0>(hashCode) += FEN[FEN.size() - 1];
                 j++;
             }
@@ -107,10 +70,10 @@ State::State(string FEN) {
     }
 }
 bool State::canActiveColorCastleKingside() {
-    return (get<2>(hashCode) & 1 << (3 - 2 * getActiveColor())) > 0;
+    return (get<2>(hashCode) & (1 << (3 - 2 * getActiveColor())));
 }
 bool State::canActiveColorCastleQueenside() {
-    return (get<2>(hashCode) & 1 << (2 - 2 * getActiveColor())) > 0;
+    return (get<2>(hashCode) & (1 << (2 - 2 * getActiveColor())));
 }
 bool State::getActiveColor() {
     return get<1>(hashCode);
@@ -134,28 +97,13 @@ unsigned long long State::getActiveColorPawns() {
     return bitboards[getActiveColor() ? BLACK_PAWNS : WHITE_PAWNS];
 }
 unsigned long long State::getActiveColorPieces() {
-    unsigned long long activeColorPieces = 0;
-    for (int i = WHITE_PAWNS; i <= BLACK_KINGS; i++) {
-        if (i % 2 != (getActiveColor() ? 1 : 0))
-            continue;
-        activeColorPieces |= bitboards[i];
-    }
-    return activeColorPieces;
+    return bitboards[getActiveColor() ? BLACK_PIECES : WHITE_PIECES];
 }
 unsigned long long State::getEmptySquares() {
-    unsigned long long emptySquares = ULLONG_MAX;
-    for (int i = WHITE_PAWNS; i <= BLACK_KINGS; i++)
-        emptySquares &= ~bitboards[i];
-    return emptySquares;
+    return ~bitboards[WHITE_PIECES] & ~bitboards[BLACK_PIECES];
 }
 unsigned long long State::getInactiveColorPieces() {
-    unsigned long long inactiveColorPieces = 0;
-    for (int i = WHITE_PAWNS; i <= BLACK_KINGS; i++) {
-        if (i % 2 == (getActiveColor() ? 1 : 0))
-            continue;
-        inactiveColorPieces |= bitboards[i];
-    }
-    return inactiveColorPieces;
+    return bitboards[getActiveColor() ? WHITE_PIECES : BLACK_PIECES];
 }
 char State::getPiece(int i, int j) {
     return get<0>(hashCode)[8 * i + j];
@@ -165,9 +113,6 @@ int State::getPossibleEnPassantTargetColumn() {
 }
 int State::getPossibleEnPassantTargetRow() {
     return getActiveColor() ? 4 : 3;
-}
-bool State::isActiveColorBishop(int i, int j) {
-    return getActiveColor() ? isBlackBishop(i, j) : isWhiteBishop(i, j);
 }
 bool State::isActiveColorInCheck() {
     for (int i = 0; i < 8; i++)
@@ -221,43 +166,22 @@ bool State::isActiveColorInCheck() {
     return false;
 }
 bool State::isActiveColorKing(int i, int j) {
-    return getActiveColor() ? isBlackKing(i, j) : isWhiteKing(i, j);
-}
-bool State::isActiveColorKnight(int i, int j) {
-    return getActiveColor() ? isBlackKnight(i, j) : isWhiteKnight(i, j);
+    return bitboards[getActiveColor() ? BLACK_KINGS : WHITE_KINGS] & ((unsigned long long)1 << (8 * i + j));
 }
 bool State::isActiveColorPawn(int i, int j) {
-    return getActiveColor() ? isBlackPawn(i, j) : isWhitePawn(i, j);
+    return bitboards[getActiveColor() ? BLACK_PAWNS : WHITE_PAWNS] & ((unsigned long long)1 << (8 * i + j));
 }
 bool State::isActiveColorPiece(int i, int j) {
-    return isActiveColorPawn(i, j) || isActiveColorKnight(i, j) || isActiveColorBishop(i, j) || isActiveColorRook(i, j) || isActiveColorQueen(i, j) || isActiveColorKing(i, j);
-}
-bool State::isActiveColorQueen(int i, int j) {
-    return getActiveColor() ? isBlackQueen(i, j) : isWhiteQueen(i, j);
-}
-bool State::isActiveColorRook(int i, int j) {
-    return getActiveColor() ? isBlackRook(i, j) : isWhiteRook(i, j);
-}
-bool State::isInactiveColorBishop(int i, int j) {
-    return getActiveColor() ? isWhiteBishop(i, j) : isBlackBishop(i, j);
+    return getActiveColorPieces() & ((unsigned long long)1 << (8 * i + j));
 }
 bool State::isInactiveColorKing(int i, int j) {
-    return getActiveColor() ? isWhiteKing(i, j) : isBlackKing(i, j);
-}
-bool State::isInactiveColorKnight(int i, int j) {
-    return getActiveColor() ? isWhiteKnight(i, j) : isBlackKnight(i, j);
+    return bitboards[getActiveColor() ? WHITE_KINGS : BLACK_KINGS] & ((unsigned long long)1 << (8 * i + j));
 }
 bool State::isInactiveColorPawn(int i, int j) {
-    return getActiveColor() ? isWhitePawn(i, j) : isBlackPawn(i, j);
+    return bitboards[getActiveColor() ? WHITE_PAWNS : BLACK_PAWNS] & ((unsigned long long)1 << (8 * i + j));
 }
 bool State::isInactiveColorPiece(int i, int j) {
-    return isInactiveColorPawn(i, j) || isInactiveColorKnight(i, j) || isInactiveColorBishop(i, j) || isInactiveColorRook(i, j) || isInactiveColorQueen(i, j) || isInactiveColorKing(i, j);
-}
-bool State::isInactiveColorQueen(int i, int j) {
-    return getActiveColor() ? isWhiteQueen(i, j) : isBlackQueen(i, j);
-}
-bool State::isInactiveColorRook(int i, int j) {
-    return getActiveColor() ? isWhiteRook(i, j) : isBlackRook(i, j);
+   return getInactiveColorPieces() & ((unsigned long long)1 << (8 * i + j));
 }
 bool State::isPiece(int i, int j) {
     return getPiece(i, j) != '.';
@@ -269,21 +193,26 @@ void State::setCanActiveColorCastleQueenside(bool canActiveColorCastleQueenside)
     get<2>(hashCode) += (4 - 3 * getActiveColor()) * (canActiveColorCastleQueenside - ((get<2>(hashCode) & 1 << (2 - 2 * getActiveColor())) > 0));
 }
 void State::setHashCode(tuple<string, bool, int, int> hashCode) {
-    for (int k = WHITE_PAWNS; k <= BLACK_KINGS; k++)
+    for (int k = WHITE_PAWNS; k <= BLACK_PIECES; k++)
         bitboards[k] = 0;
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++) {
             if (get<0>(hashCode)[8 * i + j] == '.')
                 continue;
             bitboards[pieceToIndex[get<0>(hashCode)[8 * i + j]]] |= (unsigned long long)1 << (8 * i + j);
+            bitboards[isWhite(get<0>(hashCode)[8 * i + j]) ? WHITE_PIECES : BLACK_PIECES] |= (unsigned long long)1 << (8 * i + j);
         }
     this->hashCode = hashCode;
 }
 void State::setPiece(int i, int j, char piece) {
-    if (isPiece(i, j))
+    if (isPiece(i, j)) {
         bitboards[pieceToIndex[getPiece(i, j)]] -= (unsigned long long)1 << (8 * i + j);
-    if (piece != '.')
+        bitboards[isWhite(getPiece(i, j)) ? WHITE_PIECES : BLACK_PIECES] -= (unsigned long long)1 << (8 * i + j);
+    }
+    if (piece != '.') {
         bitboards[pieceToIndex[piece]] |= (unsigned long long)1 << (8 * i + j);
+        bitboards[isWhite(piece) ? WHITE_PIECES : BLACK_PIECES] |= (unsigned long long)1 << (8 * i + j);
+    }
     get<0>(hashCode)[8 * i + j] = piece;
 }
 void State::setPossibleEnPassantTargetColumn(int possibleEnPassantTargetColumn) {

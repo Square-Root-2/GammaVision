@@ -1,11 +1,13 @@
+#include <chrono>
 #include "MoveGenerator.h"
 #include "MoveType.h"
+#include <random>
 
 void MoveGenerator::generateEastAttackSets() {
     for (int i = 0; i < 8; i++) {
         unsigned long long eastAttackSet = 0;
         for (int j = 7; j >= 0; j--) {
-            slidingPieceAttackSets[EAST][8 * i + j] = eastAttackSet;
+            attackSets[EAST][8 * i + j] = eastAttackSet;
             eastAttackSet |= (unsigned long long)1 << (8 * i + j);
         }
     }
@@ -15,33 +17,44 @@ void MoveGenerator::generateKingAttackSets() {
     int dj[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++) {
-            kingAttackSets[8 * i + j] = 0;
+            attackSets[KING][8 * i + j] = 0;
             for (int k = 0; k < 8; k++) {
                 if (i + di[k] < 0 || i + di[k] >= 8 || j + dj[k] < 0 || j + dj[k] >= 8)
                     continue;
-                kingAttackSets[8 * i + j] |= (unsigned long long)1 << (8 * (i + di[k]) + (j + dj[k]));
+                attackSets[KING][8 * i + j] |= (unsigned long long)1 << (8 * (i + di[k]) + (j + dj[k]));
             }
         }
 }
 void MoveGenerator::generateKnightAttackSets() {
     int di[8] = { -2, -1, 1, 2, 2, 1, -1, -2 };
     int dj[8] = { 1, 2, 2, 1, -1, -2, -2, -1 };
-    for (int k = 0; k < 64; k++) {
-        knightAttackSets[k] = 0;
-        int i = k / 8;
-        int j = k % 8;
-        for (int l = 0; l < 8; l++) {
-            if (i + di[l] < 0 || i + di[l] >= 8 || j + dj[l] < 0 || j + dj[l] >= 8)
-                continue;
-            knightAttackSets[k] |= (unsigned long long)1 << (8 * (i + di[l]) + (j + dj[l]));
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++) {
+            attackSets[KNIGHT][8 * i + j] = 0;
+            for (int k = 0; k < 8; k++) {
+                if (i + di[k] < 0 || i + di[k] >= 8 || j + dj[k] < 0 || j + dj[k] >= 8)
+                    continue;
+                attackSets[KNIGHT][8 * i + j] |= (unsigned long long)1 << (8 * (i + di[k]) + (j + dj[k]));
+            }
         }
+}
+void MoveGenerator::generateMaskedBlockersBitboards(vector<unsigned long long>& maskedBlockersBitboards, unsigned long long maskedBlockers, int k) {
+    if (k == 64) {
+        maskedBlockersBitboards.push_back(maskedBlockers);
+        return;
     }
+    generateMaskedBlockersBitboards(maskedBlockersBitboards, maskedBlockers, k + 1);
+    if (!(maskedBlockers & ((unsigned long long)1 << k)))
+        return;
+    maskedBlockers -= (unsigned long long)1 << k;
+    generateMaskedBlockersBitboards(maskedBlockersBitboards, maskedBlockers, k + 1);
+    maskedBlockers |= (unsigned long long)1 << k;
 }
 void MoveGenerator::generateNorthAttackSets() {
     for (int j = 0; j < 8; j++) {
         unsigned long long northAttackSet = 0;
         for (int i = 0; i < 8; i++) {
-            slidingPieceAttackSets[NORTH][8 * i + j] = northAttackSet;
+            attackSets[NORTH][8 * i + j] = northAttackSet;
             northAttackSet |= (unsigned long long)1 << (8 * i + j);
         }
     }
@@ -52,7 +65,7 @@ void MoveGenerator::generateNortheastAttackSets() {
         int i = 0;
         int j = k;
         while (i < 8 && j >= 0) {
-            slidingPieceAttackSets[NORTHEAST][8 * i + j] = northeastAttackSet;
+            attackSets[NORTHEAST][8 * i + j] = northeastAttackSet;
             northeastAttackSet |= (unsigned long long)1 << (8 * i + j);
             i++;
             j--;
@@ -63,7 +76,7 @@ void MoveGenerator::generateNortheastAttackSets() {
         int i = k;
         int j = 7;
         while (i < 8 && j >= 0) {
-            slidingPieceAttackSets[NORTHEAST][8 * i + j] = northeastAttackSet;
+            attackSets[NORTHEAST][8 * i + j] = northeastAttackSet;
             northeastAttackSet |= (unsigned long long)1 << (8 * i + j);
             i++;
             j--;
@@ -76,7 +89,7 @@ void MoveGenerator::generateNorthwestAttackSets() {
         int i = 0;
         int j = k;
         while (i < 8 && j < 8) {
-            slidingPieceAttackSets[NORTHWEST][8 * i + j] = northwestAttackSet;
+            attackSets[NORTHWEST][8 * i + j] = northwestAttackSet;
             northwestAttackSet |= (unsigned long long)1 << (8 * i + j);
             i++;
             j++;
@@ -87,7 +100,7 @@ void MoveGenerator::generateNorthwestAttackSets() {
         int i = k;
         int j = 0;
         while (i < 8 && j < 8) {
-            slidingPieceAttackSets[NORTHWEST][8 * i + j] = northwestAttackSet;
+            attackSets[NORTHWEST][8 * i + j] = northwestAttackSet;
             northwestAttackSet |= (unsigned long long)1 << (8 * i + j);
             i++;
             j++;
@@ -95,35 +108,24 @@ void MoveGenerator::generateNorthwestAttackSets() {
     }
 }
 void MoveGenerator::generatePawnAttackSets() {
-    int di[2] = { -1, 1 };
+    int di[2] = { 1, -1 };
     int dj[2] = { -1, 1 };
-    for (int l = WHITE; l <= BLACK; l++)
-        for (int m = 0; m < 64; m++) {
-            pawnAttackSets[l][m] = 0;
-            int i = m / 8;
-            int j = m % 8;
-            for (int k = 0; k < 2; k++) {
-                if (i + di[l] < 0 || i + di[l] >= 8 || j + dj[k] < 0 || j + dj[k] >= 8)
-                    continue;
-                pawnAttackSets[l][m] |= (unsigned long long)1 << (8 * (i + di[l]) + (j + dj[k]));
+    for (int l = BLACK_PAWN; l <= WHITE_PAWN; l++)
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++) {
+                attackSets[l][8 * i + j] = 0;
+                for (int k = 0; k < 2; k++) {
+                    if (i + di[l] < 0 || i + di[l] >= 8 || j + dj[k] < 0 || j + dj[k] >= 8)
+                        continue;
+                    attackSets[l][8 * i + j] |= (unsigned long long)1 << (8 * (i + di[l]) + (j + dj[k]));
+                }
             }
-        }
-}
-void MoveGenerator::generateSlidingPieceAttackSets() {
-    generateNorthAttackSets();
-    generateNortheastAttackSets();
-    generateEastAttackSets();
-    generateSoutheastAttackSets();
-    generateSouthAttackSets();
-    generateSouthwestAttackSets();
-    generateWestAttackSets();
-    generateNorthwestAttackSets();
 }
 void MoveGenerator::generateSouthAttackSets() {
     for (int j = 0; j < 8; j++) {
         unsigned long long southAttackSet = 0;
         for (int i = 7; i >= 0; i--) {
-            slidingPieceAttackSets[SOUTH][8 * i + j] = southAttackSet;
+            attackSets[SOUTH][8 * i + j] = southAttackSet;
             southAttackSet |= (unsigned long long)1 << (8 * i + j);
         }
     }
@@ -134,7 +136,7 @@ void MoveGenerator::generateSoutheastAttackSets() {
         int i = 7;
         int j = k;
         while (i >= 0 && j >= 0) {
-            slidingPieceAttackSets[SOUTHEAST][8 * i + j] = southeastAttackSet;
+            attackSets[SOUTHEAST][8 * i + j] = southeastAttackSet;
             southeastAttackSet |= (unsigned long long)1 << (8 * i + j);
             i--;
             j--;
@@ -145,7 +147,7 @@ void MoveGenerator::generateSoutheastAttackSets() {
         int i = k;
         int j = 7;
         while (i >= 0 && j >= 0) {
-            slidingPieceAttackSets[SOUTHEAST][8 * i + j] = southeastAttackSet;
+            attackSets[SOUTHEAST][8 * i + j] = southeastAttackSet;
             southeastAttackSet |= (unsigned long long)1 << (8 * i + j);
             i--;
             j--;
@@ -158,7 +160,7 @@ void MoveGenerator::generateSouthwestAttackSets() {
         int i = 7;
         int j = k;
         while (i >= 0 && j < 8) {
-            slidingPieceAttackSets[SOUTHWEST][8 * i + j] = southwestAttackSet;
+            attackSets[SOUTHWEST][8 * i + j] = southwestAttackSet;
             southwestAttackSet |= (unsigned long long)1 << (8 * i + j);
             i--;
             j++;
@@ -169,7 +171,7 @@ void MoveGenerator::generateSouthwestAttackSets() {
         int i = k;
         int j = 0;
         while (i >= 0 && j < 8) {
-            slidingPieceAttackSets[SOUTHWEST][8 * i + j] = southwestAttackSet;
+            attackSets[SOUTHWEST][8 * i + j] = southwestAttackSet;
             southwestAttackSet |= (unsigned long long)1 << (8 * i + j);
             i--;
             j++;
@@ -180,7 +182,7 @@ void MoveGenerator::generateWestAttackSets() {
     for (int i = 0; i < 8; i++) {
         unsigned long long westAttackSet = 0;
         for (int j = 0; j < 8; j++) {
-            slidingPieceAttackSets[WEST][8 * i + j] = westAttackSet;
+            attackSets[WEST][8 * i + j] = westAttackSet;
             westAttackSet |= (unsigned long long)1 << (8 * i + j);
         }
     }
@@ -227,7 +229,7 @@ queue<Move> MoveGenerator::getColumnAttackerMoves(State& state) {
         _BitScanForward64(&m, columnAttackers);
         int i = m / 8;
         int j = m % 8;
-        unsigned long long columnAttackerAttackSet = getNorthAttackSet(state, i, j) | getEastAttackSet(state, i, j) | getSouthAttackSet(state, i, j) | getWestAttackSet(state, i, j) & ~state.getActiveColorPieces();
+        unsigned long long columnAttackerAttackSet = getMagicAttackSet(getMaskedBlockers(~state.getEmptySquares(), COLUMN, m), COLUMN, m) & ~state.getActiveColorPieces();
         while (columnAttackerAttackSet > 0) {
             unsigned long n;
             _BitScanForward64(&n, columnAttackerAttackSet);
@@ -255,16 +257,12 @@ queue<Move> MoveGenerator::getDiagonalAttackerMoves(State& state) {
         _BitScanForward64(&m, diagonalAttackers);
         int i = m / 8;
         int j = m % 8;
-        unsigned long long diagonalAttackerAttackSet = getNortheastAttackSet(state, i, j) | getSoutheastAttackSet(state, i, j) | getSouthwestAttackSet(state, i, j) | getNorthwestAttackSet(state, i, j) & ~state.getActiveColorPieces();
+        unsigned long long diagonalAttackerAttackSet = getMagicAttackSet(getMaskedBlockers(~state.getEmptySquares(), DIAGONAL, m), DIAGONAL, m) & ~state.getActiveColorPieces();
         while (diagonalAttackerAttackSet > 0) {
             unsigned long n;
             _BitScanForward64(&n, diagonalAttackerAttackSet);
             int k = n / 8;
             int l = n % 8;
-            if (state.isActiveColorPiece(k, l)) {
-                diagonalAttackerAttackSet -= (unsigned long long)1 << n;
-                continue;
-            }
             char activeColorPiece = state.getPiece(i, j);
             char inactiveColorPiece = state.getPiece(k, l);
             state.setPiece(i, j, '.');
@@ -279,12 +277,12 @@ queue<Move> MoveGenerator::getDiagonalAttackerMoves(State& state) {
     }
     return diagonalAttackerMoves;
 }
-unsigned long long MoveGenerator::getEastAttackSet(State& state, int i, int j) {
-    unsigned long long eastAttackSet = slidingPieceAttackSets[EAST][8 * i + j];
-    unsigned long k;
-    if (_BitScanForward64(&k, slidingPieceAttackSets[EAST][8 * i + j] & ~state.getEmptySquares()) == 0)
+unsigned long long MoveGenerator::getEastAttackSet(int k, unsigned long long maskedBlockers) {
+    unsigned long long eastAttackSet = attackSets[EAST][k];
+    unsigned long l;
+    if (_BitScanForward64(&l, attackSets[EAST][k] & maskedBlockers) == 0)
         return eastAttackSet;
-    eastAttackSet &= ~slidingPieceAttackSets[EAST][k];
+    eastAttackSet &= ~attackSets[EAST][l];
     return eastAttackSet;
 }
 queue<Move> MoveGenerator::getEnPassants(State& state) {
@@ -306,6 +304,9 @@ queue<Move> MoveGenerator::getEnPassants(State& state) {
     }
     return enPassants;
 }
+unsigned long long MoveGenerator::getKey(unsigned long long maskedBlockers, MagicBitboardType k, int l) {
+    return (maskedBlockers * magicNumbers[k][l]) >> (64 - keySizes[k][l]);
+}
 queue<Move> MoveGenerator::getKingMoves(State& state) {
     queue<Move> kingMoves;
     unsigned long long kings = state.getActiveColorKings();
@@ -314,7 +315,7 @@ queue<Move> MoveGenerator::getKingMoves(State& state) {
         _BitScanForward64(&m, kings);
         int i = m / 8;
         int j = m % 8;
-        unsigned long long kingAttackSet = kingAttackSets[m] & ~state.getActiveColorPieces();
+        unsigned long long kingAttackSet = attackSets[KING][m] & ~state.getActiveColorPieces();
         while (kingAttackSet > 0) {
             unsigned long n;
             _BitScanForward64(&n, kingAttackSet);
@@ -341,7 +342,7 @@ queue<Move> MoveGenerator::getKnightMoves(State& state) {
         _BitScanForward64(&m, activeColorKnights);
         int i = m / 8;
         int j = m % 8;
-        unsigned long long knightAttackSet = knightAttackSets[m] & ~state.getActiveColorPieces();
+        unsigned long long knightAttackSet = attackSets[KNIGHT][m] & ~state.getActiveColorPieces();
         while (knightAttackSet > 0) {
             unsigned long n;
             _BitScanForward64(&n, knightAttackSet);
@@ -360,28 +361,34 @@ queue<Move> MoveGenerator::getKnightMoves(State& state) {
     }
     return knightMoves;
 }
-unsigned long long MoveGenerator::getNorthAttackSet(State& state, int i, int j) {
-    unsigned long long northAttackSet = slidingPieceAttackSets[NORTH][8 * i + j];
-    unsigned long k;
-    if (_BitScanReverse64(&k, slidingPieceAttackSets[NORTH][8 * i + j] & ~state.getEmptySquares()) == 0)
+unsigned long long MoveGenerator::getMagicAttackSet(unsigned long long maskedBlockers, MagicBitboardType k, int l) {
+    return k == COLUMN ? getNorthAttackSet(l, maskedBlockers) | getEastAttackSet(l, maskedBlockers) | getSouthAttackSet(l, maskedBlockers) | getWestAttackSet(l, maskedBlockers) : getNortheastAttackSet(l, maskedBlockers) | getSoutheastAttackSet(l, maskedBlockers) | getSouthwestAttackSet(l, maskedBlockers) | getNorthwestAttackSet(l, maskedBlockers);
+}
+unsigned long long MoveGenerator::getMaskedBlockers(unsigned long long pieces, MagicBitboardType k, int l) {
+    return pieces & (k == COLUMN ? attackSets[NORTH][l] & 0xFFFFFFFFFFFFFF00 | attackSets[EAST][l] & 0x7F7F7F7F7F7F7F7F | attackSets[SOUTH][l] & 0x00FFFFFFFFFFFFFF | attackSets[WEST][l] & 0xFEFEFEFEFEFEFEFE : attackSets[NORTHEAST][l] & 0x7F7F7F7F7F7F7F00 | attackSets[SOUTHEAST][l] & 0x007F7F7F7F7F7F7F | attackSets[SOUTHWEST][l] & 0x00FEFEFEFEFEFEFE | attackSets[NORTHWEST][l] & 0xFEFEFEFEFEFEFE00);
+}
+unsigned long long MoveGenerator::getNorthAttackSet(int k, unsigned long long maskedBlockers) {
+    unsigned long long northAttackSet = attackSets[NORTH][k];
+    unsigned long l;
+    if (_BitScanReverse64(&l, attackSets[NORTH][k] & maskedBlockers) == 0)
         return northAttackSet;
-    northAttackSet &= ~slidingPieceAttackSets[NORTH][k];
+    northAttackSet &= ~attackSets[NORTH][l];
     return northAttackSet;
 }
-unsigned long long MoveGenerator::getNortheastAttackSet(State& state, int i, int j) {
-    unsigned long long northeastAttackSet = slidingPieceAttackSets[NORTHEAST][8 * i + j];
-    unsigned long k;
-    if (_BitScanReverse64(&k, slidingPieceAttackSets[NORTHEAST][8 * i + j] & ~state.getEmptySquares()) == 0)
+unsigned long long MoveGenerator::getNortheastAttackSet(int k, unsigned long long maskedBlockers) {
+    unsigned long long northeastAttackSet = attackSets[NORTHEAST][k];
+    unsigned long l;
+    if (_BitScanReverse64(&l, attackSets[NORTHEAST][k] & maskedBlockers) == 0)
         return northeastAttackSet;
-    northeastAttackSet &= ~slidingPieceAttackSets[NORTHEAST][k];
+    northeastAttackSet &= ~attackSets[NORTHEAST][l];
     return northeastAttackSet;
 }
-unsigned long long MoveGenerator::getNorthwestAttackSet(State& state, int i, int j) {
-    unsigned long long northwestAttackSet = slidingPieceAttackSets[NORTHWEST][8 * i + j];
-    unsigned long k;
-    if (_BitScanReverse64(&k, slidingPieceAttackSets[NORTHWEST][8 * i + j] & ~state.getEmptySquares()) == 0)
+unsigned long long MoveGenerator::getNorthwestAttackSet(int k, unsigned long long maskedBlockers) {
+    unsigned long long northwestAttackSet = attackSets[NORTHWEST][k];
+    unsigned long l;
+    if (_BitScanReverse64(&l, attackSets[NORTHWEST][k] & maskedBlockers) == 0)
         return northwestAttackSet;
-    northwestAttackSet &= ~slidingPieceAttackSets[NORTHWEST][k];
+    northwestAttackSet &= ~attackSets[NORTHWEST][l];
     return northwestAttackSet;
 }
 queue<Move> MoveGenerator::getPawnCaptures(State& state) {
@@ -392,7 +399,7 @@ queue<Move> MoveGenerator::getPawnCaptures(State& state) {
         _BitScanForward64(&m, activeColorPawns);
         int i = m / 8;
         int j = m % 8;
-        unsigned long long pawnAttackSet = pawnAttackSets[state.getActiveColor()][m] & state.getInactiveColorPieces();
+        unsigned long long pawnAttackSet = attackSets[state.getActiveColor() ? BLACK_PAWN : WHITE_PAWN][m] & state.getInactiveColorPieces();
         while (pawnAttackSet > 0) {
             unsigned long n;
             _BitScanForward64(&n, pawnAttackSet);
@@ -404,8 +411,8 @@ queue<Move> MoveGenerator::getPawnCaptures(State& state) {
             if (!state.isActiveColorInCheck()) {
                 if (abs(k - 3.5) == 3.5) {
                     MoveType moveTypes[4] = { MoveType::PROMOTION_TO_BISHOP, MoveType::PROMOTION_TO_KNIGHT, MoveType::PROMOTION_TO_QUEEN, MoveType::PROMOTION_TO_ROOK };
-                    for (int l = 0; l < 4; l++)
-                        pawnCaptures.push(Move(i, j, k, l, moveTypes[l], state.getActiveColor() ? 'p' : 'P', inactiveColorPiece));
+                    for (int o = 0; o < 4; o++)
+                        pawnCaptures.push(Move(i, j, k, l, moveTypes[o], state.getActiveColor() ? 'p' : 'P', inactiveColorPiece));
                 }
                 else
                     pawnCaptures.push(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'p' : 'P', inactiveColorPiece));
@@ -449,8 +456,8 @@ queue<Move> MoveGenerator::getPawnSinglePushes(State& state) {
         if (!state.isActiveColorInCheck()) {
             if (abs((i + (state.getActiveColor() ? 1 : -1)) - 3.5) == 3.5) {
                 MoveType moveTypes[4] = { MoveType::PROMOTION_TO_BISHOP, MoveType::PROMOTION_TO_KNIGHT, MoveType::PROMOTION_TO_QUEEN, MoveType::PROMOTION_TO_ROOK };
-                for (int k = 0; k < 4; k++)
-                    pawnSinglePushes.push(Move(i, j, i + (state.getActiveColor() ? 1 : -1), j, moveTypes[k], state.getActiveColor() ? 'p' : 'P', '.'));
+                for (int l = 0; l < 4; l++)
+                    pawnSinglePushes.push(Move(i, j, i + (state.getActiveColor() ? 1 : -1), j, moveTypes[l], state.getActiveColor() ? 'p' : 'P', '.'));
             }
             else
                 pawnSinglePushes.push(Move(i, j, i + (state.getActiveColor() ? 1 : -1), j, MoveType::NORMAL, state.getActiveColor() ? 'p' : 'P', '.'));
@@ -461,43 +468,91 @@ queue<Move> MoveGenerator::getPawnSinglePushes(State& state) {
     }
     return pawnSinglePushes;
 }
-unsigned long long MoveGenerator::getSouthAttackSet(State& state, int i, int j) {
-    unsigned long long southAttackSet = slidingPieceAttackSets[SOUTH][8 * i + j];
-    unsigned long k;
-    if (_BitScanForward64(&k, slidingPieceAttackSets[SOUTH][8 * i + j] & ~state.getEmptySquares()) == 0)
+unsigned long long MoveGenerator::getSouthAttackSet(int k, unsigned long long maskedBlockers) {
+    unsigned long long southAttackSet = attackSets[SOUTH][k];
+    unsigned long l;
+    if (_BitScanForward64(&l, attackSets[SOUTH][k] & maskedBlockers) == 0)
         return southAttackSet;
-    southAttackSet &= ~slidingPieceAttackSets[SOUTH][k];
+    southAttackSet &= ~attackSets[SOUTH][l];
     return southAttackSet;
 }
-unsigned long long MoveGenerator::getSoutheastAttackSet(State& state, int i, int j) {
-    unsigned long long southeastAttackSet = slidingPieceAttackSets[SOUTHEAST][8 * i + j];
-    unsigned long k;
-    if (_BitScanForward64(&k, slidingPieceAttackSets[SOUTHEAST][8 * i + j] & ~state.getEmptySquares()) == 0)
+unsigned long long MoveGenerator::getSoutheastAttackSet(int k, unsigned long long maskedBlockers) {
+    unsigned long long southeastAttackSet = attackSets[SOUTHEAST][k];
+    unsigned long l;
+    if (_BitScanForward64(&l, attackSets[SOUTHEAST][k] & maskedBlockers) == 0)
         return southeastAttackSet;
-    southeastAttackSet &= ~slidingPieceAttackSets[SOUTHEAST][k];
+    southeastAttackSet &= ~attackSets[SOUTHEAST][l];
     return southeastAttackSet;
 }
-unsigned long long MoveGenerator::getSouthwestAttackSet(State& state, int i, int j) {
-    unsigned long long southwestAttackSet = slidingPieceAttackSets[SOUTHWEST][8 * i + j];
-    unsigned long k;
-    if (_BitScanForward64(&k, slidingPieceAttackSets[SOUTHWEST][8 * i + j] & ~state.getEmptySquares()) == 0)
+unsigned long long MoveGenerator::getSouthwestAttackSet(int k, unsigned long long maskedBlockers) {
+    unsigned long long southwestAttackSet = attackSets[SOUTHWEST][k];
+    unsigned long l;
+    if (_BitScanForward64(&l, attackSets[SOUTHWEST][k] & maskedBlockers) == 0)
         return southwestAttackSet;
-    southwestAttackSet &= ~slidingPieceAttackSets[SOUTHWEST][k];
+    southwestAttackSet &= ~attackSets[SOUTHWEST][l];
     return southwestAttackSet;
 }
-unsigned long long MoveGenerator::getWestAttackSet(State& state, int i, int j) {
-    unsigned long long westAttackSet = slidingPieceAttackSets[WEST][8 * i + j];
-    unsigned long k;
-    if (_BitScanReverse64(&k, slidingPieceAttackSets[WEST][8 * i + j] & ~state.getEmptySquares()) == 0)
+unsigned long long MoveGenerator::getWestAttackSet(int k, unsigned long long maskedBlockers) {
+    unsigned long long westAttackSet = attackSets[WEST][k];
+    unsigned long l;
+    if (_BitScanReverse64(&l, attackSets[WEST][k] & maskedBlockers) == 0)
         return westAttackSet;
-    westAttackSet &= ~slidingPieceAttackSets[WEST][k];
+    westAttackSet &= ~attackSets[WEST][l];
     return westAttackSet;
+}
+void MoveGenerator::initializeMagicAttackSets() {
+    mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++) {
+            vector<unsigned long long> maskedBlockersBitboards;
+            unsigned long long maskedBlockers = getMaskedBlockers(0xFFFFFFFFFFFFFFFF, COLUMN, 8 * i + j);
+            generateMaskedBlockersBitboards(maskedBlockersBitboards, maskedBlockers, 0);
+            for (int keySize = 3; ; keySize = min(keySize + 1, 12)) {
+                keySizes[COLUMN][8 * i + j] = keySize;
+                magicAttackSets[COLUMN][8 * i + j] = vector<unsigned long long>(1 << keySizes[COLUMN][8 * i + j]);
+                magicNumbers[COLUMN][8 * i + j] = rng() & rng();
+
+                if (!isThereCollision(COLUMN, 8 * i + j, maskedBlockersBitboards))
+                    break;
+            }
+        }
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++) {
+            vector<unsigned long long> maskedBlockersBitboards;
+            unsigned long long maskedBlockers = getMaskedBlockers(0xFFFFFFFFFFFFFFFF, DIAGONAL, 8 * i + j);
+            generateMaskedBlockersBitboards(maskedBlockersBitboards, maskedBlockers, 0);
+            for (int keySize = 3; ; keySize = min(keySize + 1, 12)) {
+                keySizes[DIAGONAL][8 * i + j] = keySize;
+                magicAttackSets[DIAGONAL][8 * i + j] = vector<unsigned long long>(1 << keySizes[DIAGONAL][8 * i + j]);
+                magicNumbers[DIAGONAL][8 * i + j] = rng() & rng();
+                if (!isThereCollision(DIAGONAL, 8 * i + j, maskedBlockersBitboards))
+                    break;
+            }
+        }
+}
+bool MoveGenerator::isThereCollision(MagicBitboardType k, int l, vector<unsigned long long>& maskedBlockersBitboards) {
+    for (unsigned long long maskedBlockers : maskedBlockersBitboards) {
+        unsigned long long key = getKey(maskedBlockers, k, l);
+        unsigned long long magicAttackSet = getMagicAttackSet(maskedBlockers, k, l);
+        if (magicAttackSets[k][l][key] != 0 && magicAttackSets[k][l][key] != magicAttackSet)
+            return true;
+        magicAttackSets[k][l][key] = magicAttackSet;
+    }
+    return false;
 }
 MoveGenerator::MoveGenerator() {
     generatePawnAttackSets();
     generateKnightAttackSets();
-    generateSlidingPieceAttackSets();
     generateKingAttackSets();
+    generateNorthAttackSets();
+    generateNortheastAttackSets();
+    generateEastAttackSets();
+    generateSoutheastAttackSets();
+    generateSouthAttackSets();
+    generateSouthwestAttackSets();
+    generateWestAttackSets();
+    generateNorthwestAttackSets();
+    initializeMagicAttackSets();
 }
 vector<Move> MoveGenerator::getMoves(State& state) {
     vector<Move> moves;
@@ -548,4 +603,3 @@ vector<Move> MoveGenerator::getMoves(State& state) {
     }
     return moves;
 }
-

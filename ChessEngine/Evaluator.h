@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 class Evaluator {
-    static constexpr int MAXIMUM_EVALUATION = 13800;
+    static constexpr int MAXIMUM_EVALUATION = 10400;
     static constexpr int PIECE_SQUARE_TABLES[24][8][8] = { { {0, 0, 0, 0, 0, 0, 0, 0},
                                                              {50, 50, 50, 50, 50, 50, 50, 50},
                                                              {10, 10, 20, 30, 30, 20, 10, 10},
