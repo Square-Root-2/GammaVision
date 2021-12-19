@@ -112,6 +112,8 @@ int State::getPossibleEnPassantTargetColumn() {
     return get<3>(hashCode);
 }
 int State::getPossibleEnPassantTargetRow() {
+    if (getPossibleEnPassantTargetColumn() == -1)
+        return -1;
     return getActiveColor() ? 4 : 3;
 }
 bool State::isActiveColorInCheck() {
@@ -173,6 +175,9 @@ bool State::isActiveColorPawn(int i, int j) {
 }
 bool State::isActiveColorPiece(int i, int j) {
     return getActiveColorPieces() & ((unsigned long long)1 << (8 * i + j));
+}
+bool State::isActiveColorRook(int i, int j) {
+    return bitboards[getActiveColor() ? BLACK_ROOKS : WHITE_ROOKS] & ((unsigned long long)1 << (8 * i + j));
 }
 bool State::isInactiveColorKing(int i, int j) {
     return bitboards[getActiveColor() ? WHITE_KINGS : BLACK_KINGS] & ((unsigned long long)1 << (8 * i + j));

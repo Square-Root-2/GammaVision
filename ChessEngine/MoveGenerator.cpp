@@ -191,7 +191,7 @@ queue<Move> MoveGenerator::getCastlings(State& state) {
     queue<Move> castlings;
     if (state.isActiveColorInCheck())
         return castlings;
-    if (state.canActiveColorCastleKingside() && !state.isPiece(state.getActiveColor() ? 0 : 7, 5) && !state.isPiece(state.getActiveColor() ? 0 : 7, 6)) {
+    if (state.canActiveColorCastleKingside() && !state.isPiece(state.getActiveColor() ? 0 : 7, 5) && !state.isPiece(state.getActiveColor() ? 0 : 7, 6) && state.isActiveColorRook(state.getActiveColor() ? 0 : 7, 7)) {
         state.setPiece(state.getActiveColor() ? 0 : 7, 4, '.');
         state.setPiece(state.getActiveColor() ? 0 : 7, 5, state.getActiveColor() ? 'k' : 'K');
         if (!state.isActiveColorInCheck()) {
@@ -205,7 +205,7 @@ queue<Move> MoveGenerator::getCastlings(State& state) {
         state.setPiece(state.getActiveColor() ? 0 : 7, 5, '.');
         state.setPiece(state.getActiveColor() ? 0 : 7, 4, state.getActiveColor() ? 'k' : 'K');
     }
-    if (state.canActiveColorCastleQueenside() && !state.isPiece(state.getActiveColor() ? 0 : 7, 1) && !state.isPiece(state.getActiveColor() ? 0 : 7, 2) && !state.isPiece(state.getActiveColor() ? 0 : 7, 3)) {
+    if (state.canActiveColorCastleQueenside() && !state.isPiece(state.getActiveColor() ? 0 : 7, 2) && !state.isPiece(state.getActiveColor() ? 0 : 7, 1) && !state.isPiece(state.getActiveColor() ? 0 : 7, 3) && state.isActiveColorRook(state.getActiveColor() ? 0 : 7, 0)) {
         state.setPiece(state.getActiveColor() ? 0 : 7, 4, '.');
         state.setPiece(state.getActiveColor() ? 0 : 7, 3, state.getActiveColor() ? 'k' : 'K');
         if (!state.isActiveColorInCheck()) {

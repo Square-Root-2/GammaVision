@@ -13,7 +13,9 @@ int main() {
         string FEN;
         getline(cin, FEN);
         State s(FEN);
-        e.perft(s, 1);
+        string depth;
+        getline(cin, depth);
+        e.perft(s, stoi(depth));
         /*
         tuple<Move, int, int> optimalMove = e.getOptimalMove(FEN, 30);
         cout << "Move: " << char(get<0>(optimalMove).getBeginColumn() + 'a') << " " << 8 - get<0>(optimalMove).getBeginRow() << " " << char(get<0>(optimalMove).getEndColumn() + 'a') << " " << 8 - get<0>(optimalMove).getEndRow() << " ";

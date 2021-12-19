@@ -173,9 +173,9 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
     return alpha;
 }
 int Engine::perft(State& state, int currentDepth, int depth) {
-    vector<Move> activeColorMoves = moveGenerator.getMoves(state);
     if (currentDepth == depth)
         return 1;
+    vector<Move> activeColorMoves = moveGenerator.getMoves(state);
     if (activeColorMoves.empty())
         return 0;
     if (depth - currentDepth == 1)
@@ -244,6 +244,6 @@ int Engine::perft(State& state, int depth) {
         cout << char(activeColorMoves[i].getBeginColumn() + 'a') << " " << 8 - activeColorMoves[i].getBeginRow() << " " << char(activeColorMoves[i].getEndColumn() + 'a') << " " << 8 - activeColorMoves[i].getEndRow() << ": " << nodes << "\n";
         state.setHashCode(hashCode);
     }
-    cout << "\nTotal Nodes: " << totalNodes << "\n";
+    cout << "\nTotal Nodes: " << totalNodes << "\n\n";
     return totalNodes;
 }

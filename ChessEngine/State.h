@@ -49,6 +49,7 @@ public:
     int getPossibleEnPassantTargetRow();
     bool isActiveColorInCheck();
     bool isActiveColorPiece(int i, int j);
+    bool isActiveColorRook(int i, int j);
     bool isInactiveColorKing(int i, int j);
     bool isInactiveColorPawn(int i, int j);
     bool isInactiveColorPiece(int i, int j);
