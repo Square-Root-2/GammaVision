@@ -26,60 +26,63 @@ State::State(string FEN) {
             if (isalpha(FEN[FEN.size() - 1])) {
                 bitboards[pieceToIndex[FEN[FEN.size() - 1]]] |= (unsigned long long)1 << (8 * i + j);
                 bitboards[isWhite(FEN[FEN.size() - 1]) ? WHITE_PIECES : BLACK_PIECES] |= (unsigned long long)1 << (8 * i + j);
-                get<0>(hashCode) += FEN[FEN.size() - 1];
+                get<0>(uniqueHash) += FEN[FEN.size() - 1];
                 j++;
             }
             else if (isdigit(FEN[FEN.size() - 1])) {
                 for (int k = 0; k < FEN[FEN.size() - 1] - '0'; k++)
-                    get<0>(hashCode) += '.';
+                    get<0>(uniqueHash) += '.';
                 j += FEN[FEN.size() - 1] - '0';
             }
             FEN.pop_back();
         }
         FEN.pop_back();
     }
-    get<1>(hashCode) = FEN[FEN.size() - 1] == 'b';
+    get<1>(uniqueHash) = FEN[FEN.size() - 1] == 'b';
     for (int k = 0; k < 2; k++)
         FEN.pop_back();
-    get<2>(hashCode) = 0;
+    get<2>(uniqueHash) = 0;
     while (true) {
         if (FEN[FEN.size() - 1] == ' ') {
             FEN.pop_back();
             break;
         }
         if (FEN[FEN.size() - 1] == 'K')
-            get<2>(hashCode) += 8;
+            get<2>(uniqueHash) += 8;
         else if (FEN[FEN.size() - 1] == 'Q')
-            get<2>(hashCode) += 4;
+            get<2>(uniqueHash) += 4;
         else if (FEN[FEN.size() - 1] == 'k')
-            get<2>(hashCode) += 2;
+            get<2>(uniqueHash) += 2;
         else if (FEN[FEN.size() - 1] == 'q') {
-            get<2>(hashCode)++;
+            get<2>(uniqueHash)++;
         }
         FEN.pop_back();
     }
-    get<3>(hashCode) = -1;
+    get<3>(uniqueHash) = -1;
     while (true) {
         if (FEN[FEN.size() - 1] == ' ') {
             FEN.pop_back();
             break;
         }
         if (isalpha(FEN[FEN.size() - 1]))
-            get<3>(hashCode) = FEN[FEN.size() - 1] - 'a';
+            get<3>(uniqueHash) = FEN[FEN.size() - 1] - 'a';
         FEN.pop_back();
     }
+    hash = 0;
+    for (int k = WHITE_PAWNS; k <= BLACK_KINGS; k++)
+        hash ^= bitboards[k];
+}
+bool State::operator==(State state) const {
+    return uniqueHash == state.getUniqueHash();
 }
 bool State::canActiveColorCastleKingside() {
-    return (get<2>(hashCode) & (1 << (3 - 2 * getActiveColor())));
+    return (get<2>(uniqueHash) & (1 << (3 - 2 * getActiveColor())));
 }
 bool State::canActiveColorCastleQueenside() {
-    return (get<2>(hashCode) & (1 << (2 - 2 * getActiveColor())));
+    return (get<2>(uniqueHash) & (1 << (2 - 2 * getActiveColor())));
 }
 bool State::getActiveColor() {
-    return get<1>(hashCode);
-}
-tuple<string, bool, int, int> State::getHashCode() {
-    return hashCode;
+    return get<1>(uniqueHash);
 }
 unsigned long long State::getActiveColorColumnAttackers() {
     return getActiveColor() ? bitboards[BLACK_ROOKS] | bitboards[BLACK_QUEENS] : bitboards[WHITE_ROOKS] | bitboards[WHITE_QUEENS];
@@ -102,19 +105,25 @@ unsigned long long State::getActiveColorPieces() {
 unsigned long long State::getEmptySquares() {
     return ~bitboards[WHITE_PIECES] & ~bitboards[BLACK_PIECES];
 }
+unsigned long long State::getHash() {
+    return hash;
+}
 unsigned long long State::getInactiveColorPieces() {
     return bitboards[getActiveColor() ? WHITE_PIECES : BLACK_PIECES];
 }
 char State::getPiece(int i, int j) {
-    return get<0>(hashCode)[8 * i + j];
+    return get<0>(uniqueHash)[8 * i + j];
 }
 int State::getPossibleEnPassantTargetColumn() {
-    return get<3>(hashCode);
+    return get<3>(uniqueHash);
 }
 int State::getPossibleEnPassantTargetRow() {
     if (getPossibleEnPassantTargetColumn() == -1)
         return -1;
     return getActiveColor() ? 4 : 3;
+}
+tuple<string, bool, int, int> State::getUniqueHash() {
+    return uniqueHash;
 }
 bool State::isActiveColorInCheck() {
     for (int i = 0; i < 8; i++)
@@ -192,37 +201,32 @@ bool State::isPiece(int i, int j) {
     return getPiece(i, j) != '.';
 }
 void State::setCanActiveColorCastleKingside(bool canActiveColorCastleKingside) {
-    get<2>(hashCode) += (8 - 6 * getActiveColor()) * (canActiveColorCastleKingside - ((get<2>(hashCode) & 1 << (3 - 2 * getActiveColor())) > 0));
+    get<2>(uniqueHash) += (8 - 6 * getActiveColor()) * (canActiveColorCastleKingside - ((get<2>(uniqueHash) & 1 << (3 - 2 * getActiveColor())) > 0));
 }
 void State::setCanActiveColorCastleQueenside(bool canActiveColorCastleQueenside) {
-    get<2>(hashCode) += (4 - 3 * getActiveColor()) * (canActiveColorCastleQueenside - ((get<2>(hashCode) & 1 << (2 - 2 * getActiveColor())) > 0));
-}
-void State::setHashCode(tuple<string, bool, int, int> hashCode) {
-    for (int k = WHITE_PAWNS; k <= BLACK_PIECES; k++)
-        bitboards[k] = 0;
-    for (int i = 0; i < 8; i++)
-        for (int j = 0; j < 8; j++) {
-            if (get<0>(hashCode)[8 * i + j] == '.')
-                continue;
-            bitboards[pieceToIndex[get<0>(hashCode)[8 * i + j]]] |= (unsigned long long)1 << (8 * i + j);
-            bitboards[isWhite(get<0>(hashCode)[8 * i + j]) ? WHITE_PIECES : BLACK_PIECES] |= (unsigned long long)1 << (8 * i + j);
-        }
-    this->hashCode = hashCode;
+    get<2>(uniqueHash) += (4 - 3 * getActiveColor()) * (canActiveColorCastleQueenside - ((get<2>(uniqueHash) & 1 << (2 - 2 * getActiveColor())) > 0));
 }
 void State::setPiece(int i, int j, char piece) {
     if (isPiece(i, j)) {
+        hash ^= bitboards[pieceToIndex[getPiece(i, j)]];
         bitboards[pieceToIndex[getPiece(i, j)]] -= (unsigned long long)1 << (8 * i + j);
+        hash ^= bitboards[pieceToIndex[getPiece(i, j)]];
         bitboards[isWhite(getPiece(i, j)) ? WHITE_PIECES : BLACK_PIECES] -= (unsigned long long)1 << (8 * i + j);
     }
     if (piece != '.') {
+        hash ^= bitboards[pieceToIndex[piece]];
         bitboards[pieceToIndex[piece]] |= (unsigned long long)1 << (8 * i + j);
+        hash ^= bitboards[pieceToIndex[piece]];
         bitboards[isWhite(piece) ? WHITE_PIECES : BLACK_PIECES] |= (unsigned long long)1 << (8 * i + j);
     }
-    get<0>(hashCode)[8 * i + j] = piece;
+    get<0>(uniqueHash)[8 * i + j] = piece;
 }
 void State::setPossibleEnPassantTargetColumn(int possibleEnPassantTargetColumn) {
-    get<3>(hashCode) = possibleEnPassantTargetColumn;
+    get<3>(uniqueHash) = possibleEnPassantTargetColumn;
 }
 void State::toggleActiveColor() {
-    get<1>(hashCode) = !get<1>(hashCode);
+    get<1>(uniqueHash) = !get<1>(uniqueHash);
+}
+unsigned long long std::hash<State>::operator()(State state) const {
+    return state.getHash();
 }

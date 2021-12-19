@@ -23,8 +23,9 @@ class State {
         BLACK_PIECES
     };
     unsigned long long bitboards[14];
-    tuple<string, bool, int, int> hashCode;
+    unsigned long long hash;
     unordered_map<char, BitboardType> pieceToIndex = { {'P', WHITE_PAWNS}, {'p', BLACK_PAWNS}, {'N', WHITE_KNIGHTS}, {'n', BLACK_KNIGHTS}, {'B', WHITE_BISHOPS}, {'b', BLACK_BISHOPS}, {'R', WHITE_ROOKS}, {'r', BLACK_ROOKS}, {'Q', WHITE_QUEENS}, {'q', BLACK_QUEENS}, {'K', WHITE_KINGS}, {'k', BLACK_KINGS} };
+    tuple<string, bool, int, int> uniqueHash;
     bool isInactiveColorBishop(int i, int j);
     bool isInactiveColorKnight(int i, int j);
     bool isInactiveColorQueen(int i, int j);
@@ -32,10 +33,10 @@ class State {
     bool isWhite(char piece);
 public:
     State(string FEN);
+    bool operator==(State state) const;
     bool canActiveColorCastleKingside();
     bool canActiveColorCastleQueenside();
     bool getActiveColor();
-    tuple<string, bool, int, int> getHashCode();
     unsigned long long getActiveColorColumnAttackers();
     unsigned long long getActiveColorDiagonalAttackers();
     unsigned long long getActiveColorKings();
@@ -43,10 +44,12 @@ public:
     unsigned long long getActiveColorPawns();
     unsigned long long getActiveColorPieces();
     unsigned long long getEmptySquares();
+    unsigned long long getHash();
     unsigned long long getInactiveColorPieces();
     char getPiece(int i, int j);
     int getPossibleEnPassantTargetColumn();
     int getPossibleEnPassantTargetRow();
+    tuple<string, bool, int, int> getUniqueHash();
     bool isActiveColorInCheck();
     bool isActiveColorPiece(int i, int j);
     bool isActiveColorRook(int i, int j);
@@ -58,8 +61,13 @@ public:
     bool isPiece(int i, int j);
     void setCanActiveColorCastleKingside(bool canActiveColorCastleKingside);
     void setCanActiveColorCastleQueenside(bool canActiveColorCastleQueenside);
-    void setHashCode(tuple<string, bool, int, int> hashCode);
     void setPiece(int i, int j, char piece);
     void setPossibleEnPassantTargetColumn(int possibleEnPassantTargetColumn);
     void toggleActiveColor();
 };
+
+namespace std {
+    template<> struct hash<State> {
+        unsigned long long operator()(State state) const;
+    };
+}

@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include "Evaluator.h"
-#include <map>
 #include "Move.h"
 #include "MoveGenerator.h"
 #include "State.h"
@@ -23,15 +22,15 @@ class Engine {
     MoveGenerator moveGenerator;
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
-    map<tuple<string, bool, int, int>, tuple<int, NodeType, int, Move>> transpositionTable;
+    unordered_map<State, tuple<int, NodeType, int, Move>> transpositionTable;
     void makeMove(State& state, Move& move);
-    pair<Move, int> negamax(State& state, int depth, int alpha, int beta);
     int negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool isNullOk, vector<Move>& activeColorMoves, bool isActiveColorInCheck);
+    pair<Move, int> negamax(State& state, int depth, int alpha, int beta);
     int perft(State& state, int currentDepth, int depth);
+    void printSearchResult(Move& optimalMove, int evaluation, int depth);
     int quiescenceSearch(State& state, int currentDepth, int alpha, int beta, vector<Move>& activeColorMoves);
     void unmakeMove(State& state, Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn);
 public:
-    int getMateValue();
-    tuple<Move, int, int> getOptimalMove(string& FEN, int seconds);
+    void getOptimalMove(State& state, int seconds);
     void perft(State& state, int depth);
 };
