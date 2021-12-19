@@ -12,11 +12,6 @@ int main() {
         cout << "FEN: ";
         string FEN;
         getline(cin, FEN);
-        State s(FEN);
-        string depth;
-        getline(cin, depth);
-        e.perft(s, stoi(depth));
-        /*
         tuple<Move, int, int> optimalMove = e.getOptimalMove(FEN, 30);
         cout << "Move: " << char(get<0>(optimalMove).getBeginColumn() + 'a') << " " << 8 - get<0>(optimalMove).getBeginRow() << " " << char(get<0>(optimalMove).getEndColumn() + 'a') << " " << 8 - get<0>(optimalMove).getEndRow() << " ";
         if (get<0>(optimalMove).getMoveType() == MoveType::PROMOTION_TO_BISHOP)
@@ -34,6 +29,5 @@ int main() {
         else
             cout << get<1>(optimalMove) << "\n";
         cout << "Depth: " << get<2>(optimalMove) << "\n\n";
-        */
     }
 }
