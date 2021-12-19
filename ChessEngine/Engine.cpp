@@ -57,6 +57,9 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
     int staticEvaluation = Evaluator::getEvaluation(state);
     int searchedMoves = 0;
     for (int i = 0; i < activeColorMoves.size(); i++) {
+        bool couldActiveColorCastleKingside = state.canActiveColorCastleKingside();
+        bool couldActiveColorCastleQueenside = state.canActiveColorCastleQueenside();
+        int possibleEnPassantTargetColumn = state.getPossibleEnPassantTargetColumn();
         makeMove(state, activeColorMoves[i]);
         bool isInactiveColorInCheck = state.isActiveColorInCheck();
         if (depth == 1 && !activeColorMoves[i].isCapture() && !isInactiveColorInCheck && !isActiveColorInCheck && abs(alpha) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && abs(beta) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && staticEvaluation + 320 <= alpha) {
@@ -71,7 +74,7 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
             evaluation = -negamax(state, 1, depth, -beta, -alpha, true, inactiveColorMoves, isInactiveColorInCheck);
         if (evaluation == mateValue + 1)
             return pair<Move, int>(Move(0, 0, 0, 0, MoveType::TIMEOUT, ' ', ' '), 0);
-        state.setHashCode(hashCode);
+        unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
         if (evaluation >= beta) {
             transpositionTable[hashCode] = tuple<int, NodeType, int, Move>(depth, NodeType::CUT_NODE, beta, activeColorMoves[i]);
             return pair<Move, int>(activeColorMoves[i], beta);
@@ -136,6 +139,9 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
     int searchedMoves = 0;
     int staticEvaluation = Evaluator::getEvaluation(state);
     for (int i = 0; i < activeColorMoves.size(); i++) {
+        bool couldActiveColorCastleKingside = state.canActiveColorCastleKingside();
+        bool couldActiveColorCastleQueenside = state.canActiveColorCastleQueenside();
+        int possibleEnPassantTargetColumn = state.getPossibleEnPassantTargetColumn();
         makeMove(state, activeColorMoves[i]);
         bool isInactiveColorInCheck = state.isActiveColorInCheck();
         if (depth - currentDepth == 1 && !activeColorMoves[i].isCapture() && !isInactiveColorInCheck && !isActiveColorInCheck && abs(alpha) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && abs(beta) < mateValue - MAXIMUM_NEGAMAX_DEPTH - MAXIMUM_QUIESCENCE_DEPTH && staticEvaluation + 320 <= alpha) {
@@ -150,7 +156,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
             evaluation = -negamax(state, currentDepth + 1, depth, -beta, -alpha, true, inactiveColorMoves, isInactiveColorInCheck);
         if (evaluation == mateValue + 1)
             return -(mateValue + 1);
-        state.setHashCode(hashCode);
+        unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
         if (evaluation >= beta) {
             if (activeColorMoves[i].isQuiet())
                 killerMoves[currentDepth].insert(activeColorMoves[i]);
@@ -199,21 +205,46 @@ int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta
         return beta;
     alpha = max(alpha, standPat);
     sort(activeColorMoves.begin(), activeColorMoves.end(), MoveComparator(killerMoves[0], move));
-    tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < activeColorMoves.size(); i++) {
         if (!activeColorMoves[i].isCapture())
             break;
+        bool couldActiveColorCastleKingside = state.canActiveColorCastleKingside();
+        bool couldActiveColorCastleQueenside = state.canActiveColorCastleQueenside();
+        int possibleEnPassantTargetColumn = state.getPossibleEnPassantTargetColumn();
         makeMove(state, activeColorMoves[i]);
         vector<Move> inactiveColorMoves = moveGenerator.getMoves(state);
         int evaluation = -quiescenceSearch(state, currentDepth + 1, -beta, -alpha, inactiveColorMoves);
         if (evaluation == mateValue + 1)
             return -(mateValue + 1);
-        state.setHashCode(hashCode);
+        unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
         if (evaluation >= beta)
             return beta;
         alpha = max(alpha, evaluation);
     }
     return alpha;
+}
+void Engine::unmakeMove(State& state, Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn) {
+    state.toggleActiveColor();
+    state.setPossibleEnPassantTargetColumn(possibleEnPassantTargetColumn);
+    state.setCanActiveColorCastleKingside(couldActiveColorCastleKingside);
+    state.setCanActiveColorCastleQueenside(couldActiveColorCastleQueenside);
+    if (move.getMoveType() == MoveType::KINGSIDE_CASTLE) {
+        state.setPiece(move.getBeginRow(), 5, '.');
+        state.setPiece(move.getBeginRow(), 7, state.getActiveColor() ? 'r' : 'R');
+    }
+    else if (move.getMoveType() == MoveType::QUEENSIDE_CASTLE) {
+        state.setPiece(move.getBeginRow(), 3, '.');
+        state.setPiece(move.getBeginRow(), 0, state.getActiveColor() ? 'r' : 'R');
+    }
+    else if (move.getMoveType() == MoveType::EN_PASSANT)
+        state.setPiece(move.getBeginRow(), move.getEndColumn(), move.getVictim());
+    else if (move.isPromotion())
+        state.setPiece(move.getEndRow(), move.getEndColumn(), move.getAggressor());
+    if (move.getMoveType() == MoveType::EN_PASSANT)
+        state.setPiece(move.getEndRow(), move.getEndColumn(), '.');
+    else
+        state.setPiece(move.getEndRow(), move.getEndColumn(), move.getVictim());
+    state.setPiece(move.getBeginRow(), move.getBeginColumn(), move.getAggressor());
 }
 int Engine::getMateValue() {
     return mateValue;
@@ -233,17 +264,18 @@ tuple<Move, int, int> Engine::getOptimalMove(string& FEN, int seconds) {
     }
     return tuple<Move, int, int>(optimalMove.first, optimalMove.second, MAXIMUM_NEGAMAX_DEPTH);
 }
-int Engine::perft(State& state, int depth) {
+void Engine::perft(State& state, int depth) {
     vector<Move> activeColorMoves = moveGenerator.getMoves(state);
     int totalNodes = 0;
-    tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < activeColorMoves.size(); i++) {
+        bool couldActiveColorCastleKingside = state.canActiveColorCastleKingside();
+        bool couldActiveColorCastleQueenside = state.canActiveColorCastleQueenside();
+        int possibleEnPassantTargetColumn = state.getPossibleEnPassantTargetColumn();
         makeMove(state, activeColorMoves[i]);
         int nodes = perft(state, 1, depth);
         totalNodes += nodes;
         cout << char(activeColorMoves[i].getBeginColumn() + 'a') << " " << 8 - activeColorMoves[i].getBeginRow() << " " << char(activeColorMoves[i].getEndColumn() + 'a') << " " << 8 - activeColorMoves[i].getEndRow() << ": " << nodes << "\n";
-        state.setHashCode(hashCode);
+        unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
     }
     cout << "\nTotal Nodes: " << totalNodes << "\n\n";
-    return totalNodes;
 }
