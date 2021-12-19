@@ -27,9 +27,10 @@ class Engine {
     void makeMove(State& state, Move& move);
     pair<Move, int> negamax(State& state, int depth, int alpha, int beta);
     int negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool isNullOk, vector<Move>& activeColorMoves, bool isActiveColorInCheck);
+    int perft(State& state, int currentDepth, int depth);
     int quiescenceSearch(State& state, int currentDepth, int alpha, int beta, vector<Move>& activeColorMoves);
 public:
     int getMateValue();
     tuple<Move, int, int> getOptimalMove(string& FEN, int seconds);
-    unsigned long long perft(State& state, int depth);
+    int perft(State& state, int depth);
 };

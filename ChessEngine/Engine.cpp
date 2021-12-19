@@ -2,6 +2,7 @@
 #include "MoveComparator.h"
 #include "MoveType.h"
 #include <random>
+#include <iostream>
 
 void Engine::makeMove(State& state, Move& move) {
     state.setPiece(move.getEndRow(), move.getEndColumn(), move.getAggressor());
@@ -171,6 +172,23 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
             transpositionTable[hashCode] = tuple<int, NodeType, int, Move>(depth - currentDepth, NodeType::PV_NODE, alpha, optimalMove);
     return alpha;
 }
+int Engine::perft(State& state, int currentDepth, int depth) {
+    vector<Move> activeColorMoves = moveGenerator.getMoves(state);
+    if (currentDepth == depth)
+        return 1;
+    if (activeColorMoves.empty())
+        return 0;
+    if (depth - currentDepth == 1)
+        return activeColorMoves.size();
+    int nodes = 0;
+    tuple<string, bool, int, int> hashCode = state.getHashCode();
+    for (int i = 0; i < activeColorMoves.size(); i++) {
+        makeMove(state, activeColorMoves[i]);
+        nodes += perft(state, currentDepth + 1, depth);
+        state.setHashCode(hashCode);
+    }
+    return nodes;
+}
 int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta, vector<Move>& activeColorMoves) {
     if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
         return -(mateValue + 1);
@@ -215,18 +233,17 @@ tuple<Move, int, int> Engine::getOptimalMove(string& FEN, int seconds) {
     }
     return tuple<Move, int, int>(optimalMove.first, optimalMove.second, MAXIMUM_NEGAMAX_DEPTH);
 }
-unsigned long long Engine::perft(State& state, int depth) {
+int Engine::perft(State& state, int depth) {
     vector<Move> activeColorMoves = moveGenerator.getMoves(state);
-    if (activeColorMoves.empty())
-        return 1;
-    if (depth == 1)
-        return activeColorMoves.size();
-    unsigned long long nodes = 0;
+    int totalNodes = 0;
     tuple<string, bool, int, int> hashCode = state.getHashCode();
     for (int i = 0; i < activeColorMoves.size(); i++) {
         makeMove(state, activeColorMoves[i]);
-        nodes += perft(state, depth - 1);;
+        int nodes = perft(state, 1, depth);
+        totalNodes += nodes;
+        cout << char(activeColorMoves[i].getBeginColumn() + 'a') << " " << 8 - activeColorMoves[i].getBeginRow() << " " << char(activeColorMoves[i].getEndColumn() + 'a') << " " << 8 - activeColorMoves[i].getEndRow() << ": " << nodes << "\n";
         state.setHashCode(hashCode);
     }
-    return nodes;
+    cout << "\nTotal Nodes: " << totalNodes << "\n";
+    return totalNodes;
 }
