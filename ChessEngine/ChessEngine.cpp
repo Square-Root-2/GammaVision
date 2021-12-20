@@ -21,6 +21,8 @@ int main() {
         else if (command == "perft")
             engine.perft(state, stoi(option));
         else if (command == "movetime")
-            engine.getOptimalMove(state, stoi(option));
+            engine.getOptimalMoveMoveTimeVersion(state, stoi(option));
+        else if (command == "depth")
+            engine.getOptimalMoveDepthVersion(state, stoi(option));
     }
 }

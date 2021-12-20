@@ -264,7 +264,22 @@ void Engine::unmakeMove(State& state, Move& move, bool couldActiveColorCastleKin
         state.setPiece(move.getEndRow(), move.getEndColumn(), move.getVictim());
     state.setPiece(move.getBeginRow(), move.getBeginColumn(), move.getAggressor());
 }
-void Engine::getOptimalMove(State& state, int seconds) {
+void Engine::getOptimalMoveDepthVersion(State& state, int maximumDepth) {
+    if (maximumDepth > MAXIMUM_NEGAMAX_DEPTH) {
+        cout << "\nDepth greater than maximum depth.\n";
+        return;
+    }
+    transpositionTable.clear();
+    pair<Move, int> optimalMove;
+    this->seconds = INT32_MAX;
+    start = chrono::steady_clock::now();
+    for (int depth = 1; depth <= maximumDepth; depth++) {
+        State s(state);
+        optimalMove = negamax(s, depth, -INT32_MAX, INT32_MAX);
+    }
+    printSearchResult(optimalMove.first, optimalMove.second, maximumDepth);
+}
+void Engine::getOptimalMoveMoveTimeVersion(State& state, int seconds) {
     transpositionTable.clear();
     pair<Move, int> optimalMove;
     this->seconds = seconds;

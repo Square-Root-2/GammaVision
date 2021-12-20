@@ -22,6 +22,9 @@ class State {
         WHITE_PIECES,
         BLACK_PIECES
     };
+    static const int BLACK_TO_MOVE = 768, CASTLING_RIGHTS = 769, POSSIBLE_EN_PASSANT_TARGET_COLUMN = 785;
+    static bool isZobristInitialized;
+    static unsigned long long Zobrist[793];
     unsigned long long bitboards[14];
     unsigned long long hash;
     unordered_map<char, BitboardType> pieceToIndex = { {'P', WHITE_PAWNS}, {'p', BLACK_PAWNS}, {'N', WHITE_KNIGHTS}, {'n', BLACK_KNIGHTS}, {'B', WHITE_BISHOPS}, {'b', BLACK_BISHOPS}, {'R', WHITE_ROOKS}, {'r', BLACK_ROOKS}, {'Q', WHITE_QUEENS}, {'q', BLACK_QUEENS}, {'K', WHITE_KINGS}, {'k', BLACK_KINGS} };

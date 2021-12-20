@@ -31,6 +31,7 @@ class Engine {
     int quiescenceSearch(State& state, int currentDepth, int alpha, int beta, vector<Move>& activeColorMoves);
     void unmakeMove(State& state, Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn);
 public:
-    void getOptimalMove(State& state, int seconds);
+    void getOptimalMoveDepthVersion(State& state, int maximumDepth);
+    void getOptimalMoveMoveTimeVersion(State& state, int seconds);
     void perft(State& state, int depth);
 };
