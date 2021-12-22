@@ -13,12 +13,7 @@ bool State::isWhite(char piece) {
     return isupper(piece);
 }
 State::State(string FEN) {
-    if (!isZobristInitialized) {
-        mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
-        for (int k = 0; k < 793; k++)
-            Zobrist[k] = rng();
-        isZobristInitialized = true;
-    }
+    initialize();
     for (int k = WHITE_PAWNS; k <= BLACK_PIECES; k++)
         bitboards[k] = 0;
     hash = 0;
@@ -141,6 +136,14 @@ int State::getPossibleEnPassantTargetRow() {
     if (getPossibleEnPassantTargetColumn() == -1)
         return -1;
     return getActiveColor() ? 4 : 3;
+}
+void State::initialize() {
+    if (isZobristInitialized)
+        return;
+    mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+    for (int k = 0; k < 793; k++)
+        Zobrist[k] = rng();
+    isZobristInitialized = true;
 }
 bool State::isActiveColorKing(int i, int j) {
     return bitboards[getActiveColor() ? BLACK_KING : WHITE_KING] & ((unsigned long long)1 << (8 * i + j));

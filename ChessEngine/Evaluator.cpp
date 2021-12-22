@@ -191,8 +191,7 @@ const int Evaluator::PIECE_SQUARE_TABLES[24][8][8] = { { {0, 0, 0, 0, 0, 0, 0, 0
                                                           {-30, -10, 30, 40, 40, 30, -10, -30},
                                                           {-30, -10, 20, 30, 30, 20, -10, -30},
                                                           {-30, -20, -10, 0, 0, -10, -20, -30},
-                                                          {-50, -40, -30, -20, -20, -30, -40, -50} } };
-                                                  
+                                                          {-50, -40, -30, -20, -20, -30, -40, -50} } };                                               
 unordered_map<char, int> Evaluator::pieceToIndex = { { 'P', 0 }, { 'p', 1 }, { 'N', 2 }, { 'n', 3 }, { 'B', 4 }, { 'b', 5 }, { 'R', 6 }, { 'r', 7 }, { 'Q', 8 }, { 'q', 9 }, { 'K', 10 }, { 'k', 11 } };
 bool Evaluator::isEndgame(State& state) {
     int activeColorPieces = 0;

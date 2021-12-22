@@ -54,6 +54,7 @@ public:
     char getPiece(int i, int j);
     int getPossibleEnPassantTargetColumn();
     int getPossibleEnPassantTargetRow();
+    static void initialize();
     bool isActiveColorKing(int i, int j);
     bool isActiveColorPawn(int i, int j);
     bool isActiveColorPiece(int i, int j);

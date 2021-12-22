@@ -1,0 +1,23 @@
+Board Representation
+- bitboards
+- 8x8 board
+- Zobrist hashing
+
+Move Generation
+- bitboards for pawns, knights, kings
+- magic bitboards for sliding pieces
+
+Search
+- negamax
+- alpha-beta
+- quiescence search
+- iterative deepening
+- null move reductions
+- killer heuristic
+- Most Valuable Victim - Least Valuable Aggressor
+- transposition table
+- late move reductions
+- futility pruning
+
+Evaluation
+- piece-square tables

@@ -7,6 +7,7 @@
 using namespace std;
 
 int main() {
+    State::initialize();
     Engine engine;
     State state("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     while (true) {
