@@ -119,6 +119,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\T14Gen1\source\repos\Square-Root-2\ChessEngine\ChessEngine</AdditionalIncludeDirectories>
+      <OpenMPSupport>Yes</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

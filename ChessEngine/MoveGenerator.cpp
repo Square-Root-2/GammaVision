@@ -3,6 +3,10 @@
 #include "MoveType.h"
 #include <random>
 
+unsigned long long MoveGenerator::attackSets[12][64];
+unsigned long long MoveGenerator::magicNumbers[2][64];
+int MoveGenerator::keySizes[2][64];
+vector<unsigned long long> MoveGenerator::magicAttackSets[2][64];
 void MoveGenerator::generateEastAttackSets() {
     for (int i = 0; i < 8; i++) {
         unsigned long long eastAttackSet = 0;
@@ -187,42 +191,17 @@ void MoveGenerator::generateWestAttackSets() {
         }
     }
 }
-queue<Move> MoveGenerator::getCastlings(State& state) {
-    queue<Move> castlings;
-    if (state.isActiveColorInCheck())
-        return castlings;
-    if (state.canActiveColorCastleKingside() && !state.isPiece(state.getActiveColor() ? 0 : 7, 5) && !state.isPiece(state.getActiveColor() ? 0 : 7, 6) && state.isActiveColorRook(state.getActiveColor() ? 0 : 7, 7)) {
-        state.setPiece(state.getActiveColor() ? 0 : 7, 4, '.');
-        state.setPiece(state.getActiveColor() ? 0 : 7, 5, state.getActiveColor() ? 'k' : 'K');
-        if (!state.isActiveColorInCheck()) {
-            state.setPiece(state.getActiveColor() ? 0 : 7, 5, '.');
-            state.setPiece(state.getActiveColor() ? 0 : 7, 6, state.getActiveColor() ? 'k' : 'K');
-            if (!state.isActiveColorInCheck())
-                castlings.push(Move(state.getActiveColor() ? 0 : 7, 4, state.getActiveColor() ? 0 : 7, 6, MoveType::KINGSIDE_CASTLE, state.getActiveColor() ? 'k' : 'K', '.'));
-            state.setPiece(state.getActiveColor() ? 0 : 7, 6, '.');
-            state.setPiece(state.getActiveColor() ? 0 : 7, 5, state.getActiveColor() ? 'k' : 'K');
-        }
-        state.setPiece(state.getActiveColor() ? 0 : 7, 5, '.');
-        state.setPiece(state.getActiveColor() ? 0 : 7, 4, state.getActiveColor() ? 'k' : 'K');
-    }
-    if (state.canActiveColorCastleQueenside() && !state.isPiece(state.getActiveColor() ? 0 : 7, 2) && !state.isPiece(state.getActiveColor() ? 0 : 7, 1) && !state.isPiece(state.getActiveColor() ? 0 : 7, 3) && state.isActiveColorRook(state.getActiveColor() ? 0 : 7, 0)) {
-        state.setPiece(state.getActiveColor() ? 0 : 7, 4, '.');
-        state.setPiece(state.getActiveColor() ? 0 : 7, 3, state.getActiveColor() ? 'k' : 'K');
-        if (!state.isActiveColorInCheck()) {
-            state.setPiece(state.getActiveColor() ? 0 : 7, 3, '.');
-            state.setPiece(state.getActiveColor() ? 0 : 7, 2, state.getActiveColor() ? 'k' : 'K');
-            if (!state.isActiveColorInCheck())
-                castlings.push(Move(state.getActiveColor() ? 0 : 7, 4, state.getActiveColor() ? 0 : 7, 2, MoveType::QUEENSIDE_CASTLE, state.getActiveColor() ? 'k' : 'K', '.'));
-            state.setPiece(state.getActiveColor() ? 0 : 7, 2, '.');
-            state.setPiece(state.getActiveColor() ? 0 : 7, 3, state.getActiveColor() ? 'k' : 'K');
-        }
-        state.setPiece(state.getActiveColor() ? 0 : 7, 3, '.');
-        state.setPiece(state.getActiveColor() ? 0 : 7, 4, state.getActiveColor() ? 'k' : 'K');
-    }
-    return castlings;
+void MoveGenerator::getCastles(vector<Move>& moves, State& state) {
+    if (isActiveColorInCheck(state))
+        return;
+    unsigned long long inactiveColorPieceAttackSets = getInactiveColorPieceAttackSets(state);
+    int i = state.getActiveColor() ? 0 : 7;
+    if (state.canActiveColorCastleKingside() && !state.isPiece(i, 5) && !state.isPiece(i, 6) && state.isActiveColorRook(i, 7) && !(inactiveColorPieceAttackSets & ((unsigned long long)1 << (8 * i + 5))))
+        moves.push_back(Move(i, 4, i, 6, MoveType::KINGSIDE_CASTLE, state.getActiveColor() ? 'k' : 'K', '.'));
+    if (state.canActiveColorCastleQueenside() && !state.isPiece(i, 3) && !state.isPiece(i, 2) && !state.isPiece(i, 1) && state.isActiveColorRook(i, 0) && !(inactiveColorPieceAttackSets & ((unsigned long long)1 << (8 * i + 3))))
+        moves.push_back(Move(i, 4, i, 2, MoveType::QUEENSIDE_CASTLE, state.getActiveColor() ? 'k' : 'K', '.'));
 }
-queue<Move> MoveGenerator::getColumnAttackerMoves(State& state) {
-    queue<Move> columnAttackerMoves;
+void MoveGenerator::getColumnAttackerMoves(vector<Move>& moves, State& state) {
     unsigned long long columnAttackers = state.getActiveColorColumnAttackers();
     while (columnAttackers > 0) {
         unsigned long m;
@@ -237,20 +216,13 @@ queue<Move> MoveGenerator::getColumnAttackerMoves(State& state) {
             int l = n % 8;
             char activeColorPiece = state.getPiece(i, j);
             char inactiveColorPiece = state.getPiece(k, l);
-            state.setPiece(i, j, '.');
-            state.setPiece(k, l, activeColorPiece);
-            if (!state.isActiveColorInCheck())
-                columnAttackerMoves.push(Move(i, j, k, l, MoveType::NORMAL, activeColorPiece, inactiveColorPiece));
-            state.setPiece(k, l, inactiveColorPiece);
-            state.setPiece(i, j, activeColorPiece);
+            moves.push_back(Move(i, j, k, l, MoveType::NORMAL, activeColorPiece, inactiveColorPiece));
             columnAttackerAttackSet -= (unsigned long long)1 << n;
         }
         columnAttackers -= (unsigned long long)1 << m;
     }
-    return columnAttackerMoves;
 }
-queue<Move> MoveGenerator::getDiagonalAttackerMoves(State& state) {
-    queue<Move> diagonalAttackerMoves;
+void MoveGenerator::getDiagonalAttackerMoves(vector<Move>& moves, State& state) {
     unsigned long long diagonalAttackers = state.getActiveColorDiagonalAttackers();
     while (diagonalAttackers > 0) {
         unsigned long m;
@@ -265,17 +237,11 @@ queue<Move> MoveGenerator::getDiagonalAttackerMoves(State& state) {
             int l = n % 8;
             char activeColorPiece = state.getPiece(i, j);
             char inactiveColorPiece = state.getPiece(k, l);
-            state.setPiece(i, j, '.');
-            state.setPiece(k, l, activeColorPiece);
-            if (!state.isActiveColorInCheck())
-                diagonalAttackerMoves.push(Move(i, j, k, l, MoveType::NORMAL, activeColorPiece, inactiveColorPiece));
-            state.setPiece(k, l, inactiveColorPiece);
-            state.setPiece(i, j, activeColorPiece);
+            moves.push_back(Move(i, j, k, l, MoveType::NORMAL, activeColorPiece, inactiveColorPiece));
             diagonalAttackerAttackSet -= (unsigned long long)1 << n;
         }
         diagonalAttackers -= (unsigned long long)1 << m;
     }
-    return diagonalAttackerMoves;
 }
 unsigned long long MoveGenerator::getEastAttackSet(int k, unsigned long long maskedBlockers) {
     unsigned long long eastAttackSet = attackSets[EAST][k];
@@ -285,34 +251,82 @@ unsigned long long MoveGenerator::getEastAttackSet(int k, unsigned long long mas
     eastAttackSet &= ~attackSets[EAST][l];
     return eastAttackSet;
 }
-queue<Move> MoveGenerator::getEnPassants(State& state) {
-    queue<Move> enPassants;
+void MoveGenerator::getEnPassants(vector<Move>& moves, State& state) {
     if (state.getPossibleEnPassantTargetRow() == -1)
-        return enPassants;
+        return;
     int dj[2] = { -1, 1 };
     for (int k = 0; k < 2; k++) {
         if (state.getPossibleEnPassantTargetColumn() + dj[k] < 0 || state.getPossibleEnPassantTargetColumn() + dj[k] >= 8 || !state.isActiveColorPawn(state.getPossibleEnPassantTargetRow(), state.getPossibleEnPassantTargetColumn() + dj[k]))
             continue;
-        state.setPiece(state.getPossibleEnPassantTargetRow(), state.getPossibleEnPassantTargetColumn() + dj[k], '.');
-        state.setPiece(state.getPossibleEnPassantTargetRow() + (state.getActiveColor() ? 1 : -1), state.getPossibleEnPassantTargetColumn(), state.getActiveColor() ? 'p' : 'P');
-        state.setPiece(state.getPossibleEnPassantTargetRow(), state.getPossibleEnPassantTargetColumn(), '.');
-        if (!state.isActiveColorInCheck())
-             enPassants.push(Move(state.getPossibleEnPassantTargetRow(), state.getPossibleEnPassantTargetColumn() + dj[k], state.getPossibleEnPassantTargetRow() + (state.getActiveColor() ? 1 : -1), state.getPossibleEnPassantTargetColumn(), MoveType::EN_PASSANT, state.getActiveColor() ? 'p' : 'P', state.getActiveColor() ? 'P' : 'p'));
-        state.setPiece(state.getPossibleEnPassantTargetRow(), state.getPossibleEnPassantTargetColumn(), state.getActiveColor() ? 'P' : 'p');
-        state.setPiece(state.getPossibleEnPassantTargetRow() + (state.getActiveColor() ? 1 : -1), state.getPossibleEnPassantTargetColumn(), '.');
-        state.setPiece(state.getPossibleEnPassantTargetRow(), state.getPossibleEnPassantTargetColumn() + dj[k], state.getActiveColor() ? 'p' : 'P');
+        moves.push_back(Move(state.getPossibleEnPassantTargetRow(), state.getPossibleEnPassantTargetColumn() + dj[k], state.getPossibleEnPassantTargetRow() + (state.getActiveColor() ? 1 : -1), state.getPossibleEnPassantTargetColumn(), MoveType::EN_PASSANT, state.getActiveColor() ? 'p' : 'P', state.getActiveColor() ? 'P' : 'p'));
     }
-    return enPassants;
+}
+unsigned long long MoveGenerator::getInactiveColorColumnAttackerAttackSets(State& state) {
+    unsigned long long inactiveColorColumnAttackerAttackSets = 0;
+    unsigned long long inactiveColorColumnAttackers = state.getInactiveColorColumnAttackers();
+    while (inactiveColorColumnAttackers > 0) {
+        unsigned long k;
+        _BitScanForward64(&k, inactiveColorColumnAttackers);
+        inactiveColorColumnAttackerAttackSets |= getMagicAttackSet(getMaskedBlockers(~state.getEmptySquares(), COLUMN, k), COLUMN, k);
+        inactiveColorColumnAttackers -= (unsigned long long)1 << k;
+    }
+    return inactiveColorColumnAttackerAttackSets;
+}
+unsigned long long MoveGenerator::getInactiveColorDiagonalAttackerAttackSets(State& state) {
+    unsigned long long inactiveColorDiagonalAttackerAttackSets = 0;
+    unsigned long long inactiveColorDiagonalAttackers = state.getInactiveColorDiagonalAttackers();
+    while (inactiveColorDiagonalAttackers > 0) {
+        unsigned long k;
+        _BitScanForward64(&k, inactiveColorDiagonalAttackers);
+        inactiveColorDiagonalAttackerAttackSets |= getMagicAttackSet(getMaskedBlockers(~state.getEmptySquares(), DIAGONAL, k), DIAGONAL, k);
+        inactiveColorDiagonalAttackers -= (unsigned long long)1 << k;
+    }
+    return inactiveColorDiagonalAttackerAttackSets;
+}
+unsigned long long MoveGenerator::getInactiveColorKingAttackSets(State& state) {
+    unsigned long long inactiveColorKingAttackSets = 0;
+    unsigned long long inactiveColorKing = state.getInactiveColorKing();
+    while (inactiveColorKing > 0) {
+        unsigned long k;
+        _BitScanForward64(&k, inactiveColorKing);
+        inactiveColorKingAttackSets |= attackSets[KING][k];
+        inactiveColorKing -= (unsigned long long)1 << k;
+    }
+    return inactiveColorKingAttackSets;
+}
+unsigned long long MoveGenerator::getInactiveColorKnightAttackSets(State& state) {
+    unsigned long long inactiveColorKnightAttackSets = 0;
+    unsigned long long inactiveColorKnights = state.getInactiveColorKnights();
+    while (inactiveColorKnights > 0) {
+        unsigned long k;
+        _BitScanForward64(&k, inactiveColorKnights);
+        inactiveColorKnightAttackSets |= attackSets[KNIGHT][k];
+        inactiveColorKnights -= (unsigned long long)1 << k;
+    }
+    return inactiveColorKnightAttackSets;
+}
+unsigned long long MoveGenerator::getInactiveColorPawnAttackSets(State& state) {
+    unsigned long long inactiveColorPawnAttackSets = 0;
+    unsigned long long inactiveColorPawns = state.getInactiveColorPawns();
+    while (inactiveColorPawns > 0) {
+        unsigned long k;
+        _BitScanForward64(&k, inactiveColorPawns);
+        inactiveColorPawnAttackSets |= attackSets[state.getActiveColor() ? WHITE_PAWN : BLACK_PAWN][k];
+        inactiveColorPawns -= (unsigned long long)1 << k;
+    }
+    return inactiveColorPawnAttackSets;
+}
+unsigned long long MoveGenerator::getInactiveColorPieceAttackSets(State& state) {
+    return getInactiveColorPawnAttackSets(state) | getInactiveColorKnightAttackSets(state) | getInactiveColorKingAttackSets(state) | getInactiveColorColumnAttackerAttackSets(state) | getInactiveColorDiagonalAttackerAttackSets(state);
 }
 unsigned long long MoveGenerator::getKey(unsigned long long maskedBlockers, MagicBitboardType k, int l) {
     return (maskedBlockers * magicNumbers[k][l]) >> (64 - keySizes[k][l]);
 }
-queue<Move> MoveGenerator::getKingMoves(State& state) {
-    queue<Move> kingMoves;
-    unsigned long long kings = state.getActiveColorKings();
-    while (kings > 0) {
+void MoveGenerator::getKingMoves(vector<Move>& moves, State& state) {
+    unsigned long long king = state.getActiveColorKing();
+    while (king > 0) {
         unsigned long m;
-        _BitScanForward64(&m, kings);
+        _BitScanForward64(&m, king);
         int i = m / 8;
         int j = m % 8;
         unsigned long long kingAttackSet = attackSets[KING][m] & ~state.getActiveColorPieces();
@@ -322,20 +336,13 @@ queue<Move> MoveGenerator::getKingMoves(State& state) {
             int k = n / 8;
             int l = n % 8;
             char inactiveColorPiece = state.getPiece(k, l);
-            state.setPiece(i, j, '.');
-            state.setPiece(k, l, state.getActiveColor() ? 'k' : 'K');
-            if (!state.isActiveColorInCheck())
-                kingMoves.push(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'k' : 'K', inactiveColorPiece));
-            state.setPiece(k, l, inactiveColorPiece);
-            state.setPiece(i, j, state.getActiveColor() ? 'k' : 'K');
+            moves.push_back(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'k' : 'K', inactiveColorPiece));
             kingAttackSet -= (unsigned long long)1 << n;
         }
-        kings -= (unsigned long long)1 << m;
+        king -= (unsigned long long)1 << m;
     }
-    return kingMoves;
 }
-queue<Move> MoveGenerator::getKnightMoves(State& state) {
-    queue<Move> knightMoves;
+void MoveGenerator::getKnightMoves(vector<Move>& moves, State& state) {
     unsigned long long activeColorKnights = state.getActiveColorKnights();
     while (activeColorKnights > 0) {
         unsigned long m;
@@ -349,17 +356,11 @@ queue<Move> MoveGenerator::getKnightMoves(State& state) {
             int k = n / 8;
             int l = n % 8;
             char inactiveColorPiece = state.getPiece(k, l);
-            state.setPiece(i, j, '.');
-            state.setPiece(k, l, state.getActiveColor() ? 'n' : 'N');
-            if (!state.isActiveColorInCheck())
-                knightMoves.push(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'n' : 'N', inactiveColorPiece));
-            state.setPiece(k, l, inactiveColorPiece);
-            state.setPiece(i, j, state.getActiveColor() ? 'n' : 'N');
+            moves.push_back(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'n' : 'N', inactiveColorPiece));
             knightAttackSet -= (unsigned long long)1 << n;
         }
         activeColorKnights -= (unsigned long long)1 << m;
     }
-    return knightMoves;
 }
 unsigned long long MoveGenerator::getMagicAttackSet(unsigned long long maskedBlockers, MagicBitboardType k, int l) {
     return k == COLUMN ? getNorthAttackSet(l, maskedBlockers) | getEastAttackSet(l, maskedBlockers) | getSouthAttackSet(l, maskedBlockers) | getWestAttackSet(l, maskedBlockers) : getNortheastAttackSet(l, maskedBlockers) | getSoutheastAttackSet(l, maskedBlockers) | getSouthwestAttackSet(l, maskedBlockers) | getNorthwestAttackSet(l, maskedBlockers);
@@ -391,8 +392,7 @@ unsigned long long MoveGenerator::getNorthwestAttackSet(int k, unsigned long lon
     northwestAttackSet &= ~attackSets[NORTHWEST][l];
     return northwestAttackSet;
 }
-queue<Move> MoveGenerator::getPawnCaptures(State& state) {
-    queue<Move> pawnCaptures;
+void MoveGenerator::getPawnCaptures(vector<Move>& moves, State& state) {
     unsigned long long activeColorPawns = state.getActiveColorPawns();
     while (activeColorPawns > 0) {
         unsigned long m;
@@ -406,67 +406,45 @@ queue<Move> MoveGenerator::getPawnCaptures(State& state) {
             int k = n / 8;
             int l = n % 8;
             char inactiveColorPiece = state.getPiece(k, l);
-            state.setPiece(i, j, '.');
-            state.setPiece(k, l, state.getActiveColor() ? 'p' : 'P');
-            if (!state.isActiveColorInCheck()) {
-                if (abs(k - 3.5) == 3.5) {
-                    MoveType moveTypes[4] = { MoveType::PROMOTION_TO_BISHOP, MoveType::PROMOTION_TO_KNIGHT, MoveType::PROMOTION_TO_QUEEN, MoveType::PROMOTION_TO_ROOK };
-                    for (int o = 0; o < 4; o++)
-                        pawnCaptures.push(Move(i, j, k, l, moveTypes[o], state.getActiveColor() ? 'p' : 'P', inactiveColorPiece));
-                }
-                else
-                    pawnCaptures.push(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'p' : 'P', inactiveColorPiece));
+            if (abs(k - 3.5) == 3.5) {
+                MoveType moveTypes[4] = { MoveType::PROMOTION_TO_BISHOP, MoveType::PROMOTION_TO_KNIGHT, MoveType::PROMOTION_TO_QUEEN, MoveType::PROMOTION_TO_ROOK };
+                for (int o = 0; o < 4; o++)
+                    moves.push_back(Move(i, j, k, l, moveTypes[o], state.getActiveColor() ? 'p' : 'P', inactiveColorPiece));
             }
-            state.setPiece(k, l, inactiveColorPiece);
-            state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
+            else
+                moves.push_back(Move(i, j, k, l, MoveType::NORMAL, state.getActiveColor() ? 'p' : 'P', inactiveColorPiece));
             pawnAttackSet -= (unsigned long long)1 << n;
         }
         activeColorPawns -= (unsigned long long)1 << m;
     }
-    return pawnCaptures;
 }
-queue<Move> MoveGenerator::getPawnDoublePushes(State& state) {
-    queue<Move> pawnDoublePushes;
+void MoveGenerator::getPawnDoublePushes(vector<Move>& moves, State& state) {
     unsigned long long activeColorPawns = state.getActiveColorPawns() & (state.getActiveColor() ? 0x0000000000FF00 & state.getEmptySquares() >> 8 & state.getEmptySquares() >> 16 : 0x00FF000000000000 & state.getEmptySquares() << 8 & state.getEmptySquares() << 16);
     while (activeColorPawns > 0) {
         unsigned long k;
         _BitScanForward64(&k, activeColorPawns);
         int i = k / 8;
         int j = k % 8;
-        state.setPiece(i, j, '.');
-        state.setPiece(i + 2 * (state.getActiveColor() ? 1 : -1), j, state.getActiveColor() ? 'p' : 'P');
-        if (!state.isActiveColorInCheck())
-            pawnDoublePushes.push(Move(i, j, i + 2 * (state.getActiveColor() ? 1 : -1), j, MoveType::PAWN_DOUBLE_PUSH, state.getActiveColor() ? 'p' : 'P', '.'));
-        state.setPiece(i + 2 * (state.getActiveColor() ? 1 : -1), j, '.');
-        state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
+        moves.push_back(Move(i, j, i + 2 * (state.getActiveColor() ? 1 : -1), j, MoveType::PAWN_DOUBLE_PUSH, state.getActiveColor() ? 'p' : 'P', '.'));
         activeColorPawns -= (unsigned long long)1 << k;
     }
-    return pawnDoublePushes;
 }
-queue<Move> MoveGenerator::getPawnSinglePushes(State& state) {
-    queue<Move> pawnSinglePushes;
+void MoveGenerator::getPawnSinglePushes(vector<Move>& moves, State& state) {
     unsigned long long activeColorPawns = state.getActiveColorPawns() & (state.getActiveColor() ? state.getEmptySquares() >> 8 : state.getEmptySquares() << 8);
     while (activeColorPawns > 0) {
         unsigned long k;
         _BitScanForward64(&k, activeColorPawns);
         int i = k / 8;
         int j = k % 8;
-        state.setPiece(i, j, '.');
-        state.setPiece(i + (state.getActiveColor() ? 1 : -1), j, state.getActiveColor() ? 'p' : 'P');
-        if (!state.isActiveColorInCheck()) {
-            if (abs((i + (state.getActiveColor() ? 1 : -1)) - 3.5) == 3.5) {
-                MoveType moveTypes[4] = { MoveType::PROMOTION_TO_BISHOP, MoveType::PROMOTION_TO_KNIGHT, MoveType::PROMOTION_TO_QUEEN, MoveType::PROMOTION_TO_ROOK };
-                for (int l = 0; l < 4; l++)
-                    pawnSinglePushes.push(Move(i, j, i + (state.getActiveColor() ? 1 : -1), j, moveTypes[l], state.getActiveColor() ? 'p' : 'P', '.'));
-            }
-            else
-                pawnSinglePushes.push(Move(i, j, i + (state.getActiveColor() ? 1 : -1), j, MoveType::NORMAL, state.getActiveColor() ? 'p' : 'P', '.'));
+        if (abs((i + (state.getActiveColor() ? 1 : -1)) - 3.5) == 3.5) {
+            MoveType moveTypes[4] = { MoveType::PROMOTION_TO_BISHOP, MoveType::PROMOTION_TO_KNIGHT, MoveType::PROMOTION_TO_QUEEN, MoveType::PROMOTION_TO_ROOK };
+            for (int l = 0; l < 4; l++)
+                moves.push_back(Move(i, j, i + (state.getActiveColor() ? 1 : -1), j, moveTypes[l], state.getActiveColor() ? 'p' : 'P', '.'));
         }
-        state.setPiece(i + (state.getActiveColor() ? 1 : -1), j, '.');
-        state.setPiece(i, j, state.getActiveColor() ? 'p' : 'P');
+        else
+            moves.push_back(Move(i, j, i + (state.getActiveColor() ? 1 : -1), j, MoveType::NORMAL, state.getActiveColor() ? 'p' : 'P', '.'));
         activeColorPawns -= (unsigned long long)1 << k;
     }
-    return pawnSinglePushes;
 }
 unsigned long long MoveGenerator::getSouthAttackSet(int k, unsigned long long maskedBlockers) {
     unsigned long long southAttackSet = attackSets[SOUTH][k];
@@ -540,7 +518,21 @@ bool MoveGenerator::isThereCollision(MagicBitboardType k, int l, vector<unsigned
     }
     return false;
 }
-MoveGenerator::MoveGenerator() {
+void MoveGenerator::getMoves(vector<Move>& moves, State& state) {
+    initialize();
+    getPawnSinglePushes(moves, state);
+    getPawnDoublePushes(moves, state);
+    getPawnCaptures(moves, state);
+    getKnightMoves(moves, state);
+    getKingMoves(moves, state);
+    getColumnAttackerMoves(moves, state);
+    getDiagonalAttackerMoves(moves, state);
+    getEnPassants(moves, state);
+    getCastles(moves, state);
+}
+void MoveGenerator::initialize() {
+    if (!magicAttackSets[0][0].empty())
+        return;
     generatePawnAttackSets();
     generateKnightAttackSets();
     generateKingAttackSets();
@@ -554,52 +546,7 @@ MoveGenerator::MoveGenerator() {
     generateNorthwestAttackSets();
     initializeMagicAttackSets();
 }
-vector<Move> MoveGenerator::getMoves(State& state) {
-    vector<Move> moves;
-    queue<Move> pawnSinglePushes = getPawnSinglePushes(state);
-    while (!pawnSinglePushes.empty()) {
-        moves.push_back(pawnSinglePushes.front());
-        pawnSinglePushes.pop();
-    }
-    queue<Move> pawnDoublePushes = getPawnDoublePushes(state);
-    while (!pawnDoublePushes.empty()) {
-        moves.push_back(pawnDoublePushes.front());
-        pawnDoublePushes.pop();
-    }
-    queue<Move> pawnCaptures = getPawnCaptures(state);
-    while (!pawnCaptures.empty()) {
-        moves.push_back(pawnCaptures.front());
-        pawnCaptures.pop();
-    }
-    queue<Move> enPassants = getEnPassants(state);
-    while (!enPassants.empty()) {
-        moves.push_back(enPassants.front());
-        enPassants.pop();
-    }
-    queue<Move> knightsMoves = getKnightMoves(state);
-    while (!knightsMoves.empty()) {
-        moves.push_back(knightsMoves.front());
-        knightsMoves.pop();
-    }
-    queue<Move> diagonalAttackerMoves = getDiagonalAttackerMoves(state);
-    while (!diagonalAttackerMoves.empty()) {
-        moves.push_back(diagonalAttackerMoves.front());
-        diagonalAttackerMoves.pop();
-    }
-    queue<Move> columnAttackerMoves = getColumnAttackerMoves(state);
-    while (!columnAttackerMoves.empty()) {
-        moves.push_back(columnAttackerMoves.front());
-        columnAttackerMoves.pop();
-    }
-    queue<Move> kingMoves = getKingMoves(state);
-    while (!kingMoves.empty()) {
-        moves.push_back(kingMoves.front());
-        kingMoves.pop();
-    }
-    queue<Move> castlings = getCastlings(state);
-    while (!castlings.empty()) {
-        moves.push_back(castlings.front());
-        castlings.pop();
-    }
-    return moves;
+bool MoveGenerator::isActiveColorInCheck(State& state) {
+    initialize();
+    return getInactiveColorPieceAttackSets(state) & state.getActiveColorKing();
 }

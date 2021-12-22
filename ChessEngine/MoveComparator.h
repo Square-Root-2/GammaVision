@@ -12,6 +12,9 @@ class MoveComparator {
 	bool comparePromotions(Move& move1, Move& move2);
 	bool compareQuietMoves(Move& move1, Move& move2);
 public:
+	MoveComparator();
+	MoveComparator(Move& hashMove);
+	MoveComparator(unordered_set<Move>& killerMoves);
 	MoveComparator(unordered_set<Move>& killerMoves, Move& hashMove);
 	bool operator()(Move& move1, Move& move2);
 };

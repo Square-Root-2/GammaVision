@@ -1,7 +1,7 @@
 #include "Move.h"
 
 Move::Move() {
-	moveType = MoveType::NULL_MOVE;
+	moveType = MoveType::DEFAULT;
 }
 Move::Move(int beginRow, int beginColumn, int endRow, int endColumn, MoveType moveType, char aggressor, char victim) {
 	this->beginRow = beginRow;

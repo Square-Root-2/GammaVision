@@ -17,8 +17,8 @@ class State {
         BLACK_ROOKS,
         WHITE_QUEENS,
         BLACK_QUEENS,
-        WHITE_KINGS,
-        BLACK_KINGS,
+        WHITE_KING,
+        BLACK_KING,
         WHITE_PIECES,
         BLACK_PIECES
     };
@@ -27,12 +27,9 @@ class State {
     static unsigned long long Zobrist[793];
     unsigned long long bitboards[14];
     unsigned long long hash;
-    unordered_map<char, BitboardType> pieceToIndex = { {'P', WHITE_PAWNS}, {'p', BLACK_PAWNS}, {'N', WHITE_KNIGHTS}, {'n', BLACK_KNIGHTS}, {'B', WHITE_BISHOPS}, {'b', BLACK_BISHOPS}, {'R', WHITE_ROOKS}, {'r', BLACK_ROOKS}, {'Q', WHITE_QUEENS}, {'q', BLACK_QUEENS}, {'K', WHITE_KINGS}, {'k', BLACK_KINGS} };
+    unordered_map<char, BitboardType> pieceToIndex = { {'P', WHITE_PAWNS}, {'p', BLACK_PAWNS}, {'N', WHITE_KNIGHTS}, {'n', BLACK_KNIGHTS}, {'B', WHITE_BISHOPS}, {'b', BLACK_BISHOPS}, {'R', WHITE_ROOKS}, {'r', BLACK_ROOKS}, {'Q', WHITE_QUEENS}, {'q', BLACK_QUEENS}, {'K', WHITE_KING}, {'k', BLACK_KING} };
     tuple<string, bool, int, int> uniqueHash;
-    bool isInactiveColorBishop(int i, int j);
-    bool isInactiveColorKnight(int i, int j);
-    bool isInactiveColorQueen(int i, int j);
-    bool isInactiveColorRook(int i, int j);
+    tuple<string, bool, int, int> getUniqueHash();
     bool isWhite(char piece);
 public:
     State(string FEN);
@@ -42,25 +39,28 @@ public:
     bool getActiveColor();
     unsigned long long getActiveColorColumnAttackers();
     unsigned long long getActiveColorDiagonalAttackers();
-    unsigned long long getActiveColorKings();
+    unsigned long long getActiveColorKing();
     unsigned long long getActiveColorKnights();
     unsigned long long getActiveColorPawns();
     unsigned long long getActiveColorPieces();
     unsigned long long getEmptySquares();
     unsigned long long getHash();
+    unsigned long long getInactiveColorColumnAttackers();
+    unsigned long long getInactiveColorDiagonalAttackers();
+    unsigned long long getInactiveColorKing();
+    unsigned long long getInactiveColorKnights();
+    unsigned long long getInactiveColorPawns();
     unsigned long long getInactiveColorPieces();
     char getPiece(int i, int j);
     int getPossibleEnPassantTargetColumn();
     int getPossibleEnPassantTargetRow();
-    tuple<string, bool, int, int> getUniqueHash();
-    bool isActiveColorInCheck();
+    bool isActiveColorKing(int i, int j);
+    bool isActiveColorPawn(int i, int j);
     bool isActiveColorPiece(int i, int j);
     bool isActiveColorRook(int i, int j);
     bool isInactiveColorKing(int i, int j);
     bool isInactiveColorPawn(int i, int j);
     bool isInactiveColorPiece(int i, int j);
-    bool isActiveColorKing(int i, int j);
-    bool isActiveColorPawn(int i, int j);
     bool isPiece(int i, int j);
     void setCanActiveColorCastleKingside(bool canActiveColorCastleKingside);
     void setCanActiveColorCastleQueenside(bool canActiveColorCastleQueenside);

@@ -4,17 +4,8 @@
 
 bool State::isZobristInitialized = false;
 unsigned long long State::Zobrist[793];
-bool State::isInactiveColorBishop(int i, int j) {
-    return bitboards[getActiveColor() ? WHITE_BISHOPS : BLACK_BISHOPS] & ((unsigned long long)1 << (8 * i + j));
-}
-bool State::isInactiveColorKnight(int i, int j) {
-    return bitboards[getActiveColor() ? WHITE_KNIGHTS : BLACK_KNIGHTS] & ((unsigned long long)1 << (8 * i + j));
-}
-bool State::isInactiveColorQueen(int i, int j) {
-    return bitboards[getActiveColor() ? WHITE_QUEENS : BLACK_QUEENS] & ((unsigned long long)1 << (8 * i + j));
-}
-bool State::isInactiveColorRook(int i, int j) {
-    return bitboards[getActiveColor() ? WHITE_ROOKS : BLACK_ROOKS] & ((unsigned long long)1 << (8 * i + j));
+tuple<string, bool, int, int> State::getUniqueHash() {
+    return uniqueHash;
 }
 bool State::isWhite(char piece) {
     if (piece == '.')
@@ -104,8 +95,8 @@ unsigned long long State::getActiveColorColumnAttackers() {
 unsigned long long State::getActiveColorDiagonalAttackers() {
     return getActiveColor() ? bitboards[BLACK_BISHOPS] | bitboards[BLACK_QUEENS] : bitboards[WHITE_BISHOPS] | bitboards[WHITE_QUEENS];
 }
-unsigned long long State::getActiveColorKings() {
-    return bitboards[getActiveColor() ? BLACK_KINGS : WHITE_KINGS];
+unsigned long long State::getActiveColorKing() {
+    return bitboards[getActiveColor() ? BLACK_KING : WHITE_KING];
 }
 unsigned long long State::getActiveColorKnights() {
     return bitboards[getActiveColor() ? BLACK_KNIGHTS : WHITE_KNIGHTS];
@@ -122,6 +113,21 @@ unsigned long long State::getEmptySquares() {
 unsigned long long State::getHash() {
     return hash;
 }
+unsigned long long State::getInactiveColorColumnAttackers() {
+    return getActiveColor() ? bitboards[WHITE_ROOKS] | bitboards[WHITE_QUEENS] : bitboards[BLACK_ROOKS] | bitboards[BLACK_QUEENS];
+}
+unsigned long long State::getInactiveColorDiagonalAttackers() {
+    return getActiveColor() ? bitboards[WHITE_BISHOPS] | bitboards[WHITE_QUEENS] : bitboards[BLACK_BISHOPS] | bitboards[BLACK_QUEENS];
+}
+unsigned long long State::getInactiveColorKing() {
+    return bitboards[getActiveColor() ? WHITE_KING : BLACK_KING];
+}
+unsigned long long State::getInactiveColorKnights() {
+    return bitboards[getActiveColor() ? WHITE_KNIGHTS : BLACK_KNIGHTS];
+}
+unsigned long long State::getInactiveColorPawns() {
+    return bitboards[getActiveColor() ? WHITE_PAWNS : BLACK_PAWNS];
+}
 unsigned long long State::getInactiveColorPieces() {
     return bitboards[getActiveColor() ? WHITE_PIECES : BLACK_PIECES];
 }
@@ -136,62 +142,8 @@ int State::getPossibleEnPassantTargetRow() {
         return -1;
     return getActiveColor() ? 4 : 3;
 }
-tuple<string, bool, int, int> State::getUniqueHash() {
-    return uniqueHash;
-}
-bool State::isActiveColorInCheck() {
-    for (int i = 0; i < 8; i++)
-        for (int j = 0; j < 8; j++) {
-            if (!isActiveColorKing(i, j))
-                continue;
-            if ((getActiveColor() ? i <= 5 : i >= 2) && (j - 1 >= 0 && isInactiveColorPawn(i + (getActiveColor() ? 1 : -1), j - 1) || j + 1 < 8 && isInactiveColorPawn(i + (getActiveColor() ? 1 : -1), j + 1)))
-                return true;
-            int di[16] = { -2, -1, 1, 2, 2, 1, -1, -2, -1, -1, 1, 1, -1, 0, 1, 0 };
-            int dj[16] = { 1, 2, 2, 1, -1, -2, -2, -1, -1, 1, 1, -1, 0, 1, 0, -1 };
-            for (int k = 0; k < 8; k++) {
-                if (i + di[k] < 0 || i + di[k] >= 8 || j + dj[k] < 0 || j + dj[k] >= 8)
-                    continue;
-                if (!isInactiveColorKnight(i + di[k], j + dj[k]))
-                    continue;
-                return true;
-            }
-            for (int k = 8; k < 16; k++) {
-                if (i + di[k] < 0 || i + di[k] >= 8 || j + dj[k] < 0 || j + dj[k] >= 8)
-                    continue;
-                if (!isInactiveColorKing(i + di[k], j + dj[k]))
-                    continue;
-                return true;
-            }
-            for (int k = 8; k < 12; k++) {
-                for (int l = 1; ; l++) {
-                    if (i + l * di[k] < 0 || i + l * di[k] >= 8 || j + l * dj[k] < 0 || j + l * dj[k] >= 8)
-                        break;
-                    if (isActiveColorPiece(i + l * di[k], j + l * dj[k]))
-                        break;
-                    if (isInactiveColorBishop(i + l * di[k], j + l * dj[k]) || isInactiveColorQueen(i + l * di[k], j + l * dj[k]))
-                        return true;
-                    if (isInactiveColorPiece(i + l * di[k], j + l * dj[k]))
-                        break;
-                }
-            }
-            for (int k = 12; k < 16; k++) {
-                for (int l = 1; ; l++) {
-                    if (i + l * di[k] < 0 || i + l * di[k] >= 8 || j + l * dj[k] < 0 || j + l * dj[k] >= 8)
-                        break;
-                    if (isActiveColorPiece(i + l * di[k], j + l * dj[k]))
-                        break;
-                    if (isInactiveColorRook(i + l * di[k], j + l * dj[k]) || isInactiveColorQueen(i + l * di[k], j + l * dj[k]))
-                        return true;
-                    if (isInactiveColorPiece(i + l * di[k], j + l * dj[k]))
-                        break;
-                }
-            }
-            return false;
-        }
-    return false;
-}
 bool State::isActiveColorKing(int i, int j) {
-    return bitboards[getActiveColor() ? BLACK_KINGS : WHITE_KINGS] & ((unsigned long long)1 << (8 * i + j));
+    return bitboards[getActiveColor() ? BLACK_KING : WHITE_KING] & ((unsigned long long)1 << (8 * i + j));
 }
 bool State::isActiveColorPawn(int i, int j) {
     return bitboards[getActiveColor() ? BLACK_PAWNS : WHITE_PAWNS] & ((unsigned long long)1 << (8 * i + j));
@@ -203,7 +155,7 @@ bool State::isActiveColorRook(int i, int j) {
     return bitboards[getActiveColor() ? BLACK_ROOKS : WHITE_ROOKS] & ((unsigned long long)1 << (8 * i + j));
 }
 bool State::isInactiveColorKing(int i, int j) {
-    return bitboards[getActiveColor() ? WHITE_KINGS : BLACK_KINGS] & ((unsigned long long)1 << (8 * i + j));
+    return bitboards[getActiveColor() ? WHITE_KING : BLACK_KING] & ((unsigned long long)1 << (8 * i + j));
 }
 bool State::isInactiveColorPawn(int i, int j) {
     return bitboards[getActiveColor() ? WHITE_PAWNS : BLACK_PAWNS] & ((unsigned long long)1 << (8 * i + j));
