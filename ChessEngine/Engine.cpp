@@ -292,7 +292,7 @@ void Engine::printSearchResult(Move& optimalMove, int evaluation, int depth, int
     cout << "\n";
     cout << "Evaluation: ";
     if (abs(evaluation) > MAXIMUM_EVALUATION)
-        cout << "Mate in " << (MATE_IN_ZERO - abs(evaluation) + 1) / 2 << "\n";
+        cout << (MATE_IN_ZERO - abs(evaluation) % 2 ? '+' : '-') << 'M' << (MATE_IN_ZERO - abs(evaluation) + 1) / 2 << "\n";
     else
         cout << evaluation << "\n";
     cout << "Depth: " << depth << "\n";
