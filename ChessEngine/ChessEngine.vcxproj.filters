@@ -21,9 +21,6 @@
     <ClCompile Include="State.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Evaluator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,15 +33,12 @@
     <ClCompile Include="MoveComparator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Evaluator2.cpp">
+    <ClCompile Include="Evaluator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="State.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Evaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine.h">
@@ -62,7 +56,7 @@
     <ClInclude Include="MoveComparator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Evaluator2.h">
+    <ClInclude Include="Evaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
