@@ -149,11 +149,13 @@
     <ClCompile Include="Move.cpp" />
     <ClCompile Include="MoveComparator.cpp" />
     <ClCompile Include="MoveGenerator.cpp" />
+    <ClCompile Include="Evaluator2.cpp" />
     <ClCompile Include="State.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Evaluator.h" />
+    <ClInclude Include="Evaluator2.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="MoveComparator.h" />
     <ClInclude Include="MoveGenerator.h" />

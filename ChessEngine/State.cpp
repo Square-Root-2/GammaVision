@@ -2,7 +2,22 @@
 #include "State.h"
 #include <random>
 
-bool State::isZobristInitialized = false;
+const unordered_map<char, State::BitboardType> State::PIECE_TO_INDEX = 
+{ 
+    { 'P', WHITE_PAWNS}, 
+    { 'p', BLACK_PAWNS }, 
+    { 'N', WHITE_KNIGHTS }, 
+    { 'n', BLACK_KNIGHTS }, 
+    { 'B', WHITE_BISHOPS }, 
+    { 'b', BLACK_BISHOPS }, 
+    { 'R', WHITE_ROOKS }, 
+    { 'r', BLACK_ROOKS }, 
+    { 'Q', WHITE_QUEENS }, 
+    { 'q', BLACK_QUEENS }, 
+    { 'K', WHITE_KING }, 
+    { 'k', BLACK_KING } 
+};
+bool State::isInitialized = false;
 unsigned long long State::Zobrist[793];
 tuple<string, bool, int, int> State::getUniqueHash() {
     return uniqueHash;
@@ -21,9 +36,9 @@ State::State(string FEN) {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; ) {
             if (isalpha(FEN[FEN.size() - 1])) {
-                bitboards[pieceToIndex[FEN[FEN.size() - 1]]] |= (unsigned long long)1 << (8 * i + j);
+                bitboards[PIECE_TO_INDEX.find(FEN[FEN.size() - 1])->second] |= (unsigned long long)1 << (8 * i + j);
                 bitboards[isWhite(FEN[FEN.size() - 1]) ? WHITE_PIECES : BLACK_PIECES] |= (unsigned long long)1 << (8 * i + j);
-                hash ^= Zobrist[64 * pieceToIndex[FEN[FEN.size() - 1]] + (8 * i + j)];
+                hash ^= Zobrist[64 * PIECE_TO_INDEX.find(FEN[FEN.size() - 1])->second + (8 * i + j)];
                 get<0>(uniqueHash) += FEN[FEN.size() - 1];
                 j++;
             }
@@ -138,12 +153,12 @@ int State::getPossibleEnPassantTargetRow() {
     return getActiveColor() ? 4 : 3;
 }
 void State::initialize() {
-    if (isZobristInitialized)
+    if (isInitialized)
         return;
     mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
     for (int k = 0; k < 793; k++)
         Zobrist[k] = rng();
-    isZobristInitialized = true;
+    isInitialized = true;
 }
 bool State::isActiveColorKing(int i, int j) {
     return bitboards[getActiveColor() ? BLACK_KING : WHITE_KING] & ((unsigned long long)1 << (8 * i + j));
@@ -181,13 +196,13 @@ void State::setCanActiveColorCastleQueenside(bool canActiveColorCastleQueenside)
 }
 void State::setPiece(int i, int j, char piece) {
     if (isPiece(i, j)) {
-        hash ^= Zobrist[64 * pieceToIndex[getPiece(i, j)] + (8 * i + j)];
-        bitboards[pieceToIndex[getPiece(i, j)]] -= (unsigned long long)1 << (8 * i + j);
+        hash ^= Zobrist[64 * PIECE_TO_INDEX.find(getPiece(i, j))->second + (8 * i + j)];
+        bitboards[PIECE_TO_INDEX.find(getPiece(i, j))->second] -= (unsigned long long)1 << (8 * i + j);
         bitboards[isWhite(getPiece(i, j)) ? WHITE_PIECES : BLACK_PIECES] -= (unsigned long long)1 << (8 * i + j);
     }
     if (piece != '.') {
-        hash ^= Zobrist[64 * pieceToIndex[piece] + (8 * i + j)];
-        bitboards[pieceToIndex[piece]] |= (unsigned long long)1 << (8 * i + j);
+        hash ^= Zobrist[64 * PIECE_TO_INDEX.find(piece)->second + (8 * i + j)];
+        bitboards[PIECE_TO_INDEX.find(piece)->second] |= (unsigned long long)1 << (8 * i + j);
         bitboards[isWhite(piece) ? WHITE_PIECES : BLACK_PIECES] |= (unsigned long long)1 << (8 * i + j);
     }
     get<0>(uniqueHash)[8 * i + j] = piece;

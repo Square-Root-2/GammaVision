@@ -21,3 +21,4 @@ Search
 
 Evaluation
 - piece-square tables
+- tapered evaluation

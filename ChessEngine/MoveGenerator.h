@@ -6,24 +6,25 @@
 
 class MoveGenerator {
     enum AttackSetType {
-        BLACK_PAWN,
         WHITE_PAWN,
-        EAST,
-        KING,
+        BLACK_PAWN,
         KNIGHT,
+        KING,
         NORTH,
         NORTHEAST,
-        NORTHWEST,
-        SOUTH,
+        EAST,
         SOUTHEAST,
+        SOUTH,
         SOUTHWEST,
-        WEST
+        WEST,
+        NORTHWEST
     };
     enum MagicBitboardType {
         COLUMN,
         DIAGONAL
     };
     static unsigned long long attackSets[12][64], magicNumbers[2][64];
+    static bool isInitialized;
     static int keySizes[2][64];
     static vector<unsigned long long> magicAttackSets[2][64];
     static void generateEastAttackSets();

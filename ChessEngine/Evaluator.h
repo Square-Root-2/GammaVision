@@ -11,4 +11,5 @@ class Evaluator {
 public:
     static int getCentipawnEquivalent(char piece);
     static int getEvaluation(State& state);
+    static void initialize();
 };

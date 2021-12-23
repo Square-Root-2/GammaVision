@@ -5,6 +5,7 @@
 
 unsigned long long MoveGenerator::attackSets[12][64];
 unsigned long long MoveGenerator::magicNumbers[2][64];
+bool MoveGenerator::isInitialized = false;
 int MoveGenerator::keySizes[2][64];
 vector<unsigned long long> MoveGenerator::magicAttackSets[2][64];
 void MoveGenerator::generateEastAttackSets() {
@@ -112,9 +113,9 @@ void MoveGenerator::generateNorthwestAttackSets() {
     }
 }
 void MoveGenerator::generatePawnAttackSets() {
-    int di[2] = { 1, -1 };
+    int di[2] = { -1, 1 };
     int dj[2] = { -1, 1 };
-    for (int l = BLACK_PAWN; l <= WHITE_PAWN; l++)
+    for (int l = WHITE_PAWN; l <= BLACK_PAWN; l++)
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++) {
                 attackSets[l][8 * i + j] = 0;
@@ -531,7 +532,7 @@ void MoveGenerator::getMoves(vector<Move>& moves, State& state) {
     getCastles(moves, state);
 }
 void MoveGenerator::initialize() {
-    if (!magicAttackSets[0][0].empty())
+    if (isInitialized)
         return;
     generatePawnAttackSets();
     generateKnightAttackSets();
@@ -545,6 +546,7 @@ void MoveGenerator::initialize() {
     generateWestAttackSets();
     generateNorthwestAttackSets();
     initializeMagicAttackSets();
+    isInitialized = true;
 }
 bool MoveGenerator::isActiveColorInCheck(State& state) {
     initialize();
