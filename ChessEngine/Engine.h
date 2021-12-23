@@ -23,6 +23,7 @@ class Engine {
     chrono::time_point<chrono::steady_clock> start;
     unordered_map<State, tuple<NodeType, int, Move>> transpositionTable[MAXIMUM_NEGAMAX_DEPTH + 1][2];
     bool makeMove(State& state, Move& move);
+    void makeNullMove(State& state);
     string moveToString(Move& move);
     int negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool isNullMoveOk, bool isActiveColorInCheck, bool hasThereBeenNullMove);
     pair<Move, int> negamax(State& state, int depth, int alpha, int beta);
@@ -31,6 +32,7 @@ class Engine {
     void printSearchResult(int depth, Move& optimalMove, int evaluation, State& state);
     int quiescenceSearch(State& state, int currentDepth, int alpha, int beta, bool hasThereBeenNullMove);
     void unmakeMove(State& state, Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn);
+    void unmakeNullMove(State& state, int possibleEnPassantTargetColumn);
 public:
     Engine();
     void getOptimalMoveDepthVersion(State& state, int maximumDepth);

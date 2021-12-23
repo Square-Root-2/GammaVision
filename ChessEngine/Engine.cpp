@@ -54,6 +54,10 @@ bool Engine::makeMove(State& state, Move& move) {
     state.toggleActiveColor();
     return isLegal;
 }
+void Engine::makeNullMove(State& state) {
+    state.setPossibleEnPassantTargetColumn(-1);
+    state.toggleActiveColor();
+}
 string Engine::moveToString(Move& move) {
     return string{ char(move.getBeginColumn() + 'a') }
         + to_string(8 - move.getBeginRow())
@@ -77,7 +81,8 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
         else if (get<0>(it->second) == NodeType::CUT && get<1>(it->second) - 1 < beta)
             alpha = max(alpha, get<1>(it->second) - 1);
     }
-    if (currentDepth >= min(depth, MAXIMUM_NEGAMAX_DEPTH)) {
+    int checkExtension = isActiveColorInCheck ? 1 : 0;
+    if (currentDepth >= min(depth + checkExtension, MAXIMUM_NEGAMAX_DEPTH)) {
         int evaluation = quiescenceSearch(state, currentDepth, alpha, beta, hasThereBeenNullMove);
         if (evaluation <= alpha) {
             if (it == transpositionTable[0][isNullMoveOk].end() || evaluation < get<1>(it->second))
@@ -91,13 +96,13 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
             transpositionTable[0][isNullMoveOk][state] = tuple<NodeType, int, Move>(NodeType::PV, evaluation, Move());
         return evaluation;
     }
-    int checkExtension = isActiveColorInCheck ? 1 : 0;
     int nullMoveReduction = 0;
     if (!isActiveColorInCheck && isNullMoveOk) {
-        state.toggleActiveColor();
+        int possibleEnPassantTargetColumn = state.getPossibleEnPassantTargetColumn();
+        makeNullMove(state);
         int R = depth - currentDepth > 6 ? MAXIMUM_R : MINIMUM_R;
         int evaluation = -negamax(state, currentDepth + 1, depth - R + checkExtension, -beta, -beta + 1, false, false, true);
-        state.toggleActiveColor();
+        unmakeNullMove(state, possibleEnPassantTargetColumn);
         if (evaluation >= beta) {
             nullMoveReduction = DR;
             if (currentDepth >= min(depth - nullMoveReduction, MAXIMUM_NEGAMAX_DEPTH)) {
@@ -118,6 +123,8 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
     }
     vector<Move> activeColorMoves;
     MoveGenerator::getMoves(activeColorMoves, state);
+    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    shuffle(activeColorMoves.begin(), activeColorMoves.end(), rng);
     if (it != transpositionTable[max(depth - currentDepth, 0)][isNullMoveOk].end())
         sort(activeColorMoves.begin(), activeColorMoves.end(), MoveComparator(killerMoves[currentDepth], get<2>(it->second)));
     else
@@ -214,6 +221,8 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
         else if (get<0>(it->second) == NodeType::CUT && get<1>(it->second) - 1 < beta)
             alpha = max(alpha, get<1>(it->second) - 1);
     }
+    bool isActiveColorInCheck = MoveGenerator::isActiveColorInCheck(state);
+    int checkExtension = isActiveColorInCheck ? 1 : 0;
     vector<Move> activeColorMoves;
     MoveGenerator::getMoves(activeColorMoves, state);
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
@@ -226,9 +235,7 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
     int optimalEvaluation = -INT32_MAX;
     int legalMoves = activeColorMoves.size();
     int searchedMoves = 0;
-    bool isActiveColorInCheck = MoveGenerator::isActiveColorInCheck(state);
     int staticEvaluation = Evaluator::getEvaluation(state);
-    int checkExtension = isActiveColorInCheck ? 1 : 0;
     for (int i = 0; i < activeColorMoves.size(); i++) {
         bool couldActiveColorCastleKingside = state.canActiveColorCastleKingside();
         bool couldActiveColorCastleQueenside = state.canActiveColorCastleQueenside();
@@ -269,7 +276,7 @@ pair<Move, int> Engine::negamax(State& state, int depth, int alpha, int beta) {
         }
         searchedMoves++;
     }
-    if (optimalEvaluation <= alpha) {
+    if (optimalEvaluation < alpha) {
         if (it == transpositionTable[depth][false].end() || optimalEvaluation < get<1>(it->second))
             transpositionTable[depth][false][state] = tuple<NodeType, int, Move>(NodeType::ALL, optimalEvaluation, optimalMove);
     }
@@ -332,6 +339,8 @@ int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta
     int optimalEvaluation = Evaluator::getEvaluation(state);
     vector<Move> activeColorMoves;
     MoveGenerator::getMoves(activeColorMoves, state);
+    mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+    shuffle(activeColorMoves.begin(), activeColorMoves.end(), rng);
     sort(activeColorMoves.begin(), activeColorMoves.end(), MoveComparator());
     int legalMoves = activeColorMoves.size();
     bool isActiveColorInCheck = MoveGenerator::isActiveColorInCheck(state);
@@ -344,7 +353,7 @@ int Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta
             unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
             continue;
         }
-        if (activeColorMoves[i].isQuiet() && !isActiveColorInCheck) {
+        if (!activeColorMoves[i].isCapture() && !isActiveColorInCheck) {
             unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
             continue;
         }
@@ -391,6 +400,10 @@ void Engine::unmakeMove(State& state, Move& move, bool couldActiveColorCastleKin
     else
         state.setPiece(move.getEndRow(), move.getEndColumn(), move.getVictim());
     state.setPiece(move.getBeginRow(), move.getBeginColumn(), move.getAggressor());
+}
+void Engine::unmakeNullMove(State& state, int possibleEnPassantTargetColumn) {
+    state.toggleActiveColor();
+    state.setPossibleEnPassantTargetColumn(possibleEnPassantTargetColumn);
 }
 Engine::Engine() {
     Evaluator::initialize();
