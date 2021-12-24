@@ -13,15 +13,21 @@ class Engine {
         CUT,
         ALL
     };
-    static const int DR = 4, MAXIMUM_R = 4, MINIMUM_R = 3;
-    static const int MAXIMUM_EVALUATION = 10400, MAXIMUM_NEGAMAX_DEPTH = 30, MAXIMUM_PERFT_DEPTH = 30, MAXIMUM_QUIESCENCE_DEPTH = 30;
-    static const int MATE_IN_ZERO = MAXIMUM_EVALUATION + MAXIMUM_NEGAMAX_DEPTH + MAXIMUM_QUIESCENCE_DEPTH + 1, TIMEOUT = MATE_IN_ZERO + 1;
+    static const int DR = 4, 
+        MAXIMUM_DEPTH = 60,
+        MAXIMUM_EVALUATION = 24120,
+        MAXIMUM_NEGAMAX_DEPTH = 30, 
+        MAXIMUM_PERFT_DEPTH = 30,
+        MAXIMUM_R = 4, 
+        MINIMUM_R = 3,
+        MATE_IN_ZERO = MAXIMUM_EVALUATION + MAXIMUM_DEPTH + 1,
+        TIMEOUT = MATE_IN_ZERO + 1;
     static const unordered_map<MoveType, string> promotionToString;
-    unordered_set<Move> killerMoves[MAXIMUM_NEGAMAX_DEPTH + 1];
-    unordered_map<State, Move> principalVariation[MAXIMUM_NEGAMAX_DEPTH + MAXIMUM_QUIESCENCE_DEPTH + 1];
+    unordered_set<Move> killerMoves[MAXIMUM_DEPTH + 1];
+    unordered_map<State, Move> principalVariation[MAXIMUM_DEPTH + 1];
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
-    unordered_map<State, tuple<NodeType, int, Move>> transpositionTable[MAXIMUM_NEGAMAX_DEPTH + 1][MAXIMUM_NEGAMAX_DEPTH + 1][2];
+    unordered_map<State, tuple<int, NodeType, int, Move>> transpositionTable;
     bool makeMove(State& state, Move& move);
     void makeNullMove(State& state);
     string moveToString(Move& move);

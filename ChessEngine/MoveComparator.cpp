@@ -20,12 +20,6 @@ bool MoveComparator::compareQuietMoves(Move& move1, Move& move2) {
 		return true;
 	return false;
 }
-MoveComparator::MoveComparator() {
-
-}
-MoveComparator::MoveComparator(Move& hashMove) {
-	this->hashMove = hashMove;
-}
 MoveComparator::MoveComparator(unordered_set<Move>& killerMoves) {
 	this->killerMoves = killerMoves;
 }
