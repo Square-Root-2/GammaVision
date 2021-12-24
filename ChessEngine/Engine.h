@@ -21,7 +21,7 @@ class Engine {
     unordered_map<State, Move> principalVariation[MAXIMUM_NEGAMAX_DEPTH + MAXIMUM_QUIESCENCE_DEPTH + 1];
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
-    unordered_map<State, tuple<NodeType, int, Move>> transpositionTable[MAXIMUM_NEGAMAX_DEPTH + 1][2];
+    unordered_map<State, tuple<NodeType, int, Move>> transpositionTable[MAXIMUM_NEGAMAX_DEPTH + 1][MAXIMUM_NEGAMAX_DEPTH + 1][2];
     bool makeMove(State& state, Move& move);
     void makeNullMove(State& state);
     string moveToString(Move& move);
