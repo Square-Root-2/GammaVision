@@ -69,7 +69,7 @@ int Engine::negamax(State& state, int currentDepth, int depth, int alpha, int be
             continue;
         }
         bool isInactiveColorInCheck = MoveGenerator::isActiveColorInCheck(state);
-        bool isFutilityPruningOk = min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth == 1 && !activeColorMoves[i].isCapture() && !isInactiveColorInCheck && !isActiveColorInCheck && abs(max(alpha, optimalEvaluation) - (MATE_IN_ZERO - min(depth, MAXIMUM_NEGAMAX_DEPTH))) > Evaluator::getCentipawnEquivalent('N') && abs(beta - (MATE_IN_ZERO - min(depth, MAXIMUM_NEGAMAX_DEPTH))) > Evaluator::getCentipawnEquivalent('N') && Evaluator::getCentipawnEquivalent('N') <= max(alpha, optimalEvaluation);
+        bool isFutilityPruningOk = min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth == 1 && !activeColorMoves[i].isCapture() && !isInactiveColorInCheck && !isActiveColorInCheck && abs(max(alpha, optimalEvaluation) - (MATE_IN_ZERO - min(depth, MAXIMUM_NEGAMAX_DEPTH))) > Evaluator::getCentipawnEquivalent('N') && abs(beta - (MATE_IN_ZERO - min(depth, MAXIMUM_NEGAMAX_DEPTH))) > Evaluator::getCentipawnEquivalent('N') && staticEvaluation + Evaluator::getCentipawnEquivalent('N') <= max(alpha, optimalEvaluation);
         if (isFutilityPruningOk) 
         {
             unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
@@ -404,3 +404,4 @@ void Engine::perft(const State& state, int depth)
     }
     cout << "\nTotal Nodes: " << totalNodes << "\n\n";
 }
+// 2K3k1/1p3ppp/2p2b2/1r6/8/p7/8/8 b - - 0 1
