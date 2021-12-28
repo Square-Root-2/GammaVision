@@ -1,14 +1,20 @@
+#ifndef _EVALUATOR_H_
+#define _EVALUATOR_H_
+
 #pragma once
 
 #include "State.h"
 #include <unordered_map>
 
-class Evaluator {
-    enum Color {
+class Evaluator 
+{
+    enum Color 
+    {
         WHITE,
         BLACK
     };
-    enum Piece {
+    enum Piece 
+    {
         WHITE_PAWN,
         BLACK_PAWN,
         WHITE_KNIGHT,
@@ -22,7 +28,8 @@ class Evaluator {
         WHITE_KING,
         BLACK_KING
     };
-    enum PieceType {
+    enum PieceType 
+    {
         PAWN,
         KNIGHT,
         BISHOP,
@@ -42,6 +49,35 @@ class Evaluator {
     static bool isWhite(char piece);
 public:
     static int getCentipawnEquivalent(char piece);
-    static int getEvaluation(State& state);
+    static int getEvaluation(const State& state);
     static void initialize();
 };
+
+inline int Evaluator::getFlippedIndex(int i, int j)
+{
+    return 8 * (7 - i) + j;
+}
+inline bool Evaluator::isWhite(char piece)
+{
+    if (piece == '.')
+        return false;
+    return isupper(piece);
+}
+inline int Evaluator::getCentipawnEquivalent(char piece)
+{
+    if (piece == 'P' || piece == 'p')
+        return 100;
+    if (piece == 'N' || piece == 'n')
+        return 320;
+    if (piece == 'B' || piece == 'b')
+        return 330;
+    if (piece == 'R' || piece == 'r')
+        return 500;
+    if (piece == 'Q' || piece == 'q')
+        return 900;
+    if (piece == 'K' || piece == 'k')
+        return 20000;
+    return 0;
+}
+
+#endif // _EVALUATOR_H_

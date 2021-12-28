@@ -1,6 +1,7 @@
 #pragma once
 
-enum class MoveType {
+enum class MoveType 
+{
 	PROMOTION_TO_QUEEN,
 	PROMOTION_TO_ROOK,
 	PROMOTION_TO_BISHOP,
@@ -11,5 +12,6 @@ enum class MoveType {
 	KINGSIDE_CASTLE,
 	QUEENSIDE_CASTLE,
 	NO_MOVE,
+	NULL_MOVE,
 	TIMEOUT
 };
