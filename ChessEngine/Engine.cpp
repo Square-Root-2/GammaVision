@@ -344,7 +344,8 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
         pair<int, stack<Move>*> evaluation = quiescenceSearch(state, currentDepth + 1, -beta, -max(alpha, optimalEvaluation));
         evaluation.first = -evaluation.first;
         evaluation.second->push(activeColorMoves[i]);
-        if (evaluation.first == TIMEOUT) {
+        if (evaluation.first == TIMEOUT) 
+        {
             killerMoves[currentDepth + 1].clear();
             delete variation;
             return pair<int, stack<Move>*>(-TIMEOUT, evaluation.second);
@@ -412,7 +413,8 @@ void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth)
         int alpha = optimalEvaluation.first - 25;
         int beta = optimalEvaluation.first + 25;
         pair<int, stack<Move>*> evaluation = negamax(s, depth, alpha, beta);
-        if (evaluation.first <= alpha || evaluation.first >= beta) {
+        if (evaluation.first <= alpha || evaluation.first >= beta) 
+        {
             delete evaluation.second;
             evaluation = negamax(s, depth, -INT32_MAX, INT32_MAX);
         }
@@ -441,7 +443,8 @@ void Engine::getOptimalMoveMoveTimeVersion(const State& state, int seconds)
             delete evaluation.second;
             return;
         }
-        if (evaluation.first <= alpha || evaluation.first >= beta) {
+        if (evaluation.first <= alpha || evaluation.first >= beta) 
+        {
             delete evaluation.second;
             evaluation = negamax(s, depth, -INT32_MAX, INT32_MAX);
         }
