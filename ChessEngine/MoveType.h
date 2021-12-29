@@ -13,5 +13,4 @@ enum class MoveType
 	QUEENSIDE_CASTLE,
 	NO_MOVE,
 	NULL_MOVE,
-	TIMEOUT
 };

@@ -7,6 +7,7 @@
 #include <iostream>
 #include "Move.h"
 #include "MoveGenerator.h"
+#include <stack>
 #include "State.h"
 #include <unordered_set>
 
@@ -30,18 +31,18 @@ class Engine
         MATE_IN_ZERO = MAXIMUM_EVALUATION + MAXIMUM_DEPTH + 1,
         TIMEOUT = MATE_IN_ZERO + 1;
     static const unordered_map<MoveType, string> promotionToString;
-    unordered_set<Move> killerMoves[MAXIMUM_DEPTH + 1];
+    unordered_set<Move> killerMoves[MAXIMUM_DEPTH + 1]; 
     int seconds;
     chrono::time_point<chrono::steady_clock> start;
     unordered_map<State, tuple<int, NodeType, int, Move>> transpositionTable;
     bool makeMove(State& state, const Move& move);
     void makeNullMove(State& state);
     string moveToString(const Move& move);
-    int negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool isNullMoveOk, bool isActiveColorInCheck, bool hasThereBeenNullMove);
-    pair<Move, int> negamax(State& state, int depth, int alpha, int beta);
+    pair<int, stack<Move>*> negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool isNullMoveOk, bool isActiveColorInCheck);
+    pair<int, stack<Move>*> negamax(State& state, int depth, int alpha, int beta);
     int perft(State& state, int currentDepth, int depth);
-    void printSearchResult(int depth, const Move& optimalMove, int evaluation);
-    int quiescenceSearch(State& state, int currentDepth, int alpha, int beta, bool hasThereBeenNullMove);
+    void printSearchResult(int depth, pair<int, stack<Move>*> optimalEvaluation);
+    pair<int, stack<Move>*> quiescenceSearch(State& state, int currentDepth, int alpha, int beta);
     void unmakeMove(State& state, const Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn);
     void unmakeNullMove(State& state, int possibleEnPassantTargetColumn);
 public:
@@ -110,14 +111,22 @@ inline string Engine::moveToString(const Move& move)
         + to_string(8 - move.getEndRow())
         + (move.isPromotion() ? promotionToString.find(move.getMoveType())->second : "");
 }
-inline void Engine::printSearchResult(int depth, const Move& optimalMove, int evaluation) {
+inline void Engine::printSearchResult(int depth, pair<int, stack<Move>*> optimalEvaluation) 
+{
     cout << "\nDepth: " << depth << "\n";
-    cout << "Move: " << moveToString(optimalMove) << "\n";
+    cout << "Move: " << moveToString(optimalEvaluation.second->top()) << "\n";
     cout << "Evaluation: ";
-    if (abs(evaluation) > MAXIMUM_EVALUATION)
-        cout << (MATE_IN_ZERO - abs(evaluation) % 2 ? '+' : '-') << 'M' << (MATE_IN_ZERO - abs(evaluation) + 1) / 2 << "\n\n";
+    if (abs(optimalEvaluation.first) > MAXIMUM_EVALUATION)
+        cout << (MATE_IN_ZERO - abs(optimalEvaluation.first) % 2 ? '+' : '-') << 'M' << (MATE_IN_ZERO - abs(optimalEvaluation.first) + 1) / 2 << "\n";
     else
-        cout << evaluation << "\n\n";
+        cout << optimalEvaluation.first << "\n";
+    cout << "Principal Variation: ";
+    while (!optimalEvaluation.second->empty()) 
+    {
+        cout << moveToString(optimalEvaluation.second->top()) << " ";
+        optimalEvaluation.second->pop();
+    }
+    cout << "\n\n";
 }
 inline void Engine::unmakeMove(State& state, const Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn)
 {
