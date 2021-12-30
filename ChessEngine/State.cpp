@@ -19,6 +19,15 @@ const unordered_map<char, State::BitboardType> State::PIECE_TO_INDEX =
 };
 bool State::isInitialized = false;
 unsigned long long State::Zobrist[793];
+void State::initialize()
+{
+    if (isInitialized)
+        return;
+    mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+    for (int k = 0; k < 793; k++)
+        Zobrist[k] = rng();
+    isInitialized = true;
+}
 State::State(const string& FEN) 
 {
     string fen(FEN);
@@ -87,13 +96,4 @@ State::State(const string& FEN)
     }
     if (get<3>(uniqueHash) != -1)
         hash ^= Zobrist[POSSIBLE_EN_PASSANT_TARGET_COLUMN + get<3>(uniqueHash)];
-}
-void State::initialize() 
-{
-    if (isInitialized)
-        return;
-    mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
-    for (int k = 0; k < 793; k++)
-        Zobrist[k] = rng();
-    isInitialized = true;
 }

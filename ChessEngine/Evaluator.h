@@ -46,11 +46,11 @@ class Evaluator
     static int ENDGAME_TABLE[12][64], MIDDLEGAME_TABLE[12][64];
     static bool isInitialized;
     static int getFlippedIndex(int i, int j);
+    static void initialize();
     static bool isWhite(char piece);
 public:
     static int getCentipawnEquivalent(char piece);
     static int getEvaluation(const State& state);
-    static void initialize();
 };
 
 inline int Evaluator::getFlippedIndex(int i, int j)

@@ -448,9 +448,7 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
 }
 Engine::Engine() 
 {
-    Evaluator::initialize();
     MoveGenerator::initialize();
-    State::initialize();
 }
 void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth)
 {

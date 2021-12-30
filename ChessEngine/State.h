@@ -34,6 +34,7 @@ class State
     unsigned long long bitboards[14];
     unsigned long long hash;
     tuple<string, bool, int, int> uniqueHash;
+    static void initialize();
     tuple<string, bool, int, int> getUniqueHash() const;
     bool isWhite(char piece) const;
 public:
@@ -60,7 +61,6 @@ public:
     char getPiece(int i, int j) const;
     int getPossibleEnPassantTargetColumn() const;
     int getPossibleEnPassantTargetRow() const;
-    static void initialize();
     bool isActiveColorKing(int i, int j) const;
     bool isActiveColorPawn(int i, int j) const;
     bool isActiveColorPiece(int i, int j) const;
@@ -76,9 +76,9 @@ public:
     void toggleActiveColor();
 };
 
-inline State::State() {
-    initialize();
-    *this = State("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+inline State::State() : State("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") 
+{
+
 }
 inline tuple<string, bool, int, int> State::getUniqueHash() const 
 {
