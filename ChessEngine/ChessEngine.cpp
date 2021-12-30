@@ -9,7 +9,7 @@ using namespace std;
 int main() 
 {
     Engine engine;
-    State state("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    State state;
     while (true) 
     {
         cout << ">> ";
@@ -26,5 +26,7 @@ int main()
             engine.getOptimalMoveMoveTimeVersion(state, stoi(option));
         else if (command == "depth")
             engine.getOptimalMoveDepthVersion(state, stoi(option));
+        else if (command == "ponder")
+            engine.ponder(stoi(option));
     }
 }

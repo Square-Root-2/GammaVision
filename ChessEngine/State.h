@@ -37,6 +37,7 @@ class State
     tuple<string, bool, int, int> getUniqueHash() const;
     bool isWhite(char piece) const;
 public:
+    State();
     State(const string& fen);
     bool operator==(const State& state) const;
     bool canActiveColorCastleKingside() const;
@@ -75,6 +76,10 @@ public:
     void toggleActiveColor();
 };
 
+inline State::State() {
+    initialize();
+    *this = State("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+}
 inline tuple<string, bool, int, int> State::getUniqueHash() const 
 {
     return uniqueHash;

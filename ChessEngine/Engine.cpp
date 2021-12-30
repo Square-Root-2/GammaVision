@@ -39,6 +39,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int currentDepth, int dept
         evaluation.second->push(Move(MoveType::NULL_MOVE));
         if (evaluation.first == TIMEOUT) 
         {
+            unmakeNullMove(state, possibleEnPassantTargetColumn);
             killerMoves[currentDepth + 1].clear();
             delete variation;
             return pair<int, stack<Move>*>(-TIMEOUT, evaluation.second);
@@ -92,6 +93,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int currentDepth, int dept
         evaluation.second->push(activeColorMoves[i]);
         if (evaluation.first == TIMEOUT) 
         {
+            unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
             killerMoves[currentDepth + 1].clear();
             delete variation;
             return pair<int, stack<Move>*>(-TIMEOUT, evaluation.second);
@@ -105,6 +107,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int currentDepth, int dept
         }
         if (evaluation.first == TIMEOUT) 
         {
+            unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
             killerMoves[currentDepth + 1].clear();
             delete variation;
             return pair<int, stack<Move>*>(-TIMEOUT, evaluation.second);
@@ -169,6 +172,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int depth, int alpha, int 
         evaluation.second->push(Move(MoveType::NULL_MOVE));
         if (evaluation.first == TIMEOUT)
         {
+            unmakeNullMove(state, possibleEnPassantTargetColumn);
             killerMoves[1].clear();
             delete variation;
             return pair<int, stack<Move>*>(TIMEOUT, evaluation.second);
@@ -222,6 +226,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int depth, int alpha, int 
         evaluation.second->push(activeColorMoves[i]);
         if (evaluation.first == TIMEOUT)
         {
+            unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
             killerMoves[1].clear();
             delete variation;
             return pair<int, stack<Move>*>(TIMEOUT, evaluation.second);
@@ -235,6 +240,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int depth, int alpha, int 
         }
         if (evaluation.first == TIMEOUT) 
         {
+            unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
             killerMoves[1].clear();
             delete variation;
             return pair<int, stack<Move>*>(TIMEOUT, evaluation.second);
@@ -271,7 +277,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int depth, int alpha, int 
     killerMoves[1].clear();
     return pair<int, stack<Move>*>(optimalEvaluation, variation);
 }
-int Engine::perft(State& state, int currentDepth, int depth) 
+int Engine::perft(State& state, int currentDepth, int depth) const
 {
     if (currentDepth == depth)
         return 1;
@@ -294,6 +300,56 @@ int Engine::perft(State& state, int currentDepth, int depth)
         unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
     }
     return nodes;
+}
+void Engine::printSearchResult(int depth, const pair<int, stack<Move>*> optimalEvaluation) const
+{
+    cout << "\nDepth: " << depth << "\n";
+    cout << "Move: " << moveToString(optimalEvaluation.second->top()) << "\n";
+    cout << "Evaluation: ";
+    if (abs(optimalEvaluation.first) > MAXIMUM_EVALUATION)
+        cout << (MATE_IN_ZERO - abs(optimalEvaluation.first) % 2 ? '+' : '-') << 'M' << (MATE_IN_ZERO - abs(optimalEvaluation.first) + 1) / 2 << "\n";
+    else
+        cout << optimalEvaluation.first << "\n";
+    cout << "Principal Variation: ";
+    stack<Move> principalVariation(*optimalEvaluation.second);
+    while (!principalVariation.empty())
+    {
+        cout << moveToString(principalVariation.top()) << " ";
+        principalVariation.pop();
+    }
+    cout << "\n\n";
+}
+void Engine::ponder(int seconds) {
+    this->seconds = seconds;
+    start = chrono::steady_clock::now();
+    pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(state, 0, -INT32_MAX, INT32_MAX);
+    for (int depth = 1; depth <= MAXIMUM_NEGAMAX_DEPTH; depth++)
+    {
+        int alpha = optimalEvaluation.first - 25;
+        int beta = optimalEvaluation.first + 25;
+        pair<int, stack<Move>*> evaluation = negamax(state, depth, alpha, beta);
+        if (evaluation.first == TIMEOUT)
+        {
+            killerMoves[0].clear();
+            delete evaluation.second, optimalEvaluation.second;
+            return;
+        }
+        if (evaluation.first <= alpha || evaluation.first >= beta)
+        {
+            delete evaluation.second;
+            evaluation = negamax(state, depth, -INT32_MAX, INT32_MAX);
+        }
+        if (evaluation.first == TIMEOUT)
+        {
+            killerMoves[0].clear();
+            delete evaluation.second, optimalEvaluation.second;
+            return;
+        }
+        killerMoves[0].clear();
+        delete optimalEvaluation.second;
+        optimalEvaluation = evaluation;
+    }
+    delete optimalEvaluation.second;
 }
 pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta) 
 {
@@ -346,6 +402,7 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
         evaluation.second->push(activeColorMoves[i]);
         if (evaluation.first == TIMEOUT) 
         {
+            unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
             killerMoves[currentDepth + 1].clear();
             delete variation;
             return pair<int, stack<Move>*>(-TIMEOUT, evaluation.second);
@@ -395,25 +452,24 @@ Engine::Engine()
     MoveGenerator::initialize();
     State::initialize();
 }
-void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth) 
+void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth)
 {
-    if (maximumDepth > MAXIMUM_NEGAMAX_DEPTH) 
+    if (maximumDepth > MAXIMUM_NEGAMAX_DEPTH)
     {
         cout << "\nDepth greater than maximum depth.\n\n";
         return;
     }
-    transpositionTable.clear();
     State s(state);
     this->seconds = INT32_MAX;
     start = chrono::steady_clock::now();
     pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(s, 0, -INT32_MAX, INT32_MAX);
-    for (int depth = 1; depth <= maximumDepth; depth++) 
+    for (int depth = 1; depth <= maximumDepth; depth++)
     {
         delete optimalEvaluation.second;
         int alpha = optimalEvaluation.first - 25;
         int beta = optimalEvaluation.first + 25;
         pair<int, stack<Move>*> evaluation = negamax(s, depth, alpha, beta);
-        if (evaluation.first <= alpha || evaluation.first >= beta) 
+        if (evaluation.first <= alpha || evaluation.first >= beta)
         {
             delete evaluation.second;
             evaluation = negamax(s, depth, -INT32_MAX, INT32_MAX);
@@ -422,25 +478,41 @@ void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth)
         optimalEvaluation = evaluation;
         printSearchResult(depth, optimalEvaluation);
     }
+    transpositionTable.clear();
+    for (int i = 0; i < 2; i++)
+    {
+        if (optimalEvaluation.second->empty())
+            break;
+        makeMove(s, optimalEvaluation.second->top());
+        optimalEvaluation.second->pop();
+    }
+    this->state = s;
     delete optimalEvaluation.second;
 }
 void Engine::getOptimalMoveMoveTimeVersion(const State& state, int seconds) 
 {
-    transpositionTable.clear();
     State s(state);
     this->seconds = seconds;
     start = chrono::steady_clock::now();
     pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(s, 0, -INT32_MAX, INT32_MAX);
     for (int depth = 1; depth <= MAXIMUM_NEGAMAX_DEPTH; depth++) 
     {
-        delete optimalEvaluation.second;
         int alpha = optimalEvaluation.first - 25;
         int beta = optimalEvaluation.first + 25;
         pair<int, stack<Move>*> evaluation = negamax(s, depth, alpha, beta);
         if (evaluation.first == TIMEOUT) 
-        { 
+        {   
             killerMoves[0].clear();
-            delete evaluation.second;
+            transpositionTable.clear();
+            for (int i = 0; i < 2; i++)
+            {
+                if (optimalEvaluation.second->empty())
+                    break;
+                makeMove(s, optimalEvaluation.second->top());
+                optimalEvaluation.second->pop();
+            }
+            this->state = s;
+            delete evaluation.second, optimalEvaluation.second;
             return;
         }
         if (evaluation.first <= alpha || evaluation.first >= beta) 
@@ -451,16 +523,35 @@ void Engine::getOptimalMoveMoveTimeVersion(const State& state, int seconds)
         if (evaluation.first == TIMEOUT)
         {
             killerMoves[0].clear();
-            delete evaluation.second;
+            transpositionTable.clear();
+            for (int i = 0; i < 2; i++)
+            {
+                if (optimalEvaluation.second->empty())
+                    break;
+                makeMove(s, optimalEvaluation.second->top());
+                optimalEvaluation.second->pop();
+            }
+            this->state = s;
+            delete evaluation.second, optimalEvaluation.second;
             return;
         }
         killerMoves[0].clear();
+        delete optimalEvaluation.second;
         optimalEvaluation = evaluation; 
         printSearchResult(depth, optimalEvaluation);
     }
+    transpositionTable.clear();
+    for (int i = 0; i < 2; i++)
+    {
+        if (optimalEvaluation.second->empty())
+            break;
+        makeMove(s, optimalEvaluation.second->top());
+        optimalEvaluation.second->pop();
+    }
+    this->state = s;
     delete optimalEvaluation.second;
 }
-void Engine::perft(const State& state, int depth) 
+void Engine::perft(const State& state, int depth) const
 {
     if (depth > MAXIMUM_PERFT_DEPTH) 
     {

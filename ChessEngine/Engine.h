@@ -33,26 +33,28 @@ class Engine
     static const unordered_map<MoveType, string> promotionToString;
     unordered_set<Move> killerMoves[MAXIMUM_DEPTH + 1]; 
     int seconds;
+    State state;
     chrono::time_point<chrono::steady_clock> start;
     unordered_map<State, tuple<int, NodeType, int, Move>> transpositionTable;
-    bool makeMove(State& state, const Move& move);
-    void makeNullMove(State& state);
-    string moveToString(const Move& move);
+    bool makeMove(State& state, const Move& move) const;
+    void makeNullMove(State& state) const;
+    string moveToString(const Move& move) const;
     pair<int, stack<Move>*> negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool isNullMoveOk, bool isActiveColorInCheck);
     pair<int, stack<Move>*> negamax(State& state, int depth, int alpha, int beta);
-    int perft(State& state, int currentDepth, int depth);
-    void printSearchResult(int depth, pair<int, stack<Move>*> optimalEvaluation);
+    int perft(State& state, int currentDepth, int depth) const;
+    void printSearchResult(int depth, const pair<int, stack<Move>*> optimalEvaluation) const;
     pair<int, stack<Move>*> quiescenceSearch(State& state, int currentDepth, int alpha, int beta);
-    void unmakeMove(State& state, const Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn);
-    void unmakeNullMove(State& state, int possibleEnPassantTargetColumn);
+    void unmakeMove(State& state, const Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn) const;
+    void unmakeNullMove(State& state, int possibleEnPassantTargetColumn) const;
 public:
     Engine();
     void getOptimalMoveDepthVersion(const State& state, int maximumDepth);
     void getOptimalMoveMoveTimeVersion(const State& state, int seconds);
-    void perft(const State& state, int depth);
+    void perft(const State& state, int depth) const;
+    void ponder(int seconds);
 };
 
-inline bool Engine::makeMove(State& state, const Move& move)
+inline bool Engine::makeMove(State& state, const Move& move) const
 {
     state.setPiece(move.getEndRow(), move.getEndColumn(), move.getAggressor());
     state.setPiece(move.getBeginRow(), move.getBeginColumn(), '.');
@@ -98,12 +100,12 @@ inline bool Engine::makeMove(State& state, const Move& move)
     state.toggleActiveColor();
     return isLegal;
 }
-inline void Engine::makeNullMove(State& state)
+inline void Engine::makeNullMove(State& state) const
 {
     state.setPossibleEnPassantTargetColumn(-1);
     state.toggleActiveColor();
 }
-inline string Engine::moveToString(const Move& move)
+inline string Engine::moveToString(const Move& move) const
 {
     return string{ char(move.getBeginColumn() + 'a') }
         + to_string(8 - move.getBeginRow())
@@ -111,24 +113,7 @@ inline string Engine::moveToString(const Move& move)
         + to_string(8 - move.getEndRow())
         + (move.isPromotion() ? promotionToString.find(move.getMoveType())->second : "");
 }
-inline void Engine::printSearchResult(int depth, pair<int, stack<Move>*> optimalEvaluation) 
-{
-    cout << "\nDepth: " << depth << "\n";
-    cout << "Move: " << moveToString(optimalEvaluation.second->top()) << "\n";
-    cout << "Evaluation: ";
-    if (abs(optimalEvaluation.first) > MAXIMUM_EVALUATION)
-        cout << (MATE_IN_ZERO - abs(optimalEvaluation.first) % 2 ? '+' : '-') << 'M' << (MATE_IN_ZERO - abs(optimalEvaluation.first) + 1) / 2 << "\n";
-    else
-        cout << optimalEvaluation.first << "\n";
-    cout << "Principal Variation: ";
-    while (!optimalEvaluation.second->empty()) 
-    {
-        cout << moveToString(optimalEvaluation.second->top()) << " ";
-        optimalEvaluation.second->pop();
-    }
-    cout << "\n\n";
-}
-inline void Engine::unmakeMove(State& state, const Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn)
+inline void Engine::unmakeMove(State& state, const Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn) const
 {
     state.toggleActiveColor();
     state.setPossibleEnPassantTargetColumn(possibleEnPassantTargetColumn);
@@ -154,7 +139,7 @@ inline void Engine::unmakeMove(State& state, const Move& move, bool couldActiveC
         state.setPiece(move.getEndRow(), move.getEndColumn(), move.getVictim());
     state.setPiece(move.getBeginRow(), move.getBeginColumn(), move.getAggressor());
 }
-inline void Engine::unmakeNullMove(State& state, int possibleEnPassantTargetColumn)
+inline void Engine::unmakeNullMove(State& state, int possibleEnPassantTargetColumn) const
 {
     state.toggleActiveColor();
     state.setPossibleEnPassantTargetColumn(possibleEnPassantTargetColumn);
