@@ -488,6 +488,7 @@ void MoveGenerator::initializeMagicAttackSets()
                 keySizes[COLUMN][8 * i + j] = keySize;
                 magicAttackSets[COLUMN][8 * i + j] = vector<unsigned long long>(1 << keySizes[COLUMN][8 * i + j]);
                 magicNumbers[COLUMN][8 * i + j] = rng() & rng();
+
                 if (!isThereCollision(COLUMN, 8 * i + j, maskedBlockersBitboards))
                     break;
             }
