@@ -14,10 +14,12 @@ Search
 - iterative deepening
 - null move reductions
 - killer heuristic
-- Most Valuable Victim - Least Valuable Aggressor
+- most valuable Victim - least valuable aggressor
 - transposition table
 - late move reductions
 - futility pruning
+- aspiration windows
+- principal variation search
 
 Evaluation
 - piece-square tables

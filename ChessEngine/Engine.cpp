@@ -615,18 +615,24 @@ void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth)
     pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(s, 0, -INT32_MAX, INT32_MAX);
     for (int depth = 1; depth <= maximumDepth; depth++)
     {
-        delete optimalEvaluation.second;
-        int alpha = optimalEvaluation.first - 25;
-        int beta = optimalEvaluation.first + 25;
-        pair<int, stack<Move>*> evaluation = negamax(s, depth, alpha, beta);
-        if (evaluation.first <= alpha || evaluation.first >= beta)
-        {
+        int dAlpha = -25;
+        int dBeta = 25;
+        while (true) {
+            int alpha = optimalEvaluation.first + dAlpha;
+            int beta = optimalEvaluation.first + dBeta;
+            pair<int, stack<Move>*> evaluation = negamax(s, depth, alpha, beta);
+            if (evaluation.first > alpha && evaluation.first < beta) {
+                delete optimalEvaluation.second;
+                optimalEvaluation = evaluation;
+                printSearchResult(depth, optimalEvaluation);
+                break;
+            }
+            if (evaluation.first <= alpha)
+                dAlpha *= 2;
+            else
+                dBeta *= 2;
             delete evaluation.second;
-            evaluation = negamax(s, depth, -INT32_MAX, INT32_MAX);
         }
-        killerMoves[0].clear();
-        optimalEvaluation = evaluation;
-        printSearchResult(depth, optimalEvaluation);
     }
     transpositionTable.clear();
     for (int i = 0; i < 2; i++)
@@ -647,48 +653,39 @@ void Engine::getOptimalMoveMoveTimeVersion(const State& state, int seconds)
     pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(s, 0, -INT32_MAX, INT32_MAX);
     for (int depth = 1; depth <= MAXIMUM_NEGAMAX_DEPTH; depth++) 
     {
-        int alpha = optimalEvaluation.first - 25;
-        int beta = optimalEvaluation.first + 25;
-        pair<int, stack<Move>*> evaluation = negamax(s, depth, alpha, beta);
-        if (evaluation.first == TIMEOUT) 
-        {   
-            killerMoves[0].clear();
-            transpositionTable.clear();
-            for (int i = 0; i < 2; i++)
+        int dAlpha = -25;
+        int dBeta = 25;
+        while (true) {
+            int alpha = optimalEvaluation.first + dAlpha;
+            int beta = optimalEvaluation.first + dBeta;
+            pair<int, stack<Move>*> evaluation = negamax(s, depth, alpha, beta);
+            if (evaluation.first == TIMEOUT)
             {
-                if (optimalEvaluation.second->empty())
-                    break;
-                makeMove(s, optimalEvaluation.second->top());
-                optimalEvaluation.second->pop();
+                killerMoves[0].clear();
+                transpositionTable.clear();
+                for (int i = 0; i < 2; i++)
+                {
+                    if (optimalEvaluation.second->empty())
+                        break;
+                    makeMove(s, optimalEvaluation.second->top());
+                    optimalEvaluation.second->pop();
+                }
+                this->state = s;
+                delete evaluation.second, optimalEvaluation.second;
+                return;
             }
-            this->state = s;
-            delete evaluation.second, optimalEvaluation.second;
-            return;
-        }
-        if (evaluation.first <= alpha || evaluation.first >= beta) 
-        {
+            if (evaluation.first > alpha && evaluation.first < beta) {
+                delete optimalEvaluation.second;
+                optimalEvaluation = evaluation;
+                printSearchResult(depth, optimalEvaluation);
+                break;
+            }
+            if (evaluation.first <= alpha)
+                dAlpha *= 2;
+            else
+                dBeta *= 2;
             delete evaluation.second;
-            evaluation = negamax(s, depth, -INT32_MAX, INT32_MAX);
         }
-        if (evaluation.first == TIMEOUT)
-        {
-            killerMoves[0].clear();
-            transpositionTable.clear();
-            for (int i = 0; i < 2; i++)
-            {
-                if (optimalEvaluation.second->empty())
-                    break;
-                makeMove(s, optimalEvaluation.second->top());
-                optimalEvaluation.second->pop();
-            }
-            this->state = s;
-            delete evaluation.second, optimalEvaluation.second;
-            return;
-        }
-        killerMoves[0].clear();
-        delete optimalEvaluation.second;
-        optimalEvaluation = evaluation; 
-        printSearchResult(depth, optimalEvaluation);
     }
     transpositionTable.clear();
     for (int i = 0; i < 2; i++)
