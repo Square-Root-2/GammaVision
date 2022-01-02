@@ -71,7 +71,8 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int currentDepth, int dept
     if (min(depth - nullMoveReduction + checkExtension, MAXIMUM_NEGAMAX_DEPTH) - currentDepth == 1)
         staticEvaluation = Evaluator::getEvaluation(state);
     int i = 0;
-    for (; i < activeColorMoves.size(); i++) {
+    for (; i < activeColorMoves.size(); i++) 
+    {
         bool couldActiveColorCastleKingside = state.canActiveColorCastleKingside();
         bool couldActiveColorCastleQueenside = state.canActiveColorCastleQueenside();
         int possibleEnPassantTargetColumn = state.getPossibleEnPassantTargetColumn();
@@ -104,7 +105,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int currentDepth, int dept
         {
             if (activeColorMoves[i].isQuiet())
                 killerMoves[currentDepth].insert(activeColorMoves[i]);
-            if (it == transpositionTable.end() || evaluation.first > get<2>(it->second))
+            if (it == transpositionTable.end() || min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth > get<0>(it->second) || min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth == get<0>(it->second) && evaluation.first > get<2>(it->second))
                 transpositionTable[state] = tuple<int, NodeType, int, Move>(min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth, NodeType::CUT, evaluation.first, activeColorMoves[i]);
             killerMoves[currentDepth + 1].clear();
             delete variation;
@@ -166,7 +167,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int currentDepth, int dept
         {
             if (activeColorMoves[i].isQuiet())
                 killerMoves[currentDepth].insert(activeColorMoves[i]);
-            if (it == transpositionTable.end() || evaluation.first > get<2>(it->second))
+            if (it == transpositionTable.end() || min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth > get<0>(it->second) || min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth == get<0>(it->second) && evaluation.first > get<2>(it->second))
                 transpositionTable[state] = tuple<int, NodeType, int, Move>(min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth, NodeType::CUT, evaluation.first, activeColorMoves[i]);
             killerMoves[currentDepth + 1].clear();
             delete variation;
@@ -187,10 +188,10 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int currentDepth, int dept
         return pair<int, stack<Move>*>(isActiveColorInCheck ? -(MATE_IN_ZERO - currentDepth) : 0, variation);
     if (optimalEvaluation <= alpha) 
     {
-        if (it == transpositionTable.end() || optimalEvaluation < get<2>(it->second))
+        if (it == transpositionTable.end() || min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth > get<0>(it->second) || min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth == get<0>(it->second) && optimalEvaluation < get<2>(it->second))
             transpositionTable[state] = tuple<int, NodeType, int, Move>(min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth, NodeType::ALL, optimalEvaluation, optimalMove);
     }
-    else
+    else if (it == transpositionTable.end() || min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth > get<0>(it->second))
         transpositionTable[state] = tuple<int, NodeType, int, Move>(min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth, NodeType::PV, optimalEvaluation, optimalMove);
     return pair<int, stack<Move>*>(optimalEvaluation, variation);
 }
@@ -252,7 +253,8 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int depth, int alpha, int 
     if (min(depth - nullMoveReduction + checkExtension, MAXIMUM_NEGAMAX_DEPTH) == 1)
         staticEvaluation = Evaluator::getEvaluation(state);
     int i = 0;
-    for (; i < activeColorMoves.size(); i++) {
+    for (; i < activeColorMoves.size(); i++) 
+    {
         bool couldActiveColorCastleKingside = state.canActiveColorCastleKingside();
         bool couldActiveColorCastleQueenside = state.canActiveColorCastleQueenside();
         int possibleEnPassantTargetColumn = state.getPossibleEnPassantTargetColumn();
@@ -285,7 +287,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int depth, int alpha, int 
         {
             if (activeColorMoves[i].isQuiet())
                 killerMoves[0].insert(activeColorMoves[i]);
-            if (it == transpositionTable.end() || evaluation.first > get<2>(it->second))
+            if (it == transpositionTable.end() || min(depth, MAXIMUM_NEGAMAX_DEPTH) > get<0>(it->second) || min(depth, MAXIMUM_NEGAMAX_DEPTH) == get<0>(it->second) && evaluation.first > get<2>(it->second))
                 transpositionTable[state] = tuple<int, NodeType, int, Move>(min(depth, MAXIMUM_NEGAMAX_DEPTH), NodeType::CUT, evaluation.first, activeColorMoves[i]);
             killerMoves[1].clear();
             delete variation;
@@ -347,7 +349,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int depth, int alpha, int 
         {
             if (activeColorMoves[i].isQuiet())
                 killerMoves[0].insert(activeColorMoves[i]);
-            if (it == transpositionTable.end() || evaluation.first > get<2>(it->second))
+            if (it == transpositionTable.end() || min(depth, MAXIMUM_NEGAMAX_DEPTH) > get<0>(it->second) || min(depth, MAXIMUM_NEGAMAX_DEPTH) == get<0>(it->second) && evaluation.first > get<2>(it->second))
                 transpositionTable[state] = tuple<int, NodeType, int, Move>(min(depth, MAXIMUM_NEGAMAX_DEPTH), NodeType::CUT, evaluation.first, activeColorMoves[i]);
             killerMoves[1].clear();
             delete variation;
@@ -365,10 +367,10 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int depth, int alpha, int 
     }
     if (optimalEvaluation <= alpha) 
     {
-        if (it == transpositionTable.end() || optimalEvaluation < get<2>(it->second))
+        if (it == transpositionTable.end() || min(depth, MAXIMUM_NEGAMAX_DEPTH) > get<0>(it->second) || min(depth, MAXIMUM_NEGAMAX_DEPTH) == get<0>(it->second) && optimalEvaluation < get<2>(it->second))
             transpositionTable[state] = tuple<int, NodeType, int, Move>(min(depth, MAXIMUM_NEGAMAX_DEPTH), NodeType::ALL, optimalEvaluation, optimalMove);
     }
-    else
+    else if (it == transpositionTable.end() || min(depth, MAXIMUM_NEGAMAX_DEPTH) > get<0>(it->second))
         transpositionTable[state] = tuple<int, NodeType, int, Move>(min(depth, MAXIMUM_NEGAMAX_DEPTH), NodeType::PV, optimalEvaluation, optimalMove);
     killerMoves[1].clear();
     return pair<int, stack<Move>*>(optimalEvaluation, variation);
@@ -415,7 +417,8 @@ void Engine::printSearchResult(int depth, const pair<int, stack<Move>*> optimalE
     }
     cout << "\n\n";
 }
-void Engine::ponder(int seconds) {
+void Engine::ponder(int seconds) 
+{
     this->seconds = seconds;
     start = chrono::steady_clock::now();
     pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(state, 0, -INT32_MAX, INT32_MAX);
@@ -461,7 +464,7 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
             return pair<int, stack<Move>*>(get<2>(it->second), variation);
     }
     Move optimalMove;
-    int optimalEvaluation = Evaluator::getEvaluation(state);
+    int optimalEvaluation = -INT32_MAX;
     vector<Move> activeColorMoves;
     MoveGenerator::getMoves(activeColorMoves, state);
     mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
@@ -484,16 +487,16 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
             unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
             continue;
         }
-        if (currentDepth == MAXIMUM_DEPTH) {
-            unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
-            continue;
-        }
-        if (!activeColorMoves[i].isCapture() && !isActiveColorInCheck)
+        if (currentDepth == MAXIMUM_DEPTH) 
         {
             unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
             continue;
         }
-        pair<int, stack<Move>*> evaluation = quiescenceSearch(state, currentDepth + 1, -beta, -max(alpha, optimalEvaluation));
+        pair<int, stack<Move>*> evaluation;
+        if (activeColorMoves[i].isCapture() || isActiveColorInCheck)
+            evaluation = quiescenceSearch(state, currentDepth + 1, -beta, -alpha);
+        else
+            evaluation = pair<int, stack<Move>*>(Evaluator::getEvaluation(state), new stack<Move>);
         evaluation.first = -evaluation.first;
         evaluation.second->push(activeColorMoves[i]);
         if (evaluation.first == TIMEOUT)
@@ -508,21 +511,16 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
         {
             if (activeColorMoves[i].isQuiet())
                 killerMoves[currentDepth].insert(activeColorMoves[i]);
-            if (it == transpositionTable.end() || evaluation.first > get<2>(it->second))
+            if (it == transpositionTable.end() || 0 > get<0>(it->second) || 0 == get<0>(it->second) && evaluation.first > get<2>(it->second))
                 transpositionTable[state] = tuple<int, NodeType, int, Move>(0, NodeType::CUT, evaluation.first, activeColorMoves[i]);
             killerMoves[currentDepth + 1].clear();
             delete variation;
             return pair<int, stack<Move>*>(evaluation.first, evaluation.second);
         }
-        if (evaluation.first > optimalEvaluation)
-        {
-            optimalMove = activeColorMoves[i];
-            optimalEvaluation = evaluation.first;
-            delete variation;
-            variation = evaluation.second;
-        }
-        else
-            delete evaluation.second;
+        optimalMove = activeColorMoves[i];
+        optimalEvaluation = evaluation.first;
+        delete variation;
+        variation = evaluation.second;
         i++;
         break;
     }
@@ -537,12 +535,11 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
             unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
             continue;
         }
-        if (!activeColorMoves[i].isCapture() && !isActiveColorInCheck) 
-        {
-            unmakeMove(state, activeColorMoves[i], couldActiveColorCastleKingside, couldActiveColorCastleQueenside, possibleEnPassantTargetColumn);
-            continue;
-        }
-        pair<int, stack<Move>*> evaluation = quiescenceSearch(state, currentDepth + 1, -max(alpha, optimalEvaluation) - 1, -max(alpha, optimalEvaluation));
+        pair<int, stack<Move>*> evaluation;
+        if (activeColorMoves[i].isCapture() || isActiveColorInCheck)
+            evaluation = quiescenceSearch(state, currentDepth + 1, -max(alpha, optimalEvaluation) - 1, -max(alpha, optimalEvaluation));
+        else
+            evaluation = pair<int, stack<Move>*>(Evaluator::getEvaluation(state), new stack<Move>);
         evaluation.first = -evaluation.first;
         evaluation.second->push(activeColorMoves[i]);
         if (evaluation.first == TIMEOUT) 
@@ -552,7 +549,7 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
             delete variation;
             return pair<int, stack<Move>*>(-TIMEOUT, evaluation.second);
         }
-        if (evaluation.first > max(alpha, optimalEvaluation) && evaluation.first < beta)
+        if ((activeColorMoves[i].isCapture() || isActiveColorInCheck) && evaluation.first > max(alpha, optimalEvaluation) && evaluation.first < beta)
         {
             delete evaluation.second;
             evaluation = quiescenceSearch(state, currentDepth + 1, -beta, -max(alpha, optimalEvaluation));
@@ -564,7 +561,7 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
         {
             if (activeColorMoves[i].isQuiet())
                 killerMoves[currentDepth].insert(activeColorMoves[i]);
-            if (it == transpositionTable.end() || evaluation.first > get<2>(it->second))
+            if (it == transpositionTable.end() || 0 > get<0>(it->second) || 0 == get<0>(it->second) && evaluation.first > get<2>(it->second))
                 transpositionTable[state] = tuple<int, NodeType, int, Move>(0, NodeType::CUT, evaluation.first, activeColorMoves[i]);
             killerMoves[currentDepth + 1].clear();
             delete variation;
@@ -584,17 +581,19 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
         killerMoves[currentDepth + 1].clear();
     if (legalMoves == 0)
         return pair<int, stack<Move>*>(isActiveColorInCheck ? -(MATE_IN_ZERO - currentDepth) : 0, variation);
+    if (currentDepth == MAXIMUM_DEPTH)
+        optimalEvaluation = Evaluator::getEvaluation(state);
     if (optimalEvaluation <= alpha) 
     {
-        if (it == transpositionTable.end() || optimalEvaluation < get<2>(it->second))
+        if (it == transpositionTable.end() || 0 > get<0>(it->second) || 0 == get<0>(it->second) && optimalEvaluation < get<2>(it->second))
             transpositionTable[state] = tuple<int, NodeType, int, Move>(0, NodeType::ALL, optimalEvaluation, optimalMove);
     }
     else if (optimalEvaluation >= beta) 
     {
-        if (it == transpositionTable.end() || optimalEvaluation > get<2>(it->second))
+        if (it == transpositionTable.end() || 0 > get<0>(it->second) || 0 == get<0>(it->second) && optimalEvaluation > get<2>(it->second))
             transpositionTable[state] = tuple<int, NodeType, int, Move>(0, NodeType::CUT, optimalEvaluation, optimalMove);
     }
-    else
+    else if (it == transpositionTable.end() || 0 > get<0>(it->second))
         transpositionTable[state] = tuple<int, NodeType, int, Move>(0, NodeType::PV, optimalEvaluation, optimalMove);
     return pair<int, stack<Move>*>(optimalEvaluation, variation);
 }
@@ -617,11 +616,13 @@ void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth)
     {
         int dAlpha = -25;
         int dBeta = 25;
-        while (true) {
+        while (true) 
+        {
             int alpha = optimalEvaluation.first + dAlpha;
             int beta = optimalEvaluation.first + dBeta;
             pair<int, stack<Move>*> evaluation = negamax(s, depth, alpha, beta);
-            if (evaluation.first > alpha && evaluation.first < beta) {
+            if (evaluation.first > alpha && evaluation.first < beta) 
+            {
                 delete optimalEvaluation.second;
                 optimalEvaluation = evaluation;
                 printSearchResult(depth, optimalEvaluation);
@@ -655,7 +656,8 @@ void Engine::getOptimalMoveMoveTimeVersion(const State& state, int seconds)
     {
         int dAlpha = -25;
         int dBeta = 25;
-        while (true) {
+        while (true)
+        {
             int alpha = optimalEvaluation.first + dAlpha;
             int beta = optimalEvaluation.first + dBeta;
             pair<int, stack<Move>*> evaluation = negamax(s, depth, alpha, beta);
@@ -674,7 +676,8 @@ void Engine::getOptimalMoveMoveTimeVersion(const State& state, int seconds)
                 delete evaluation.second, optimalEvaluation.second;
                 return;
             }
-            if (evaluation.first > alpha && evaluation.first < beta) {
+            if (evaluation.first > alpha && evaluation.first < beta) 
+            {
                 delete optimalEvaluation.second;
                 optimalEvaluation = evaluation;
                 printSearchResult(depth, optimalEvaluation);
