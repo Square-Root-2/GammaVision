@@ -171,21 +171,6 @@ const unordered_map<char, Evaluator::Piece> Evaluator::PIECE_TO_INDEX =
 int Evaluator::ENDGAME_TABLE[12][64];
 int Evaluator::MIDDLEGAME_TABLE[12][64];
 bool Evaluator::isInitialized = false;
-void Evaluator::initialize()
-{
-    if (isInitialized)
-        return;
-    for (int k = PAWN, l = WHITE_PAWN; k <= KING; k++, l += 2)
-        for (int i = 0; i < 8; i++)
-            for (int j = 0; j < 8; j++)
-            {
-                MIDDLEGAME_TABLE[l][8 * i + j] = MIDDLEGAME_VALUES[k] + MIDDLEGAME_TABLES[k][8 * i + j];
-                ENDGAME_TABLE[l][8 * i + j] = ENDGAME_VALUES[k] + ENDGAME_TABLES[k][8 * i + j];
-                MIDDLEGAME_TABLE[l + 1][8 * i + j] = MIDDLEGAME_VALUES[k] + MIDDLEGAME_TABLES[k][getFlippedIndex(i, j)];
-                ENDGAME_TABLE[l + 1][8 * i + j] = ENDGAME_VALUES[k] + ENDGAME_TABLES[k][getFlippedIndex(i, j)];
-            }
-    isInitialized = true;
-}
 int Evaluator::getEvaluation(const State& state) 
 {
     initialize();
@@ -213,4 +198,19 @@ int Evaluator::getEvaluation(const State& state)
     int middlegamePhase = min(gamePhase, 24);
     int endgamePhase = 24 - middlegamePhase;
     return (middlegamePhase * middlegameScore + endgamePhase * endgameScore) / 24;
+}
+void Evaluator::initialize()
+{
+    if (isInitialized)
+        return;
+    for (int k = PAWN, l = WHITE_PAWN; k <= KING; k++, l += 2)
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
+            {
+                MIDDLEGAME_TABLE[l][8 * i + j] = MIDDLEGAME_VALUES[k] + MIDDLEGAME_TABLES[k][8 * i + j];
+                ENDGAME_TABLE[l][8 * i + j] = ENDGAME_VALUES[k] + ENDGAME_TABLES[k][8 * i + j];
+                MIDDLEGAME_TABLE[l + 1][8 * i + j] = MIDDLEGAME_VALUES[k] + MIDDLEGAME_TABLES[k][getFlippedIndex(i, j)];
+                ENDGAME_TABLE[l + 1][8 * i + j] = ENDGAME_VALUES[k] + ENDGAME_TABLES[k][getFlippedIndex(i, j)];
+            }
+    isInitialized = true;
 }

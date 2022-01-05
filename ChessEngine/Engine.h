@@ -47,7 +47,6 @@ class Engine
     void unmakeMove(State& state, const Move& move, bool couldActiveColorCastleKingside, bool couldActiveColorCastleQueenside, int possibleEnPassantTargetColumn) const;
     void unmakeNullMove(State& state, int possibleEnPassantTargetColumn) const;
 public:
-    Engine();
     void getOptimalMoveDepthVersion(const State& state, int maximumDepth);
     void getOptimalMoveMoveTimeVersion(const State& state, int seconds);
     void perft(const State& state, int depth) const;

@@ -607,10 +607,6 @@ pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth,
         transpositionTable[state] = tuple<int, NodeType, int, Move>(0, NodeType::PV, optimalEvaluation, optimalMove);
     return pair<int, stack<Move>*>(optimalEvaluation, variation);
 }
-Engine::Engine() 
-{
-    MoveGenerator::initialize();
-}
 void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth)
 {
     if (maximumDepth > MAXIMUM_NEGAMAX_DEPTH)

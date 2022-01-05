@@ -34,10 +34,10 @@ class State
     unsigned long long bitboards[14];
     unsigned long long hash;
     tuple<string, bool, int, int> uniqueHash;
-    static void initialize();
     tuple<string, bool, int, int> getUniqueHash() const;
     bool isWhite(char piece) const;
 public:
+    static void initialize();
     State();
     State(const string& fen);
     bool operator==(const State& state) const;

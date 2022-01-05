@@ -476,7 +476,7 @@ void MoveGenerator::getPawnSinglePushes(vector<Move>& moves, const State& state)
 }
 void MoveGenerator::initializeMagicAttackSets() 
 {
-    mt19937_64 rng(11842057289119198108);
+    mt19937_64 rng(246349999486056511);
     for (int i = 0; i < 8; i++)
         for (int j = 0; j < 8; j++) 
         {
@@ -487,7 +487,7 @@ void MoveGenerator::initializeMagicAttackSets()
             {
                 keySizes[COLUMN][8 * i + j] = keySize;
                 magicAttackSets[COLUMN][8 * i + j] = vector<unsigned long long>(1 << keySizes[COLUMN][8 * i + j]);
-                magicNumbers[COLUMN][8 * i + j] = rng() & rng();
+                magicNumbers[COLUMN][8 * i + j] = rng() & rng() & rng();
 
                 if (!isThereCollision(COLUMN, 8 * i + j, maskedBlockersBitboards))
                     break;
@@ -503,7 +503,7 @@ void MoveGenerator::initializeMagicAttackSets()
             {
                 keySizes[DIAGONAL][8 * i + j] = keySize;
                 magicAttackSets[DIAGONAL][8 * i + j] = vector<unsigned long long>(1 << keySizes[DIAGONAL][8 * i + j]);
-                magicNumbers[DIAGONAL][8 * i + j] = rng() & rng();
+                magicNumbers[DIAGONAL][8 * i + j] = rng() & rng() & rng();
                 if (!isThereCollision(DIAGONAL, 8 * i + j, maskedBlockersBitboards))
                     break;
             }

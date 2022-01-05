@@ -8,6 +8,9 @@ using namespace std;
 
 int main() 
 {
+    Evaluator::initialize();
+    MoveGenerator::initialize();
+    State::initialize();
     Engine engine;
     State state;
     while (true) 
