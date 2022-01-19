@@ -12,7 +12,12 @@ int main()
     MoveGenerator::initialize();
     State::initialize();
     Engine engine;
-    State state;
+    while (true) {
+        string input;
+        getline(cin, input);
+        engine.processInput(input);
+    }
+    /*
     while (true) 
     {
         cout << ">> ";
@@ -32,4 +37,5 @@ int main()
         else if (command == "ponder")
             engine.ponder(stoi(option));
     }
+    */
 }

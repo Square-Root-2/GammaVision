@@ -30,8 +30,9 @@ class Engine
         MINIMUM_R = 3,
         MATE_IN_ZERO = MAXIMUM_EVALUATION + MAXIMUM_DEPTH + 1,
         TIMEOUT = MATE_IN_ZERO + 1;
+    unordered_set<Move> killerMoves[MAXIMUM_DEPTH + 1];
     static const unordered_map<MoveType, string> promotionToString;
-    unordered_set<Move> killerMoves[MAXIMUM_DEPTH + 1]; 
+    bool debug = false;
     int seconds;
     State state;
     chrono::time_point<chrono::steady_clock> start;
@@ -51,6 +52,7 @@ public:
     void getOptimalMoveMoveTimeVersion(const State& state, int seconds);
     void perft(const State& state, int depth) const;
     void ponder(int seconds);
+    void processInput(const string& input);
 };
 
 inline bool Engine::makeMove(State& state, const Move& move) const
@@ -143,5 +145,22 @@ inline void Engine::unmakeNullMove(State& state, int possibleEnPassantTargetColu
     state.toggleActiveColor();
     state.setPossibleEnPassantTargetColumn(possibleEnPassantTargetColumn);
 }
+inline void Engine::processInput(const string& input) 
+{
+    if (input == "uci")
+    {
+        cout << "id name Gamma Vision\n";
+        cout << "id author Gamma Vision Developers\n";
+        cout << "uciok";
+    }
+    else if (input == "debug on")
+        debug = true;
+    else if (input == "debug off")
+        debug = false;
+    else if (input == "isready")
+        cout << "readyok\n";
+    else if (input == "ucinewgame") {
 
+    }
+}
 #endif //_ENGINE_H_
