@@ -30,9 +30,9 @@ class Engine
         MINIMUM_R = 3,
         MATE_IN_ZERO = MAXIMUM_EVALUATION + MAXIMUM_DEPTH + 1,
         TIMEOUT = MATE_IN_ZERO + 1;
+    bool debug = false;
     unordered_set<Move> killerMoves[MAXIMUM_DEPTH + 1];
     static const unordered_map<MoveType, string> promotionToString;
-    bool debug = false;
     int seconds;
     State state;
     chrono::time_point<chrono::steady_clock> start;
@@ -52,7 +52,7 @@ public:
     void getOptimalMoveMoveTimeVersion(const State& state, int seconds);
     void perft(const State& state, int depth) const;
     void ponder(int seconds);
-    void processInput(const string& input);
+    void processInput();
 };
 
 inline bool Engine::makeMove(State& state, const Move& move) const
@@ -145,22 +145,41 @@ inline void Engine::unmakeNullMove(State& state, int possibleEnPassantTargetColu
     state.toggleActiveColor();
     state.setPossibleEnPassantTargetColumn(possibleEnPassantTargetColumn);
 }
-inline void Engine::processInput(const string& input) 
+inline void Engine::processInput() 
 {
+    /*
+    string input;
+    cin >> input;
     if (input == "uci")
     {
         cout << "id name Gamma Vision\n";
         cout << "id author Gamma Vision Developers\n";
-        cout << "uciok";
+        cout << "uciok\n";
     }
-    else if (input == "debug on")
-        debug = true;
-    else if (input == "debug off")
-        debug = false;
+    else if (input == "debug") {
+        cin >> input;
+        if (input == "on")
+            debug = true;
+        else if (input == "off")
+            debug = false;
+    }
     else if (input == "isready")
         cout << "readyok\n";
-    else if (input == "ucinewgame") {
-
+    else if (input == "position") {
+        cin >> input;
+        if (input == "startpos")
+            state = State();
+        else if (input == "fen") {
+            cin >> input;
+            state = State(input);
+        }
+        cin >> input;
+        if (input != "moves")
+            return;
+        while (cin >> input)
+            makeMove(state, stringToMove(input));
     }
+    else if (input == "go")
+    */
 }
 #endif //_ENGINE_H_
