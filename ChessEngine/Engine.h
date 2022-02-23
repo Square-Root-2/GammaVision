@@ -31,9 +31,9 @@ class Engine
         MATE_IN_ZERO = MAXIMUM_EVALUATION + MAXIMUM_DEPTH + 1,
         TIMEOUT = MATE_IN_ZERO + 1;
     unordered_set<Move> killerMoves[MAXIMUM_DEPTH + 1];
+    int milliseconds;
     State ponderState;
     static const unordered_map<MoveType, string> promotionToString;
-    int seconds;
     chrono::time_point<chrono::steady_clock> start;
     unordered_map<State, tuple<int, NodeType, int, Move>> transpositionTable;
     bool makeMove(State& state, const Move& move) const;
@@ -48,9 +48,9 @@ class Engine
     void unmakeNullMove(State& state, int possibleEnPassantTargetColumn) const;
 public:
     void getOptimalMoveDepthVersion(const State& state, int maximumDepth);
-    void getOptimalMoveMoveTimeVersion(const State& state, int seconds);
+    void getOptimalMoveMoveTimeVersion(const State& state, int milliseconds);
     void perft(const State& state, int depth) const;
-    void ponder(int seconds);
+    void ponder(int milliseconds);
 };
 
 inline bool Engine::makeMove(State& state, const Move& move) const

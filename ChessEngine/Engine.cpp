@@ -15,7 +15,7 @@ const unordered_map<MoveType, string> Engine::promotionToString =
 pair<int, stack<Move>*> Engine::negamax(State& state, int currentDepth, int depth, int alpha, int beta, bool isNullMoveOk, bool isActiveColorInCheck)
 {
     stack<Move>* variation = new stack<Move>;
-    if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds)
+    if (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() >= milliseconds)
         return pair<int, stack<Move>*>(-TIMEOUT, variation);
     unordered_map<State, tuple<int, NodeType, int, Move>>::iterator it = transpositionTable.find(state);
     if (it != transpositionTable.end() && get<0>(it->second) >= min(depth, MAXIMUM_NEGAMAX_DEPTH) - currentDepth)
@@ -198,7 +198,7 @@ pair<int, stack<Move>*> Engine::negamax(State& state, int currentDepth, int dept
 pair<int, stack<Move>*> Engine::negamax(State& state, int depth, int alpha, int beta) 
 {
     stack<Move>* variation = new stack<Move>;
-    if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds) 
+    if (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() >= milliseconds) 
         return pair<int, stack<Move>*>(TIMEOUT, variation);
     unordered_map<State, tuple<int, NodeType, int, Move>>::iterator it = transpositionTable.find(state);
     if (it != transpositionTable.end() && get<0>(it->second) >= depth) 
@@ -417,9 +417,9 @@ void Engine::printSearchResult(int depth, const pair<int, stack<Move>*> optimalE
     }
     cout << "\n\n";
 }
-void Engine::ponder(int seconds) 
+void Engine::ponder(int milliseconds) 
 {
-    this->seconds = seconds;
+    this->milliseconds = milliseconds;
     start = chrono::steady_clock::now();
     pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(ponderState, 0, -INT32_MAX, INT32_MAX);
     for (int depth = 1; depth <= MAXIMUM_NEGAMAX_DEPTH; depth++)
@@ -453,7 +453,7 @@ void Engine::ponder(int seconds)
 pair<int, stack<Move>*> Engine::quiescenceSearch(State& state, int currentDepth, int alpha, int beta) 
 {
     stack<Move>* variation = new stack<Move>;
-    if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start).count() >= seconds) 
+    if (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() >= milliseconds) 
         return pair<int, stack<Move>*>(-TIMEOUT, variation);
     unordered_map<State, tuple<int, NodeType, int, Move>>::iterator it = transpositionTable.find(state);
     if (it != transpositionTable.end()) 
@@ -615,7 +615,7 @@ void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth)
         return;
     }
     State s(state);
-    this->seconds = INT32_MAX;
+    this->milliseconds = INT32_MAX;
     start = chrono::steady_clock::now();
     pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(s, 0, -INT32_MAX, INT32_MAX);
     for (int depth = 1; depth <= maximumDepth; depth++)
@@ -652,10 +652,10 @@ void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth)
     this->ponderState = s;
     delete optimalEvaluation.second;
 }
-void Engine::getOptimalMoveMoveTimeVersion(const State& state, int seconds) 
+void Engine::getOptimalMoveMoveTimeVersion(const State& state, int milliseconds) 
 {
     State s(state);
-    this->seconds = seconds;
+    this->milliseconds = milliseconds;
     start = chrono::steady_clock::now();
     pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(s, 0, -INT32_MAX, INT32_MAX);
     for (int depth = 1; depth <= MAXIMUM_NEGAMAX_DEPTH; depth++) 
