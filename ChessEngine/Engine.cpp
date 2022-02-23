@@ -421,12 +421,12 @@ void Engine::ponder(int seconds)
 {
     this->seconds = seconds;
     start = chrono::steady_clock::now();
-    pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(state, 0, -INT32_MAX, INT32_MAX);
+    pair<int, stack<Move>*> optimalEvaluation = quiescenceSearch(ponderState, 0, -INT32_MAX, INT32_MAX);
     for (int depth = 1; depth <= MAXIMUM_NEGAMAX_DEPTH; depth++)
     {
         int alpha = optimalEvaluation.first - 25;
         int beta = optimalEvaluation.first + 25;
-        pair<int, stack<Move>*> evaluation = negamax(state, depth, alpha, beta);
+        pair<int, stack<Move>*> evaluation = negamax(ponderState, depth, alpha, beta);
         if (evaluation.first == TIMEOUT)
         {
             killerMoves[0].clear();
@@ -436,7 +436,7 @@ void Engine::ponder(int seconds)
         if (evaluation.first <= alpha || evaluation.first >= beta)
         {
             delete evaluation.second;
-            evaluation = negamax(state, depth, -INT32_MAX, INT32_MAX);
+            evaluation = negamax(ponderState, depth, -INT32_MAX, INT32_MAX);
         }
         if (evaluation.first == TIMEOUT)
         {
@@ -649,7 +649,7 @@ void Engine::getOptimalMoveDepthVersion(const State& state, int maximumDepth)
         makeMove(s, optimalEvaluation.second->top());
         optimalEvaluation.second->pop();
     }
-    this->state = s;
+    this->ponderState = s;
     delete optimalEvaluation.second;
 }
 void Engine::getOptimalMoveMoveTimeVersion(const State& state, int seconds) 
@@ -678,7 +678,7 @@ void Engine::getOptimalMoveMoveTimeVersion(const State& state, int seconds)
                     makeMove(s, optimalEvaluation.second->top());
                     optimalEvaluation.second->pop();
                 }
-                this->state = s;
+                this->ponderState = s;
                 delete evaluation.second, optimalEvaluation.second;
                 return;
             }
@@ -704,7 +704,7 @@ void Engine::getOptimalMoveMoveTimeVersion(const State& state, int seconds)
         makeMove(s, optimalEvaluation.second->top());
         optimalEvaluation.second->pop();
     }
-    this->state = s;
+    this->ponderState = s;
     delete optimalEvaluation.second;
 }
 void Engine::perft(const State& state, int depth) const
