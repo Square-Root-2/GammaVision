@@ -1,0 +1,17 @@
+- fen [pos]
+	inputs position
+- perft [plies]
+	runs performance test on position to specified depth
+- movetime [milliseconds]
+	searches position for specified time
+- depth [plies]
+	searches position to specified depth
+- ponder [milliseconds]
+	ponders position for specified time
+	
+Examples:
+>> fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+>> perft 5
+>> movetime 30000
+>> depth 8
+>> ponder 10000

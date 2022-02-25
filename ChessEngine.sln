@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChessEngine", "ChessEngine\ChessEngine.vcxproj", "{AA837CA4-23F7-4A26-865C-36A8B65B083E}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "GammaVision", "GammaVision\GammaVision.vdproj", "{F06B77B4-FF93-4784-8B4B-EBC5D5AB5E4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,11 @@ Global
 		{AA837CA4-23F7-4A26-865C-36A8B65B083E}.Release|x64.Build.0 = Release|x64
 		{AA837CA4-23F7-4A26-865C-36A8B65B083E}.Release|x86.ActiveCfg = Release|Win32
 		{AA837CA4-23F7-4A26-865C-36A8B65B083E}.Release|x86.Build.0 = Release|Win32
+		{F06B77B4-FF93-4784-8B4B-EBC5D5AB5E4A}.Debug|x64.ActiveCfg = Debug
+		{F06B77B4-FF93-4784-8B4B-EBC5D5AB5E4A}.Debug|x86.ActiveCfg = Debug
+		{F06B77B4-FF93-4784-8B4B-EBC5D5AB5E4A}.Release|x64.ActiveCfg = Release
+		{F06B77B4-FF93-4784-8B4B-EBC5D5AB5E4A}.Release|x64.Build.0 = Release
+		{F06B77B4-FF93-4784-8B4B-EBC5D5AB5E4A}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

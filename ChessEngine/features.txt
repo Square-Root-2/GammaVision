@@ -1,6 +1,5 @@
 Board Representation
 - bitboards
-- 8x8 board
 - Zobrist hashing
 
 Move Generation
@@ -12,14 +11,14 @@ Search
 - alpha-beta
 - quiescence search
 - iterative deepening
-- null move reductions
+- null-move reductions
 - killer heuristic
-- most valuable Victim - least valuable aggressor
+- most-valuable victim - least-valuable aggressor
 - transposition table
-- late move reductions
+- late-move reductions
 - futility pruning
 - aspiration windows
-- principal variation search
+- principal-variation search
 
 Evaluation
 - piece-square tables

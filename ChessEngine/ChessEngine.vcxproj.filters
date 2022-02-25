@@ -65,4 +65,8 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="features.txt" />
+    <Text Include="documentation.txt" />
+  </ItemGroup>
 </Project>
