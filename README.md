@@ -1,16 +1,16 @@
 # GammaVision
-GammaVision is a chess engine that implements many of the chess-programming techniques found on the [Chess Programming Wiki](https://www.chessprogramming.org/Main_Page).
+GammaVision is a chess engine that uses many of the classic chess-programming techniques.
 
-# Features
-Board Representation
+## Features
+### Board Representation
 - bitboards
 - Zobrist hashing
 
-Move Generation
+### Move Generation
 - bitboards for pawns, knights, kings
 - magic bitboards for sliding pieces
 
-Search
+### Search
 - negamax
 - alpha-beta
 - quiescence search
@@ -24,12 +24,12 @@ Search
 - aspiration windows
 - principal-variation search
 
-Evaluation
+### Evaluation
 - piece-square tables
 - tapered evaluation
 
-# Documentation
-Commands
+## Documentation
+### Commands
 - fen \<fenstring\> <br/>
   set up the position described in fenstring on the internal board
 - perft \<x\> <br/>
@@ -41,9 +41,7 @@ Commands
 - ponder \<x\> <br/>
   ponder exactly x mseconds
   
-Examples
-
-
+### Examples
 \>> fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 <br/>
 \>> perft 5 <br/>
 \>> movetime 30000 <br/>
