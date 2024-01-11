@@ -1,5 +1,5 @@
 # GammaVision
-GammaVision is a chess engine that uses many standard chess-programming techniques, including principal-variation search, piece-square tables, and magic bitboards.
+GammaVision is a chess engine that uses many well-known chess-programming techniques, including principal-variation search, piece-square tables, and magic bitboards.
 
 ## Features
 ### Board Representation
