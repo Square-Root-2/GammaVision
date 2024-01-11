@@ -4,7 +4,6 @@ GammaVision is a chess engine that uses many standard chess-programming techniqu
 ## Features
 ### Board Representation
 - bitboards
-- Zobrist hashing
 
 ### Move Generation
 - bitboards
@@ -18,7 +17,7 @@ GammaVision is a chess engine that uses many standard chess-programming techniqu
 - null-move reductions
 - killer heuristic
 - most-valuable victim - least-valuable aggressor
-- transposition table
+- transposition table with Zobrist hashing
 - late-move reductions
 - futility pruning
 - aspiration windows
